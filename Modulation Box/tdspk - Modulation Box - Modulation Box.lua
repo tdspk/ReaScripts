@@ -5,7 +5,6 @@ script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 
 dofile(script_path .. '/tdspk - Modulation Box - Components.lua')
 
-if not mbox then
   mbox = {
     window_title = "Modulation Box",
     ready = false,
@@ -22,7 +21,6 @@ if not mbox then
     lfo_phase = 0,
     lfo_free = false
   }
-end
 
 if not defaults then
   defaults = {
@@ -55,8 +53,7 @@ function myWindow()
 end
 
 function loop()
-  --reaper.ImGui_SetNextWindowSize(ctx, 500, 300, reaper.ImGui_Cond_FirstUseEver())
-  --reaper.ImGui_SetNextWindowSize(ctx, 800, 300)
+  reaper.ImGui_SetNextWindowSize(ctx, 600, 600, reaper.ImGui_Cond_FirstUseEver())
   local visible, open = reaper.ImGui_Begin(ctx, mbox.window_title, true)
   if visible then
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), style.item_spacing_x, style.item_spacing_y)
@@ -82,7 +79,7 @@ end
 function RenderModulation()
   reaper.ImGui_BeginGroup(ctx)
 
-  if reaper.ImGui_Button(ctx, "Live Mode") then
+  if reaper.ImGui_Button(ctx, "Live Mode", 100) then
     mbox.live_clicked = mbox.live_clicked + 1
   end
 
@@ -100,6 +97,15 @@ function RenderModulation()
   end
 
   if mbox.ready and mbox.param_id then
+    reaper.ImGui_SameLine(ctx)
+    if reaper.ImGui_Button(ctx, "Show Window", 100) then
+      SetNamedConfigParam("mod.visible", "1")
+    end
+    reaper.ImGui_SameLine(ctx)
+    if reaper.ImGui_Button(ctx, "Show Knob", 100) then
+      reaper.SNM_AddTCPFXParm(mbox.track, mbox.fx_id, mbox.param_id)
+    end
+  
     reaper.ImGui_Text(ctx, mbox.track_name)
     reaper.ImGui_SameLine(ctx)
     reaper.ImGui_Text(ctx, mbox.fx_name)
@@ -113,8 +119,9 @@ function RenderModulation()
       local has_mod = ToBoolean(GetNamedConfigParam("mod.active"))
       
       if not has_mod then
+        mbox.ready = true
         SetNamedConfigParam("mod.active", "1")
-        SetNamedConfigParam("mod.baseline", defaults.mod_baseline)
+        SetNamedConfigParam("mod.baseline", mbox.pmax / 2)
         SetNamedConfigParam("lfo.speed", defaults.lfo_speed)
         SetNamedConfigParam("lfo.strength", defaults.lfo_strength)
         SetNamedConfigParam("lfo.phase", defaults.lfo_phase)
@@ -130,9 +137,9 @@ function RenderModulation()
     end
 
     if mbox.has_mod then
-      rv, mbox.mod_baseline = reaper.ImGui_SliderDouble(ctx, "##Baseline", mbox.mod_baseline, 0, 100, "Baseline = %.1f")
+      rv, mbox.mod_baseline = reaper.ImGui_SliderDouble(ctx, "##Baseline", mbox.mod_baseline, mbox.pmin, mbox.pmax, "Baseline = %f")
       SetNamedConfigParam("mod.baseline", mbox.mod_baseline)
-
+      
       ReadLFOSettings()
 
       rv, mbox.has_lfo = reaper.ImGui_Checkbox(ctx, "LFO", mbox.has_lfo)
@@ -153,15 +160,19 @@ function RenderModulation()
 
         RenderDirButtons()
         
-        rv, mbox.lfo_free = reaper.ImGui_Checkbox(ctx, "Free Running", mbox.lfo_free)
         rv, mbox.lfo_sync = reaper.ImGui_Checkbox(ctx, "Tempo Sync", mbox.lfo_sync)
+        reaper.ImGui_SameLine(ctx)
+        rv, mbox.lfo_free = reaper.ImGui_Checkbox(ctx, "Free Running", mbox.lfo_free)
+        
 
         if reaper.ImGui_IsWindowFocused(ctx) then
           WriteLFOSettings()
         end
       end
-
-
+      
+      --rv, mbox.has_acs = reaper.ImGui_Checkbox(ctx, "Audio Control Signal", mbox.has_acs)
+      --local has_acs = mbox.has_acs and "1" or "0"
+      --SetNamedConfigParam("acs.active", has_acs) 
     end
   else
     reaper.ImGui_Text(ctx, "Select a fx parameter")
@@ -210,23 +221,10 @@ function RenderDirButtons()
   reaper.ImGui_EndGroup(ctx)
 end
 
-function QueryLiveFxInfo()
-  rv, track_nr, mbox.fx_id, mbox.param_id = reaper.GetLastTouchedFX()
-
-  if rv then
-    mbox.track = reaper.GetTrack(0, track_nr - 1)
-    rv, mbox.track_name = reaper.GetTrackName(mbox.track)
-    rv, mbox.fx_name = reaper.TrackFX_GetNamedConfigParm(mbox.track, mbox.fx_id, "fx_name")
-    rv, mbox.param_name = reaper.TrackFX_GetParamName(mbox.track, mbox.fx_id, mbox.param_id)
-    mbox.ready = true
-  else
-    mbox.ready = false
-  end
-end
-
 function ReadModulationSettings()
   mbox.has_mod = ToBoolean(GetNamedConfigParam("mod.active"))
   mbox.mod_baseline = GetNamedConfigParam("mod.baseline")
+  dummy, mbox.pmin, mbox.pmax = reaper.TrackFX_GetParam(mbox.track, mbox.fx_id, mbox.param_id)
 end
 
 function ReadLFOSettings()
