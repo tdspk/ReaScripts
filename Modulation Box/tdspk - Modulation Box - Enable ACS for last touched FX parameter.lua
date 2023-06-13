@@ -3,6 +3,6 @@ script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 
 dofile(script_path .. '/tdspk - Modulation Box - Common Functions.lua')
 
-param_base = "lfo.active"
+param_base = "acs.active"
 
 set_modulation(param_base, "1")

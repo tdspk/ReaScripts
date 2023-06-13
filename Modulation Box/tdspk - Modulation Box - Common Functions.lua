@@ -39,3 +39,22 @@ function paste_parameter_data(param_base, param_names, ext_section, ext_key)
         rv, buf = reaper.TrackFX_SetNamedConfigParm(track, fx, param .. k, v)
     end
 end
+
+function set_modulation(param_base, value)
+  rv, track_nr, fx, param_id = reaper.GetLastTouchedFX()
+  
+  if rv then
+    track = reaper.GetTrack(0, track_nr - 1)
+    param = "param." .. param_id .. "." .. param_base
+    
+    -- Check if there is already an LFO
+    rv, buf = reaper.TrackFX_GetNamedConfigParm(track, fx, param)
+    
+    -- if not, create a default one
+    reaper.TrackFX_SetNamedConfigParm(track, fx, param, value)
+    
+    if (value == "1") then
+      reaper.Main_OnCommand(41143, 0) -- FX: Show parameter modulation/link for last touched FX parameter
+    end
+  end
+end
