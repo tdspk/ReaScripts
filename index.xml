@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk Scripts" commit="7ed948c4b90c830c58c82e8abf3e36a062781d9b">
+<index version="1" name="tdspk" commit="7ed948c4b90c830c58c82e8abf3e36a062781d9b">
   <category name="Modulation Box">
     <reapack name="tdspk - Modulation Box - Common Functions.lua" type="script" desc="This script contains common functions used by the Modulation Box scripts">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
