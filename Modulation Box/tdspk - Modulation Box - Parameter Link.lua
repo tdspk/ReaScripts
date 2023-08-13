@@ -70,8 +70,6 @@ function myWindow()
     select_mode = FOLLOW
   end
 
-
-
   if select_mode == FOLLOW then
     QueryLiveFxInfo()
     
