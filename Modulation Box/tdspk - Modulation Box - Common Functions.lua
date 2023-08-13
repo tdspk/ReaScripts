@@ -47,8 +47,8 @@ function set_modulation(param_base, value)
     track = reaper.GetTrack(0, track_nr - 1)
     param = "param." .. param_id .. "." .. param_base
     
-    -- Check if there is already an LFO
-    rv, buf = reaper.TrackFX_GetNamedConfigParm(track, fx, param)
+    -- Check if there is already an named parameter
+    -- rv, buf = reaper.TrackFX_GetNamedConfigParm(track, fx, param)
     
     -- if not, create a default one
     reaper.TrackFX_SetNamedConfigParm(track, fx, param, value)

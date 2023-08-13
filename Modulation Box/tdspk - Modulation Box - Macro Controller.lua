@@ -2,6 +2,8 @@ dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')(
 
 ctx = reaper.ImGui_CreateContext("Modulation Box")
 
+m0_val = 50
+
 function loop()
   reaper.ImGui_SetNextWindowSize(ctx, 600, 600, reaper.ImGui_Cond_FirstUseEver())
   local visible, open = reaper.ImGui_Begin(ctx, "Macro Controller", true)
@@ -32,8 +34,8 @@ function window()
   reaper.ImGui_Text(ctx, track_name)
   
   if child_found then
-    rv, m0_val = reaper.ImGui_VSliderInt(ctx, "M1", 50, 100, 50, 0, 100)
-    reaper.TrackFX_SetParam(track, child_id, 0, m0_val)
+    rv, m0_val = reaper.ImGui_VSliderInt(ctx, "M1", 50, 100, m0_val, 0, 100)
+    --reaper.TrackFX_SetParam(track, child_id, 0, m0_val)
     m0_val = reaper.TrackFX_GetParam(track, child_id, 0)
   end
 end
