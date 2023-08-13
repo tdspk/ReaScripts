@@ -1,3 +1,9 @@
+-- @description Splits and trims the shorter side of an item.
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 reaper.Main_OnCommandEx(40747, 0);
 
 -- Get selected item

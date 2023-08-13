@@ -1,3 +1,9 @@
+-- @description Toggles global sampler on the master track.
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 master = reaper.GetMasterTrack(0);
 
 -- Get FX Count and iterate to find Global Sampler
