@@ -1,4 +1,4 @@
--- @description This scripts sets the last touched parameter as a link parent for quick linking.
+-- @description Set last touched FX parameter as link parent
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

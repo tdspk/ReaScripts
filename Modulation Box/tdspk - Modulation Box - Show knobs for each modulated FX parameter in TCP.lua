@@ -1,4 +1,4 @@
--- @description This scripts displays a knob for each modulated FX parameter on the TCP.
+-- @description Show knobs for each modulated FX parameter in TCP
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

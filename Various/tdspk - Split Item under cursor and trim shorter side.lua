@@ -1,4 +1,4 @@
--- @description Splits and trims the shorter side of an item.
+-- @description Split Item under cursor and trim shorter side
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

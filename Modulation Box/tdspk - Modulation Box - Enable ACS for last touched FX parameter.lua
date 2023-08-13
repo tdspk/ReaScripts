@@ -1,4 +1,4 @@
--- @description This scripts enables the audio control signal for the last touched parameter.
+-- @description Enable ACS for last touched FX parameter
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

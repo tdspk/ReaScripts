@@ -1,4 +1,4 @@
--- @description This scripts disabled the link for the last touched parameter.
+-- @description Unlink last touched parameter
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

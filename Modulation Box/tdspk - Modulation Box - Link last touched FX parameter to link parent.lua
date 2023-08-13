@@ -1,4 +1,4 @@
--- @description This script links the last touched parameter to the current link parent.
+-- @description Link last touched FX parameter to link parent
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

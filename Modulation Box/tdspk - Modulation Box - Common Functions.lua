@@ -1,4 +1,4 @@
--- @description This script contains common functions used by the Modulation Box scripts
+-- @description Common Functions
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

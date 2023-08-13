@@ -1,4 +1,4 @@
--- @description Basic debug window. For internal use.
+-- @description Info Panel (debug)
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

@@ -1,4 +1,4 @@
--- @description Toggles global sampler on the master track.
+-- @description Toggle Global Sampler
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

@@ -1,4 +1,4 @@
--- @description Sets the snap offset for each selected media item to the first transient
+-- @description Set snap offset at first transient per selected item
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

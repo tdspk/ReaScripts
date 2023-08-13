@@ -1,4 +1,4 @@
--- @description This scripts pastes audio control settings from ExtState to the last touched parameter.
+-- @description Copy ACS settings from last touched FX parameter
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog
@@ -14,4 +14,4 @@ ext_key = "acs_data"
 param_base = ".acs."
 local param_list = {"active","dir","strength","attack","release","dblo","dbhi","chan","stereo","x2","y2"}
 
-paste_parameter_data(param_base, param_list, ext_section, ext_key)
+copy_parameter_data(param_base, param_list, ext_section, ext_key)

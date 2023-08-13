@@ -1,4 +1,4 @@
--- @description Splits items only if an item is selected.
+-- @description Split selected items under cursor
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

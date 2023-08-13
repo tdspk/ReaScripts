@@ -1,4 +1,4 @@
--- @description This scripts enabled an LFO for the last touched parameter.
+-- @description Enable LFO for last touched FX parameter
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog
