@@ -1,3 +1,9 @@
+-- @description This script copies the LFO settings of the last touched parameter in an ExtState.
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 

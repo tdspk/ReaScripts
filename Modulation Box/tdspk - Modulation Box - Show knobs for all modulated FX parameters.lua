@@ -1,3 +1,9 @@
+-- @description This scripts displays a knob for each modulated FX parameter on the TCP.
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 function p(msg)
   reaper.ShowConsoleMsg(msg)
 end

@@ -1,3 +1,9 @@
+-- @description Basic debug window. For internal use.
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 max_font_size = 16
 min_font_size = 8
 max_height = 50

@@ -1,3 +1,9 @@
+-- @description This script contains common functions used by the Modulation Box scripts
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 function copy_parameter_data(param_base, param_list, ext_section, ext_key)
     rv, track_id, fx, param_id = reaper.GetLastTouchedFX()
     track = reaper.GetTrack(0, track_id - 1) --get track of last touched FX param

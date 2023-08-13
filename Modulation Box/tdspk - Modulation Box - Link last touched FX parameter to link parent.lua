@@ -1,3 +1,9 @@
+-- @description This script links the last touched parameter to the current link parent.
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 rv, track_nr, fx, param_id = reaper.GetLastTouchedFX()
 
 if rv then

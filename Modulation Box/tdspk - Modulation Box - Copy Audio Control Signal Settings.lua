@@ -1,3 +1,9 @@
+-- @description This scripts copies the audio control signal settings from the last touched parameter into an ExtState.
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 
