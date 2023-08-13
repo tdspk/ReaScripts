@@ -1,73 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="7ed948c4b90c830c58c82e8abf3e36a062781d9b">
+<index version="1" name="tdspk" commit="025bba565d9215593a4f16a8ec3bf1250139fd19">
   <category name="Modulation Box">
-    <reapack name="tdspk - Modulation Box - Common Functions.lua" type="script" desc="This script contains common functions used by the Modulation Box scripts">
+    <reapack name="tdspk - Modulation Box - Common Functions.lua" type="script" desc="Common Functions">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Common%20Functions.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Copy Audio Control Signal Settings.lua" type="script" desc="This scripts copies the audio control signal settings from the last touched parameter into an ExtState.">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
+    <reapack name="tdspk - Modulation Box - Copy ACS settings from last touched FX parameter.lua" type="script" desc="Copy ACS settings from last touched FX parameter">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
         <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Copy%20Audio%20Control%20Signal%20Settings.lua</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Copy%20ACS%20settings%20from%20last%20touched%20FX%20parameter.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Copy LFO Settings.lua" type="script" desc="This script copies the LFO settings of the last touched parameter in an ExtState.">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
+    <reapack name="tdspk - Modulation Box - Copy LFO Settings from last touched FX parameter.lua" type="script" desc="Copy LFO Settings from last touched FX parameter">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
         <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Copy%20LFO%20Settings.lua</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Copy%20LFO%20Settings%20from%20last%20touched%20FX%20parameter.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Enable ACS for last touched FX parameter.lua" type="script" desc="This scripts enables the audio control signal for the last touched parameter.">
+    <reapack name="tdspk - Modulation Box - Enable ACS for last touched FX parameter.lua" type="script" desc="Enable ACS for last touched FX parameter">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Enable%20ACS%20for%20last%20touched%20FX%20parameter.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Enable LFO for last touched FX parameter.lua" type="script" desc="This scripts enabled an LFO for the last touched parameter.">
+    <reapack name="tdspk - Modulation Box - Enable LFO for last touched FX parameter.lua" type="script" desc="Enable LFO for last touched FX parameter">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Enable%20LFO%20for%20last%20touched%20FX%20parameter.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Info Panel.lua" type="script" desc="Basic debug window. For internal use.">
+    <reapack name="tdspk - Modulation Box - Info Panel.lua" type="script" desc="Info Panel (debug)">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Info%20Panel.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Link last touched FX parameter to link parent.lua" type="script" desc="This script links the last touched parameter to the current link parent.">
+    <reapack name="tdspk - Modulation Box - Link last touched FX parameter to link parent.lua" type="script" desc="Link last touched FX parameter to link parent">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Link%20last%20touched%20FX%20parameter%20to%20link%20parent.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Paste Audio Control Signal Settings.lua" type="script" desc="This scripts pastes audio control settings from ExtState to the last touched parameter.">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:53:47Z">
+    <reapack name="tdspk - Modulation Box - Paste ACS settings.lua" type="script" desc="Paste ACS settings">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
         <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/5c3faa0f0602862e5ba05b2e5b35a0485c43d752/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Paste%20Audio%20Control%20Signal%20Settings.lua</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Paste%20ACS%20settings.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Paste LFO Settings.lua" type="script" desc="This scripts pastes LFO settings from ExtState to the last touched parameter.">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
+    <reapack name="tdspk - Modulation Box - Paste LFO ettings.lua" type="script" desc="Paste LFO settings">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
         <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Paste%20LFO%20Settings.lua</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Paste%20LFO%20ettings.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Set last touched FX parameter as link parent.lua" type="script" desc="This scripts sets the last touched parameter as a link parent for quick linking.">
+    <reapack name="tdspk - Modulation Box - Set last touched FX parameter as link parent.lua" type="script" desc="Set last touched FX parameter as link parent">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Set%20last%20touched%20FX%20parameter%20as%20link%20parent.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Show knobs for all modulated FX parameters.lua" type="script" desc="This scripts displays a knob for each modulated FX parameter on the TCP.">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
+    <reapack name="tdspk - Modulation Box - Show knobs for each modulated FX parameter in TCP.lua" type="script" desc="Show knobs for each modulated FX parameter in TCP">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
         <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Show%20knobs%20for%20all%20modulated%20FX%20parameters.lua</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Show%20knobs%20for%20each%20modulated%20FX%20parameter%20in%20TCP.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Modulation Box - Unlink last touched parameter.lua" type="script" desc="This scripts disabled the link for the last touched parameter.">
+    <reapack name="tdspk - Modulation Box - Unlink last touched parameter.lua" type="script" desc="Unlink last touched parameter">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Unlink%20last%20touched%20parameter.lua</source>
@@ -75,31 +75,25 @@
     </reapack>
   </category>
   <category name="Various">
-    <reapack name="tdspk - Set snap offset at first transient per selected item.lua" type="script" desc="Sets the snap offset for each selected media item to the first transient">
+    <reapack name="tdspk - Set snap offset at first transient per selected item.lua" type="script" desc="Set snap offset at first transient per selected item">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Set%20snap%20offset%20at%20first%20transient%20per%20selected%20item.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Show Selected Item in Media Explorer.lua" type="script" desc="Show the selected item in the Media Explorer. Don't know why I needed this.">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
+    <reapack name="tdspk - Split Item under cursor and trim shorter side.lua" type="script" desc="Split Item under cursor and trim shorter side">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
         <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Show%20Selected%20Item%20in%20Media%20Explorer.lua</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Various/tdspk%20-%20Split%20Item%20under%20cursor%20and%20trim%20shorter%20side.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Split Item under Cursor and Trim.lua" type="script" desc="Splits and trims the shorter side of an item.">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Split%20Item%20under%20Cursor%20and%20Trim.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Split selected items under cursor.lua" type="script" desc="Splits items only if an item is selected.">
+    <reapack name="tdspk - Split selected items under cursor.lua" type="script" desc="Split selected items under cursor">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Split%20selected%20items%20under%20cursor.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Toggle Global Sampler.lua" type="script" desc="Toggles global sampler on the master track.">
+    <reapack name="tdspk - Toggle Global Sampler.lua" type="script" desc="Toggle Global Sampler">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Toggle%20Global%20Sampler.lua</source>
