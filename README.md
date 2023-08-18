@@ -2,6 +2,11 @@
 
 Welcome to my ReaScript repository!
 
+# Installation
+
+ReaPack: import this link in your Repository List and you are ready to go!
+https://raw.githubusercontent.com/tdspk/ReaScripts/main/index.xml
+
 # Modulation Box
 
 Scripts to accelerate the REAPER modulation workflow. These scripts use NamedConfigParms to quickly add, copy, and paste modulation data like ACS and LFO for FX parameters. Link parameters easily with two actions.
