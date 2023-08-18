@@ -1,4 +1,4 @@
--- @description Toggle Global Sampler
+-- @description Toggle Global Sampler on master
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog

@@ -1,3 +1,9 @@
+-- @description Set item length of all selected items to first item's length
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 item_count = reaper.CountSelectedMediaItems(0)
 
 if item_count > 1 then
