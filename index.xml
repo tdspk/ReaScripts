@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="affe2b22bedb528aec2defa93510cfc417d31df4">
+<index version="1" name="tdspk" commit="68348eaee9b4ee115af273499619102c9ccbb39e">
   <category name="Modulation Box">
     <reapack name="tdspk - Modulation Box - Common Functions.lua" type="script" desc="Common Functions">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
@@ -75,6 +75,12 @@
     </reapack>
   </category>
   <category name="Various">
+    <reapack name="tdspk - Set item length of all selected item to first item length.lua" type="script" desc="Set item length of all selected items to first item's length">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-18T09:37:26Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/68348eaee9b4ee115af273499619102c9ccbb39e/Various/tdspk%20-%20Set%20item%20length%20of%20all%20selected%20item%20to%20first%20item%20length.lua</source>
+      </version>
+    </reapack>
     <reapack name="tdspk - Set snap offset at first transient per selected item.lua" type="script" desc="Set snap offset at first transient per selected item">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
         <changelog><![CDATA[First version]]></changelog>
@@ -93,7 +99,7 @@
         <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Split%20selected%20items%20under%20cursor.lua</source>
       </version>
     </reapack>
-    <reapack name="tdspk - Toggle Global Sampler.lua" type="script" desc="Toggle Global Sampler">
+    <reapack name="tdspk - Toggle Global Sampler.lua" type="script" desc="Toggle Global Sampler on master">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Toggle%20Global%20Sampler.lua</source>
