@@ -13,6 +13,8 @@ Scripts to accelerate the REAPER modulation workflow. These scripts use NamedCon
 
 These scripts are designed to be as modular as possible, so feel free to make shortcuts, add them to toolbars, use the scripts for your own scripts, etc.
 
+Please make sure to install _tdspk - Modulation Box - Common Functions.lua_, otherwise the scripts won't work!
+
 ## LFO
 - Enable LFO for last touched FX parameter
 - Copy LFO settings from last touched FX parameter
