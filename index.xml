@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="68348eaee9b4ee115af273499619102c9ccbb39e">
+<index version="1" name="tdspk" commit="e2b2c8bdd10d5e06fd84754c786c01ab7803aff2">
   <category name="Modulation Box">
     <reapack name="tdspk - Modulation Box - Common Functions.lua" type="script" desc="Common Functions">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
@@ -53,6 +53,12 @@
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:46:20Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/affe2b22bedb528aec2defa93510cfc417d31df4/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Paste%20LFO%20settings.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Modulation Box - Set last touched FX parameter as link parent and auto-link following touched FX parameters (background).lua" type="script" desc="Set last touched FX parameter as link parent and auto-link following touched FX parameters (background)">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-19T11:26:05Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/e924c735de230d49c23128f7ad86de16768d3c75/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Set%20last%20touched%20FX%20parameter%20as%20link%20parent%20and%20auto-link%20following%20touched%20FX%20parameters%20(background).lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Modulation Box - Set last touched FX parameter as link parent.lua" type="script" desc="Set last touched FX parameter as link parent">
