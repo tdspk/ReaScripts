@@ -1,6 +1,7 @@
 -- @description Common Functions
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
+-- @provides [nomain] .
 -- @changelog
 --   First version
 
