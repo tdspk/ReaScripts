@@ -1,5 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="e2b2c8bdd10d5e06fd84754c786c01ab7803aff2">
+<index version="1" name="tdspk" commit="19279645d41defef525309aae35002c82fcfea4a">
+  <category name="Editing">
+    <reapack name="tdspk - Editing - Set item length of all selected item to first item length.lua" type="script" desc="Set item length of all selected items to first item's length">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-31T15:07:40Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/19279645d41defef525309aae35002c82fcfea4a/Editing/tdspk%20-%20Editing%20-%20Set%20item%20length%20of%20all%20selected%20item%20to%20first%20item%20length.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Set snap offset at first transient per selected item.lua" type="script" desc="Set snap offset at first transient per selected item">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-31T15:07:40Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/19279645d41defef525309aae35002c82fcfea4a/Editing/tdspk%20-%20Editing%20-%20Set%20snap%20offset%20at%20first%20transient%20per%20selected%20item.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Split Item under cursor and trim shorter side.lua" type="script" desc="Split Item under cursor and trim shorter side">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-31T15:07:40Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/19279645d41defef525309aae35002c82fcfea4a/Editing/tdspk%20-%20Editing%20-%20Split%20Item%20under%20cursor%20and%20trim%20shorter%20side.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Split selected items under cursor.lua" type="script" desc="Split selected items under cursor">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-31T15:07:40Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/19279645d41defef525309aae35002c82fcfea4a/Editing/tdspk%20-%20Editing%20-%20Split%20selected%20items%20under%20cursor.lua</source>
+      </version>
+    </reapack>
+  </category>
   <category name="Modulation Box">
     <reapack name="tdspk - Modulation Box - Common Functions.lua" type="script" desc="Common Functions">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
@@ -81,30 +107,6 @@
     </reapack>
   </category>
   <category name="Various">
-    <reapack name="tdspk - Set item length of all selected item to first item length.lua" type="script" desc="Set item length of all selected items to first item's length">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-18T09:37:26Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/68348eaee9b4ee115af273499619102c9ccbb39e/Various/tdspk%20-%20Set%20item%20length%20of%20all%20selected%20item%20to%20first%20item%20length.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Set snap offset at first transient per selected item.lua" type="script" desc="Set snap offset at first transient per selected item">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Set%20snap%20offset%20at%20first%20transient%20per%20selected%20item.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Split Item under cursor and trim shorter side.lua" type="script" desc="Split Item under cursor and trim shorter side">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Various/tdspk%20-%20Split%20Item%20under%20cursor%20and%20trim%20shorter%20side.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Split selected items under cursor.lua" type="script" desc="Split selected items under cursor">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Split%20selected%20items%20under%20cursor.lua</source>
-      </version>
-    </reapack>
     <reapack name="tdspk - Toggle Global Sampler.lua" type="script" desc="Toggle Global Sampler on master">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
         <changelog><![CDATA[First version]]></changelog>
