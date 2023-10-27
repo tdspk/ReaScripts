@@ -63,5 +63,12 @@ function set_modulation(param_base, value)
     if (value == "1") then
       reaper.Main_OnCommand(41143, 0) -- FX: Show parameter modulation/link for last touched FX parameter
     end
+    
+    -- get value of ext state from toggle
+    tcp_toggle = reaper.GetExtState("tdspk_mbox", "tcp_toggle")
+    if (tcp_toggle == "1") then
+      reaper.SNM_AddTCPFXParm(track, fx, param_id) -- add a knob to the tcp
+    end
+    
   end
 end

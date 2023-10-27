@@ -17,6 +17,7 @@ if item_count > 0 and marker_count > 0 then
   for i=0, iterations-1 do
     reaper.Main_OnCommand(40173, 0) -- Markers: Go to next marker/project end
     item = reaper.GetSelectedMediaItem(0, i)
+    
     cur_pos = reaper.GetCursorPosition()
     offset = reaper.GetMediaItemInfo_Value(item, "D_SNAPOFFSET")
     reaper.SetMediaItemInfo_Value(item, "D_POSITION", cur_pos - offset)
