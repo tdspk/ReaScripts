@@ -69,6 +69,5 @@ function set_modulation(param_base, value)
     if (tcp_toggle == "1") then
       reaper.SNM_AddTCPFXParm(track, fx, param_id) -- add a knob to the tcp
     end
-    
   end
 end
