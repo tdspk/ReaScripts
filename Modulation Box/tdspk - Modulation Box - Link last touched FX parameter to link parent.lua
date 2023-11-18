@@ -5,7 +5,7 @@
 --   Added support for tcp toggle
 --   First version
 
-rv, track_nr, fx, param_id = reaper.GetLastTouchedFX()
+rv, track_nr, item, take, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
 
 if rv then
   data = reaper.GetExtState("tdspk_mbox", "link_parent")
@@ -19,7 +19,7 @@ if rv then
       return
     end
   
-    track = reaper.GetTrack(0, track_nr - 1)
+    track = reaper.GetTrack(0, track_nr)
     param = "param." .. param_id .. ".plink."
     reaper.TrackFX_SetNamedConfigParm(track, fx, param .. "active", "1")
     reaper.TrackFX_SetNamedConfigParm(track, fx, param .. "effect", data_fx)

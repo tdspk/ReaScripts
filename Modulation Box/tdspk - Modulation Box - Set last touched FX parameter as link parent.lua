@@ -4,7 +4,7 @@
 -- @changelog
 --   First version
 
-rv, track_nr, fx, param_id = reaper.GetLastTouchedFX()
+rv, track_nr, item, take, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
 
 if rv then
   data = fx .. ";" .. param_id

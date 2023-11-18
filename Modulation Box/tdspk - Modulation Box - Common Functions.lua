@@ -6,8 +6,8 @@
 --   First version
 
 function copy_parameter_data(param_base, param_list, ext_section, ext_key)
-    rv, track_id, fx, param_id = reaper.GetLastTouchedFX()
-    track = reaper.GetTrack(0, track_id - 1) --get track of last touched FX param
+    rv, track_id, item, take, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
+    track = reaper.GetTrack(0, track_id) --get track of last touched FX param
     param = "param." .. param_id .. param_base
 
     data = ""
@@ -25,8 +25,8 @@ function copy_parameter_data(param_base, param_list, ext_section, ext_key)
 end
 
 function paste_parameter_data(param_base, param_names, ext_section, ext_key)
-    rv, track_id, fx, param_id = reaper.GetLastTouchedFX()
-    track = reaper.GetTrack(0, track_id - 1) --get track of last touched FX param
+    rv, track_id, item, take, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
+    track = reaper.GetTrack(0, track_id) --get track of last touched FX param
     data = reaper.GetExtState(ext_section, ext_key)
 
     if not data then
@@ -48,10 +48,10 @@ function paste_parameter_data(param_base, param_names, ext_section, ext_key)
 end
 
 function set_modulation(param_base, value)
-  rv, track_nr, fx, param_id = reaper.GetLastTouchedFX()
+  rv, track_nr, item, take, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX paramrv, track_nr, fx, param_id = reaper.GetLastTouchedFX()
   
   if rv then
-    track = reaper.GetTrack(0, track_nr - 1)
+    track = reaper.GetTrack(0, track_nr)
     param = "param." .. param_id .. "." .. param_base
     
     -- Check if there is already an named parameter
