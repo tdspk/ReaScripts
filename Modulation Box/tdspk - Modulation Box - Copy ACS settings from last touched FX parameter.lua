@@ -1,6 +1,7 @@
 -- @description Copy ACS settings from last touched FX parameter
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
+-- @noindex
 -- @changelog
 --   First version
 

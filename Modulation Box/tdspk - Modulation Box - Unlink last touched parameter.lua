@@ -1,6 +1,7 @@
 -- @description Unlink last touched parameter
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
+-- @noindex
 -- @changelog
 --   First version
 

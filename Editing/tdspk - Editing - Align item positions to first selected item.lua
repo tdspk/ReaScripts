@@ -1,3 +1,10 @@
+-- @description Align item position to first selected item
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @noindex
+-- @changelog
+--   First version
+
 item_count = reaper.CountSelectedMediaItems(0)
 
 if item_count > 1 then

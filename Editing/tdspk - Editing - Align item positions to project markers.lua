@@ -1,3 +1,10 @@
+-- @description Align item positions to project markers
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @noindex
+-- @changelog
+--   First version
+
 item_count = reaper.CountSelectedMediaItems(0)
 marker_count = reaper.CountProjectMarkers(0)
 

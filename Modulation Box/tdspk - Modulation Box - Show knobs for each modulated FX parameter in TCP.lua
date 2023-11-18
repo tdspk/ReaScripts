@@ -1,6 +1,7 @@
 -- @description Show knobs for each modulated FX parameter in TCP
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
+-- @noindex
 -- @changelog
 --   First version
 

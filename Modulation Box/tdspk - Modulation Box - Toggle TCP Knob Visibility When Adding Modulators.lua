@@ -1,7 +1,7 @@
 -- @description Toggle TCP Knob Visibility When Adding Modulators
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
--- @provides [nomain] .
+-- @noindex
 -- @changelog
 --   First version
 

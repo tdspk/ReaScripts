@@ -1,6 +1,7 @@
--- @description Set item length of all selected items to first item's length
+-- @description Set item length of all selected item to first item length
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
+-- @noindex
 -- @changelog
 --   First version
 

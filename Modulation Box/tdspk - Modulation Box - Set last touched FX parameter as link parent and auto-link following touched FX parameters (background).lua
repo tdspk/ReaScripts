@@ -1,6 +1,7 @@
 -- @description Set last touched FX parameter as link parent and auto-link following touched FX parameters (background)
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
+-- @noindex
 -- @changelog
 --   First version
 

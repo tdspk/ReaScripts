@@ -1,7 +1,9 @@
 -- @description Link last touched FX parameter to link parent
--- @version 1.0.1
+-- @version 1.0.2
 -- @author Tadej Supukovic (tdspk)
+-- @noindex
 -- @changelog
+--   Support for FX Containers
 --   Added support for tcp toggle
 --   First version
 

@@ -1,6 +1,7 @@
 -- @description Enable LFO for last touched FX parameter
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
+-- @noindex
 -- @changelog
 --   First version
 

@@ -1,8 +1,10 @@
 -- @description Common Functions
--- @version 1.0.0
+-- @version 1.0.1
 -- @author Tadej Supukovic (tdspk)
 -- @provides [nomain] .
+-- @noindex
 -- @changelog
+--   Support for FX Containers
 --   First version
 
 function copy_parameter_data(param_base, param_list, ext_section, ext_key)
