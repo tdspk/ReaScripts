@@ -1,10 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="b6aa1cafa02f0bc98e6c003429ab964a200a6e02">
+<index version="1" name="tdspk" commit="c87b56e889e59fc9e70ac77085c0c6e9b8ced632">
   <category name="Editing">
-    <reapack name="tdspk - Editing - Set item length of all selected item to first item length.lua" type="script" desc="Set item length of all selected items to first item's length">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-31T15:07:40Z">
+    <reapack name="tdspk - Editing - Align item positions to first selected item.lua" type="script" desc="Align item position to first selected item">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
         <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/19279645d41defef525309aae35002c82fcfea4a/Editing/tdspk%20-%20Editing%20-%20Set%20item%20length%20of%20all%20selected%20item%20to%20first%20item%20length.lua</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/c87b56e889e59fc9e70ac77085c0c6e9b8ced632/Editing/tdspk%20-%20Editing%20-%20Align%20item%20positions%20to%20first%20selected%20item.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Align item positions to project markers.lua" type="script" desc="Align item positions to project markers">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/c87b56e889e59fc9e70ac77085c0c6e9b8ced632/Editing/tdspk%20-%20Editing%20-%20Align%20item%20positions%20to%20project%20markers.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Reset snap offset for selected items.lua" type="script" desc="Reset snap offset for selected items">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/c87b56e889e59fc9e70ac77085c0c6e9b8ced632/Editing/tdspk%20-%20Editing%20-%20Reset%20snap%20offset%20for%20selected%20items.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Set item length of all selected item to first item length.lua" type="script" desc="Set item length of all selected item to first item length">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/c87b56e889e59fc9e70ac77085c0c6e9b8ced632/Editing/tdspk%20-%20Editing%20-%20Set%20item%20length%20of%20all%20selected%20item%20to%20first%20item%20length.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Editing - Set snap offset at first transient per selected item.lua" type="script" desc="Set snap offset at first transient per selected item">
@@ -27,93 +45,9 @@
     </reapack>
   </category>
   <category name="Modulation Box">
-    <reapack name="tdspk - Modulation Box - Common Functions.lua" type="script" desc="Common Functions">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Common%20Functions.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Copy ACS settings from last touched FX parameter.lua" type="script" desc="Copy ACS settings from last touched FX parameter">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Copy%20ACS%20settings%20from%20last%20touched%20FX%20parameter.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Copy LFO Settings from last touched FX parameter.lua" type="script" desc="Copy LFO Settings from last touched FX parameter">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Copy%20LFO%20Settings%20from%20last%20touched%20FX%20parameter.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Enable ACS for last touched FX parameter.lua" type="script" desc="Enable ACS for last touched FX parameter">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Enable%20ACS%20for%20last%20touched%20FX%20parameter.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Enable LFO for last touched FX parameter.lua" type="script" desc="Enable LFO for last touched FX parameter">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Enable%20LFO%20for%20last%20touched%20FX%20parameter.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Info Panel.lua" type="script" desc="Info Panel (debug)">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Info%20Panel.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Link last touched FX parameter to link parent.lua" type="script" desc="Link last touched FX parameter to link parent">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Link%20last%20touched%20FX%20parameter%20to%20link%20parent.lua</source>
-      </version>
-      <version name="1.0.1" author="Tadej Supukovic (tdspk)" time="2023-10-27T13:01:01Z">
-        <changelog><![CDATA[Added support for tcp toggle
-First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/b6aa1cafa02f0bc98e6c003429ab964a200a6e02/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Link%20last%20touched%20FX%20parameter%20to%20link%20parent.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Paste ACS settings.lua" type="script" desc="Paste ACS settings">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Paste%20ACS%20settings.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Paste LFO settings.lua" type="script" desc="Paste LFO settings">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:46:20Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/affe2b22bedb528aec2defa93510cfc417d31df4/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Paste%20LFO%20settings.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Set last touched FX parameter as link parent and auto-link following touched FX parameters (background).lua" type="script" desc="Set last touched FX parameter as link parent and auto-link following touched FX parameters (background)">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-19T11:26:05Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/e924c735de230d49c23128f7ad86de16768d3c75/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Set%20last%20touched%20FX%20parameter%20as%20link%20parent%20and%20auto-link%20following%20touched%20FX%20parameters%20(background).lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Set last touched FX parameter as link parent.lua" type="script" desc="Set last touched FX parameter as link parent">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Set%20last%20touched%20FX%20parameter%20as%20link%20parent.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Show knobs for each modulated FX parameter in TCP.lua" type="script" desc="Show knobs for each modulated FX parameter in TCP">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:27:34Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/025bba565d9215593a4f16a8ec3bf1250139fd19/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Show%20knobs%20for%20each%20modulated%20FX%20parameter%20in%20TCP.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Toggle TCP Knob Visibility When Adding Modulators.lua" type="script" desc="Toggle TCP Knob Visibility When Adding Modulators">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-10-27T13:01:01Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source>https://github.com/tdspk/ReaScripts/raw/b6aa1cafa02f0bc98e6c003429ab964a200a6e02/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Toggle%20TCP%20Knob%20Visibility%20When%20Adding%20Modulators.lua</source>
-      </version>
-    </reapack>
-    <reapack name="tdspk - Modulation Box - Unlink last touched parameter.lua" type="script" desc="Unlink last touched parameter">
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T18:54:31Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/24871452e9a6c42d0983f4b67d720582e0de8022/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Unlink%20last%20touched%20parameter.lua</source>
+    <reapack name="tdspk - Modulation Box.lua" type="script" desc="Modulation Box">
+      <version name="1.0.2" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/c87b56e889e59fc9e70ac77085c0c6e9b8ced632/Modulation%20Box/tdspk%20-%20Modulation%20Box.lua</source>
       </version>
     </reapack>
   </category>
