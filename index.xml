@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="c87b56e889e59fc9e70ac77085c0c6e9b8ced632">
+<index version="1" name="tdspk" commit="d412ad6a29ad180e74acf701dcfcc6e17cc383dc">
   <category name="Editing">
     <reapack name="tdspk - Editing - Align item positions to first selected item.lua" type="script" desc="Align item position to first selected item">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
