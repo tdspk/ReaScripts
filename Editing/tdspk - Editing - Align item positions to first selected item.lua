@@ -1,7 +1,6 @@
 -- @description Align item position to first selected item
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
--- @noindex
 -- @changelog
 --   First version
 

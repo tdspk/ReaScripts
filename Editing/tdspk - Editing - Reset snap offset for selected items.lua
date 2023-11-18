@@ -1,7 +1,6 @@
--- @description  Reset snap offset for selected items
+-- @description Reset snap offset for selected items
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
--- @noindex
 -- @changelog
 --   First version
 

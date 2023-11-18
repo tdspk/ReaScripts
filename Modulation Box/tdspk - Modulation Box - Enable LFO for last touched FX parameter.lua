@@ -2,8 +2,6 @@
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @noindex
--- @changelog
---   First version
 
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]

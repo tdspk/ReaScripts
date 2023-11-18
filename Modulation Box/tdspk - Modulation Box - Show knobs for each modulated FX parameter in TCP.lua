@@ -2,8 +2,6 @@
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @noindex
--- @changelog
---   First version
 
 function p(msg)
   reaper.ShowConsoleMsg(msg)

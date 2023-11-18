@@ -2,10 +2,6 @@
 -- @version 1.0.2
 -- @author Tadej Supukovic (tdspk)
 -- @noindex
--- @changelog
---   Support for FX Containers
---   Added support for tcp toggle
---   First version
 
 rv, track_nr, item, take, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
 

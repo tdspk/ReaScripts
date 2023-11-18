@@ -3,9 +3,6 @@
 -- @author Tadej Supukovic (tdspk)
 -- @provides [nomain] .
 -- @noindex
--- @changelog
---   Support for FX Containers
---   First version
 
 function copy_parameter_data(param_base, param_list, ext_section, ext_key)
     rv, track_id, item, take, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
