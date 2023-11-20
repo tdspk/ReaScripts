@@ -1,3 +1,9 @@
+-- @description Set take marker per transient
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 item_count = reaper.CountSelectedMediaItems(0)
 
 items = {}

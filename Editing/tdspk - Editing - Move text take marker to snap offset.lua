@@ -1,3 +1,9 @@
+-- @description Move text take marker to snap offset
+-- @version 1.0.0
+-- @author Tadej Supukovic (tdspk)
+-- @changelog
+--   First version
+
 item_count = reaper.CountSelectedMediaItems(0)
 
 for i=0, item_count - 1 do
