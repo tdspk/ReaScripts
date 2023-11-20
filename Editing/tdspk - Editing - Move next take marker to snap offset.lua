@@ -1,4 +1,4 @@
--- @description Move text take marker to snap offset
+-- @description Move next take marker to snap offset
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @changelog
