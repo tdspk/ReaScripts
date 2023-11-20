@@ -1,7 +1,8 @@
 -- @description Modulation Box
--- @version 1.0.3
+-- @version 1.0.4
 -- @author Tadej Supukovic (tdspk)
 -- @provides
+--   [nomain] .
 --   tdspk - Modulation Box - Common Functions.lua
 --   [main] tdspk - Modulation Box - Copy ACS settings from last touched FX parameter.lua
 --   [main] tdspk - Modulation Box - Copy LFO Settings from last touched FX parameter.lua
@@ -18,6 +19,7 @@
 --   [main] tdspk - Modulation Box - Toggle TCP Knob Visibility When Adding Modulators.lua
 --   [main] tdspk - Modulation Box - Unlink last touched parameter.lua
 -- @changelog
+--   Fixed cmd_idbug in Toggle TCP Knob Visibility When Adding Modulations.lua
 --   Support for FX Containers
 --   Added support for tcp toggle
 --   First version

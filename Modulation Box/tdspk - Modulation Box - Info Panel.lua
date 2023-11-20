@@ -2,7 +2,6 @@
 -- @version 1.0.0
 -- @author Tadej Supukovic (tdspk)
 -- @noindex
--- provides [nomain] .
 
 max_font_size = 16
 min_font_size = 8
