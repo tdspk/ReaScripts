@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="363a865d6a273cc580300e89fe6b9dee49031914">
+<index version="1" name="tdspk" commit="3e793419539d258d3a778c68a4921f9402ee3f01">
   <category name="Editing">
     <reapack name="tdspk - Editing - Align item positions to first selected item.lua" type="script" desc="Align item position to first selected item">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
@@ -11,6 +11,12 @@
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/c87b56e889e59fc9e70ac77085c0c6e9b8ced632/Editing/tdspk%20-%20Editing%20-%20Align%20item%20positions%20to%20project%20markers.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Move text take marker to snap offset.lua" type="script" desc="Move text take marker to snap offset">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-20T18:02:47Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/3e793419539d258d3a778c68a4921f9402ee3f01/Editing/tdspk%20-%20Editing%20-%20Move%20text%20take%20marker%20to%20snap%20offset.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Editing - Reset snap offset for selected items.lua" type="script" desc="Reset snap offset for selected items">
@@ -29,6 +35,12 @@
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-31T15:07:40Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/19279645d41defef525309aae35002c82fcfea4a/Editing/tdspk%20-%20Editing%20-%20Set%20snap%20offset%20at%20first%20transient%20per%20selected%20item.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Set take marker per transient.lua" type="script" desc="Set take marker per transient">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-20T18:02:47Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/3e793419539d258d3a778c68a4921f9402ee3f01/Editing/tdspk%20-%20Editing%20-%20Set%20take%20marker%20per%20transient.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Editing - Split Item under cursor and trim shorter side.lua" type="script" desc="Split Item under cursor and trim shorter side">
