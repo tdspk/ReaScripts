@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="8a8f82679c1be6ead4bedfac14b73c9116f1ba80">
+<index version="1" name="tdspk" commit="363a865d6a273cc580300e89fe6b9dee49031914">
   <category name="Editing">
     <reapack name="tdspk - Editing - Align item positions to first selected item.lua" type="script" desc="Align item position to first selected item">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
@@ -69,6 +69,28 @@ First version]]></changelog>
         <source main="main" file="tdspk - Modulation Box - Show knobs for each modulated FX parameter in TCP.lua">https://github.com/tdspk/ReaScripts/raw/8a8f82679c1be6ead4bedfac14b73c9116f1ba80/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Show%20knobs%20for%20each%20modulated%20FX%20parameter%20in%20TCP.lua</source>
         <source main="main" file="tdspk - Modulation Box - Toggle TCP Knob Visibility When Adding Modulators.lua">https://github.com/tdspk/ReaScripts/raw/8a8f82679c1be6ead4bedfac14b73c9116f1ba80/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Toggle%20TCP%20Knob%20Visibility%20When%20Adding%20Modulators.lua</source>
         <source main="main" file="tdspk - Modulation Box - Unlink last touched parameter.lua">https://github.com/tdspk/ReaScripts/raw/8a8f82679c1be6ead4bedfac14b73c9116f1ba80/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Unlink%20last%20touched%20parameter.lua</source>
+      </version>
+      <version name="1.0.4" author="Tadej Supukovic (tdspk)" time="2023-11-20T17:54:46Z">
+        <changelog><![CDATA[Fixed cmd_idbug in Toggle TCP Knob Visibility When Adding Modulations.lua
+Support for FX Containers
+Added support for tcp toggle
+First version]]></changelog>
+        <source>https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box.lua</source>
+        <source file="tdspk - Modulation Box - Common Functions.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Common%20Functions.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Copy ACS settings from last touched FX parameter.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Copy%20ACS%20settings%20from%20last%20touched%20FX%20parameter.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Copy LFO Settings from last touched FX parameter.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Copy%20LFO%20Settings%20from%20last%20touched%20FX%20parameter.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Enable ACS for last touched FX parameter.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Enable%20ACS%20for%20last%20touched%20FX%20parameter.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Enable LFO for last touched FX parameter.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Enable%20LFO%20for%20last%20touched%20FX%20parameter.lua</source>
+        <source file="tdspk - Modulation Box - Info Panel.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Info%20Panel.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Link last touched FX parameter to link parent.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Link%20last%20touched%20FX%20parameter%20to%20link%20parent.lua</source>
+        <source file="tdspk - Modulation Box - List View.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20List%20View.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Paste ACS settings.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Paste%20ACS%20settings.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Paste LFO settings.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Paste%20LFO%20settings.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Set last touched FX parameter as link parent and auto-link following touched FX parameters (background).lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Set%20last%20touched%20FX%20parameter%20as%20link%20parent%20and%20auto-link%20following%20touched%20FX%20parameters%20(background).lua</source>
+        <source main="main" file="tdspk - Modulation Box - Set last touched FX parameter as link parent.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Set%20last%20touched%20FX%20parameter%20as%20link%20parent.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Show knobs for each modulated FX parameter in TCP.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Show%20knobs%20for%20each%20modulated%20FX%20parameter%20in%20TCP.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Toggle TCP Knob Visibility When Adding Modulators.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Toggle%20TCP%20Knob%20Visibility%20When%20Adding%20Modulators.lua</source>
+        <source main="main" file="tdspk - Modulation Box - Unlink last touched parameter.lua">https://github.com/tdspk/ReaScripts/raw/363a865d6a273cc580300e89fe6b9dee49031914/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20Unlink%20last%20touched%20parameter.lua</source>
       </version>
     </reapack>
   </category>
