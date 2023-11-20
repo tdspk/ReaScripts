@@ -16,5 +16,6 @@ else
   new_state = 0
 end
 
+a, a, a, cmd_id = reaper.get_action_context()
 reaper.SetToggleCommandState(0, cmd_id, new_state)
 reaper.SetExtState(ext_section, ext_key, new_state, false)
