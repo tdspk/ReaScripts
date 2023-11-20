@@ -1,4 +1,4 @@
-params = {
+local params = {
   rrreeeaaa = 14,
 
   -- Bits for Synthesis
@@ -30,11 +30,15 @@ params = {
   anw_rect = 384,
   
   -- Bits for Synthesis Window
-  syn_bh = 0,
-  syn_ham = 512,
-  syn_bman = 1024,
-  syn_bman = 1536 
+  syw_bh = 0,
+  syw_ham = 512,
+  syw_bman = 1024,
+  syw_rect = 1536 
 }
+
+function extract_bit_values(val, shift)
+  return ((val >> shift) % 8) << shift
+end
 
 item_count = reaper.CountSelectedMediaItems(0)
 
@@ -56,7 +60,10 @@ if item_count > 0 then
     dbg_mode = "Rrreeeaaa"
   end
   
-  an_off = low_bytes & 0xFF
-  fft = (low_bytes >> 4) & 0xFF
-  
+  syn = extract_bit_values(low_bytes, 0)
+  ano = extract_bit_values(low_bytes, 3)
+  fft = extract_bit_values(low_bytes, 5)
+  anw = extract_bit_values(low_bytes, 7)
+  syw = extract_bit_values(low_bytes, 9)
 end
+
