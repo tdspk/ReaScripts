@@ -1,5 +1,4 @@
-dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')(
-    '0.8')
+dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8')
 
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
@@ -42,11 +41,47 @@ local params = {
   syw_rect = 1536 
 }
 
+syn_to_slider = {
+  [7] = 3,
+  [0] = 4,
+  [1] = 5,
+  [2] = 6,
+  [3] = 7,
+  [4] = 8,
+  [5] = 9,
+  [6] = 10
+}
+
+slider_to_syn = {
+  [3] = 7,
+  [4] = 0,
+  [5] = 1,
+  [6] = 2,
+  [7] = 3,
+  [8] = 4,
+  [9] = 5,
+  [10] = 6
+}
+
+fft_to_slider = {
+  [0] = 0,
+  [32] = 1,
+  [64] = 2,
+  [96] = 3
+}
+
 fft_names = {
   [0] = "FFT: 32768",
-  [32] = "FFT: 16364",
-  [64] = "FFT: 8192",
-  [96] = "FFT: 4096"
+  [1] = "FFT: 16364",
+  [2] = "FFT: 8192",
+  [3] = "FFT: 4096"
+}
+
+slider_to_fft = {
+  [0] = 0,
+  [1] = 32,
+  [2] = 64,
+  [3] = 96
 }
 
 ano_names = {
@@ -83,6 +118,10 @@ function main()
   if item_count > 0 then
     item = reaper.GetSelectedMediaItem(0, 0)
     take = reaper.GetTake(item, 0)
+    source = reaper.GetMediaItemTake_Source(take)
+    source_length = reaper.GetMediaSourceLength(source)
+    
+    dbg = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
     
     pitchmode = reaper.GetMediaItemTakeInfo_Value(take, "I_PITCHMODE")
     mode = (pitchmode >> 16) & 0xFFFF
@@ -97,56 +136,41 @@ function main()
     rv, reastretch.enabled = reaper.ImGui_Checkbox(ctx, "Enable Rrreeeaaa", reastretch.enabled)
 
     if reastretch.enabled then
-      -- Display stuff
+      -- Read values
+      reastretch.rate = 1 / reaper.GetMediaItemTakeInfo_Value(take, "D_PLAYRATE")
       reastretch.syn = extract_bit_values(parms, 0)
       reastretch.ano = extract_bit_values(parms, 3)
       reastretch.fft = extract_bit_values(parms, 5)
       reastretch.anw = extract_bit_values(parms, 7)
       reastretch.syw = extract_bit_values(parms, 9)
       
-      -- slider enum
+      rv, reastretch.rate = reaper.ImGui_SliderDouble(ctx, "Playrate", reastretch.rate, 0.5, 100, "%fx")
+      reastretch.rate = 1 / reastretch.rate
       
-      reaper.ImGui_Text(ctx, fft_names[reastretch.fft])
-      reaper.ImGui_Text(ctx, ano_names[reastretch.ano])
+      syn_slider = syn_to_slider[reastretch.syn]
+      rv, syn_slider = reaper.ImGui_SliderInt(ctx, "Synthesis", syn_slider, 3, 10, "%dx")
+      reastretch.syn = slider_to_syn[syn_slider]
       
-      reaper.ImGui_Text(ctx, "FFT")
-      reaper.ImGui_SameLine(ctx)
-      reaper.ImGui_SmallButton(ctx, "32768")
-      reaper.ImGui_SameLine(ctx)
-      reaper.ImGui_SmallButton(ctx, "16384")
-      reaper.ImGui_SameLine(ctx)
-      reaper.ImGui_SmallButton(ctx, "8192")
-      reaper.ImGui_SameLine(ctx)
-      reaper.ImGui_SmallButton(ctx, "4096")
+      fft_slider = fft_to_slider[reastretch.fft]
+      rv, fft_slider  = reaper.ImGui_SliderInt(ctx, "FFT", fft_slider, 0, 3, fft_names[fft_slider])
+      reastretch.fft = slider_to_fft[fft_slider] 
       
-      reaper.ImGui_Text(ctx, "Analysis Offset")
-      reaper.ImGui_SameLine(ctx)
-      reaper.ImGui_SmallButton(ctx, "1/2")
-      reaper.ImGui_SameLine(ctx)
-      reaper.ImGui_SmallButton(ctx, "1/4")
-      reaper.ImGui_SameLine(ctx)
-      reaper.ImGui_SmallButton(ctx, "1/6")
-      reaper.ImGui_SameLine(ctx)
-      reaper.ImGui_SmallButton(ctx, "1/8")
-      
-      -- awindow
-      
-      -- swindow
-      
-      reaper.ImGui_Text(ctx, "Synthesis")
-      reaper.ImGui_SameLine(ctx)
-      reaper.ImGui_SliderInt(ctx, "a", 3, 3, 10, "%dx")
-    end
-    
-    if reastretch.enabled then
+      -- Collect all shifter data and write at end of loop
       md = params.rrreeeaaa << 16
+      md = md + reastretch.fft
+      md = md + reastretch.syn
+      
+      
+      reaper.SetMediaItemTakeInfo_Value(take, "D_PLAYRATE", reastretch.rate)
+      reaper.SetMediaItemLength(item, source_length * (1 / reastretch.rate), false)
+      reaper.UpdateArrange()
     else
       md = -1
     end
     
-    -- Collect all shifter data and write at end of loop
+    reaper.SetMediaItemTakeInfo_Value(take, "I_PITCHMODE", md)
+    -- Check for Space key pressed!!
     
-    --reaper.SetMediaItemTakeInfo_Value(take, "I_PITCHMODE", md)
   else
     reaper.ImGui_Text(ctx, "Please select a Media Item to stretch!")
   end
