@@ -3,45 +3,17 @@ dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')(
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 
-local params = {
-  rrreeeaaa = 14,
-
-  -- Bits for Synthesis
-  syn_3 = 7,
-  syn_4 = 0,
-  syn_5 = 1,
-  syn_6 = 2,
-  syn_7 = 3,
-  syn_8 = 4,
-  syn_9 = 5,
-  syn_10 = 6,
-  
-  -- Bits for Analysis Offset
-  ano_12 = 0,
-  ano_14 = 8,
-  ano_16 = 16,
-  ano_18 = 24,
-  
-  -- Bits for FFT
-  fft_32768 = 0,
-  fft_16364 = 32,
-  fft_8192 = 64,
-  fft_4096 = 96,
-  
-  -- Bits for Analysis Window
-  anw_bh = 0,
-  anw_ham = 128,
-  anw_bman = 256,
-  anw_rect = 384,
-  
-  -- Bits for Synthesis Window
-  syw_bh = 0,
-  syw_ham = 512,
-  syw_bman = 1024,
-  syw_rect = 1536 
+bitmask = {
+  syn = 7,   -- 0000 0000 0111
+  ano = 24,  -- 0000 0001 1000
+  fft = 96,  -- 0000 0110 0000
+  anw = 384, -- 0001 0000 0000
+  syw = 1536 -- 0110 0000 0000
 }
 
-syn_to_slider = {
+-- Helper tables for Synthesis
+
+local syn_to_slider = {
   [7] = 3,
   [0] = 4,
   [1] = 5,
@@ -52,7 +24,7 @@ syn_to_slider = {
   [6] = 10
 }
 
-slider_to_syn = {
+local slider_to_syn = {
   [3] = 7,
   [4] = 0,
   [5] = 1,
@@ -63,37 +35,98 @@ slider_to_syn = {
   [10] = 6
 }
 
-fft_to_slider = {
+-- Helper Tables for FFT
+
+local fft_to_slider = {
   [0] = 0,
   [32] = 1,
   [64] = 2,
   [96] = 3
 }
 
-fft_names = {
+local fft_names = {
   [0] = "FFT: 32768",
   [1] = "FFT: 16364",
   [2] = "FFT: 8192",
   [3] = "FFT: 4096"
 }
 
-slider_to_fft = {
+local slider_to_fft = {
   [0] = 0,
   [1] = 32,
   [2] = 64,
   [3] = 96
 }
 
-ano_names = {
-  [0] = "Analysis: 1/2",
-  [8] = "Analysis: 1/4",
-  [16] = "Analysis: 1/6",
-  [24] = "Analysis: 1/8"
+-- Helper tables for analysis offset
+
+local ano_to_slider = {
+  [0] = 0,
+  [8] = 1,
+  [16] = 2,
+  [24] = 3
 }
 
-function extract_bit_values(val, shift)
-  return ((val >> shift) % 8) << shift
-end
+local ano_names = {
+  [0] = "1/2",
+  [1] = "1/4",
+  [2] = "1/6",
+  [3] = "1/8"
+}
+
+local slider_to_ano = {
+  [0] = 0,
+  [1] = 8,
+  [2] = 16,
+  [3] = 24
+}
+
+-- Analysis Window
+
+local anw_to_slider = {
+  [0] = 0,
+  [128] = 1,
+  [256] = 2,
+  [384] = 3,
+}
+
+local anw_names = {
+  [0] = "Blackman-Harris",
+  [1] = "Hamming",
+  [2] = "Blackman",
+  [3] = "Rectangular"
+}
+
+local slider_to_anw = {
+  [0] = 0,
+  [1] = 128,
+  [2] = 256,
+  [3] = 384
+}
+
+-- Synthesis Window
+
+local syw_to_slider = {
+  [0] = 0,
+  [512] = 1,
+  [1024] = 2,
+  [1536] = 3,
+}
+
+local syw_names = {
+  [0] = "Blackman-Harris",
+  [1] = "Hamming",
+  [2] = "Blackman",
+  [3] = "Triangular"
+}
+
+local slider_to_syw = {
+  [0] = 0,
+  [1] = 512,
+  [2] = 1024,
+  [3] = 1536
+}
+
 
 reastretch = {
   window_title = "ReaStretch",
@@ -105,12 +138,8 @@ reastretch = {
   syw = 0
 }
 
+local can_space = true
 ctx = reaper.ImGui_CreateContext(reastretch.window_title)
-
-
-function RGBToInt(r, g, b, a)
-  return reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, a or 1.0)
-end
 
 function main()
   item_count = reaper.CountSelectedMediaItems(0)
@@ -121,13 +150,11 @@ function main()
     source = reaper.GetMediaItemTake_Source(take)
     source_length = reaper.GetMediaSourceLength(source)
     
-    dbg = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
-    
     pitchmode = reaper.GetMediaItemTakeInfo_Value(take, "I_PITCHMODE")
     mode = (pitchmode >> 16) & 0xFFFF
     parms = pitchmode & 0xFFFF
     
-    if mode == params.rrreeeaaa then
+    if mode == 14 then
       reastretch.enabled = true
     else
       reastretch.enabled = false
@@ -138,11 +165,14 @@ function main()
     if reastretch.enabled then
       -- Read values
       reastretch.rate = 1 / reaper.GetMediaItemTakeInfo_Value(take, "D_PLAYRATE")
-      reastretch.syn = extract_bit_values(parms, 0)
-      reastretch.ano = extract_bit_values(parms, 3)
-      reastretch.fft = extract_bit_values(parms, 5)
-      reastretch.anw = extract_bit_values(parms, 7)
-      reastretch.syw = extract_bit_values(parms, 9)
+ 
+      reastretch.syn = parms & bitmask.syn
+      reastretch.ano = parms & bitmask.ano
+      reastretch.fft = parms & bitmask.fft
+      reastretch.anw = parms & bitmask.anw
+      reastretch.syw = parms & bitmask.syw
+      
+      reaper.ImGui_Text(ctx, "")
       
       rv, reastretch.rate = reaper.ImGui_SliderDouble(ctx, "Playrate", reastretch.rate, 0.5, 100, "%fx")
       reastretch.rate = 1 / reastretch.rate
@@ -151,15 +181,31 @@ function main()
       rv, syn_slider = reaper.ImGui_SliderInt(ctx, "Synthesis", syn_slider, 3, 10, "%dx")
       reastretch.syn = slider_to_syn[syn_slider]
       
+      reaper.ImGui_Text(ctx, "")
+      
       fft_slider = fft_to_slider[reastretch.fft]
       rv, fft_slider  = reaper.ImGui_SliderInt(ctx, "FFT", fft_slider, 0, 3, fft_names[fft_slider])
-      reastretch.fft = slider_to_fft[fft_slider] 
+      reastretch.fft = slider_to_fft[fft_slider]
+      
+      ano_slider = ano_to_slider[reastretch.ano]
+      rv, ano_slider = reaper.ImGui_SliderInt(ctx, "Analysis Offset", ano_slider, 0, 3, ano_names[ano_slider])
+      reastretch.ano = slider_to_ano[ano_slider]
+      
+      anw_slider = anw_to_slider[reastretch.anw]
+      rv, anw_slider = reaper.ImGui_SliderInt(ctx, "Analysis Window", anw_slider, 0, 3, anw_names[anw_slider])
+      reastretch.anw = slider_to_anw[anw_slider]
+      
+      syw_slider = syw_to_slider[reastretch.syw]
+      rv, syw_slider = reaper.ImGui_SliderInt(ctx, "Synthesis Window", syw_slider, 0, 3, syw_names[syw_slider])
+      reastretch.syw = slider_to_syw[syw_slider]
       
       -- Collect all shifter data and write at end of loop
-      md = params.rrreeeaaa << 16
-      md = md + reastretch.fft
+      md = 14 << 16
       md = md + reastretch.syn
-      
+      md = md + reastretch.ano
+      md = md + reastretch.fft
+      md = md + reastretch.anw
+      md = md + reastretch.syw
       
       reaper.SetMediaItemTakeInfo_Value(take, "D_PLAYRATE", reastretch.rate)
       reaper.SetMediaItemLength(item, source_length * (1 / reastretch.rate), false)
@@ -169,23 +215,29 @@ function main()
     end
     
     reaper.SetMediaItemTakeInfo_Value(take, "I_PITCHMODE", md)
-    -- Check for Space key pressed!!
+    
+    if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Space()) and can_space then
+      can_space = false
+      reaper.Main_OnCommand(40044, 0) -- Transport: Play/stop
+    end
+    
+    if reaper.ImGui_IsKeyReleased(ctx, reaper.ImGui_Key_Space()) then
+      can_space = true
+    end
     
   else
     reaper.ImGui_Text(ctx, "Please select a Media Item to stretch!")
   end
   
-  
 end
 
 function loop()
-    reaper.ImGui_SetNextWindowSize(ctx, 600, 600,
-                                   reaper.ImGui_Cond_FirstUseEver())
+    reaper.ImGui_SetNextWindowSize(ctx, 400, 400, reaper.ImGui_Cond_FirstUseEver())
     local visible, open = reaper.ImGui_Begin(ctx, reastretch.window_title, true)
     if visible then
-        -- reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), style.item_spacing_x, style.item_spacing_y)
+        reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 5, 5)
         main()
-        -- reaper.ImGui_PopStyleVar(ctx)
+        reaper.ImGui_PopStyleVar(ctx)
         reaper.ImGui_End(ctx)
     end
 
@@ -193,31 +245,4 @@ function loop()
 end
 
 reaper.defer(loop)
-
-item_count = reaper.CountSelectedMediaItems(0)
-
-if item_count > 0 then
-  item = reaper.GetSelectedMediaItem(0, 0)
-  take = reaper.GetTake(item, 0)
-  
-  pitchmode = reaper.GetMediaItemTakeInfo_Value(take, "I_PITCHMODE")
-  
-  if pitchmode < 0 then
-    dbg_mode = "Default"
-    return
-  end
-  
-  low_bytes = pitchmode & 0xFFFF
-  high_bytes = (pitchmode >> 16) & 0xFFFF
-  
-  if high_bytes == 14 then
-    dbg_mode = "Rrreeeaaa"
-  end
-  
-  syn = extract_bit_values(low_bytes, 0)
-  ano = extract_bit_values(low_bytes, 3)
-  fft = extract_bit_values(low_bytes, 5)
-  anw = extract_bit_values(low_bytes, 7)
-  syw = extract_bit_values(low_bytes, 9)
-end
 
