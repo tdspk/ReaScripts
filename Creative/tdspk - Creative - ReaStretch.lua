@@ -4,11 +4,16 @@ local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 
 bitmask = {
-  syn = 7,   -- 0000 0000 0111
-  ano = 24,  -- 0000 0001 1000
-  fft = 96,  -- 0000 0110 0000
-  anw = 384, -- 0001 0000 0000
-  syw = 1536 -- 0110 0000 0000
+  -- Rrreeeaaa
+  syn = 7,    -- 0000 0000 0111
+  ano = 24,   -- 0000 0001 1000
+  fft = 96,   -- 0000 0110 0000
+  anw = 384,  -- 0001 0000 0000
+  syw = 1536, -- 0110 0000 0000
+  -- ReaReaRea
+  rnd = 15,   -- 0000 0000 1111
+  fd = 1008,  -- 0011 1111 0000
+  shp = 3072  -- 1100 0000 0000
 }
 
 -- Helper tables for Synthesis
@@ -152,7 +157,7 @@ function main()
     
     pitchmode = reaper.GetMediaItemTakeInfo_Value(take, "I_PITCHMODE")
     mode = (pitchmode >> 16) & 0xFFFF
-    parms = pitchmode & 0xFFFF
+    changed = false
     
     if mode == 14 then
       reastretch.enabled = true
@@ -161,8 +166,10 @@ function main()
     end
     
     rv, reastretch.enabled = reaper.ImGui_Checkbox(ctx, "Enable Rrreeeaaa", reastretch.enabled)
+    changed = changed or rv
 
     if reastretch.enabled then
+      parms = pitchmode & 0xFFFF
       -- Read values
       reastretch.rate = 1 / reaper.GetMediaItemTakeInfo_Value(take, "D_PLAYRATE")
  
@@ -177,27 +184,34 @@ function main()
       rv, reastretch.rate = reaper.ImGui_SliderDouble(ctx, "Playrate", reastretch.rate, 0.5, 100, "%fx")
       reastretch.rate = 1 / reastretch.rate
       
+      changed = changed or rv
+      
       syn_slider = syn_to_slider[reastretch.syn]
       rv, syn_slider = reaper.ImGui_SliderInt(ctx, "Synthesis", syn_slider, 3, 10, "%dx")
       reastretch.syn = slider_to_syn[syn_slider]
+      changed = changed or rv
       
       reaper.ImGui_Text(ctx, "")
       
       fft_slider = fft_to_slider[reastretch.fft]
       rv, fft_slider  = reaper.ImGui_SliderInt(ctx, "FFT", fft_slider, 0, 3, fft_names[fft_slider])
       reastretch.fft = slider_to_fft[fft_slider]
+      changed = changed or rv
       
       ano_slider = ano_to_slider[reastretch.ano]
       rv, ano_slider = reaper.ImGui_SliderInt(ctx, "Analysis Offset", ano_slider, 0, 3, ano_names[ano_slider])
       reastretch.ano = slider_to_ano[ano_slider]
+      changed = changed or rv
       
       anw_slider = anw_to_slider[reastretch.anw]
       rv, anw_slider = reaper.ImGui_SliderInt(ctx, "Analysis Window", anw_slider, 0, 3, anw_names[anw_slider])
       reastretch.anw = slider_to_anw[anw_slider]
+      changed = changed or rv
       
       syw_slider = syw_to_slider[reastretch.syw]
       rv, syw_slider = reaper.ImGui_SliderInt(ctx, "Synthesis Window", syw_slider, 0, 3, syw_names[syw_slider])
       reastretch.syw = slider_to_syw[syw_slider]
+      changed = changed or rv
       
       -- Collect all shifter data and write at end of loop
       md = 14 << 16
@@ -207,14 +221,18 @@ function main()
       md = md + reastretch.anw
       md = md + reastretch.syw
       
-      reaper.SetMediaItemTakeInfo_Value(take, "D_PLAYRATE", reastretch.rate)
-      reaper.SetMediaItemLength(item, source_length * (1 / reastretch.rate), false)
-      reaper.UpdateArrange()
+      if changed then
+        reaper.SetMediaItemTakeInfo_Value(take, "D_PLAYRATE", reastretch.rate)
+        reaper.SetMediaItemLength(item, source_length * (1 / reastretch.rate), false)
+        reaper.UpdateArrange()
+      end
     else
       md = -1
     end
     
-    reaper.SetMediaItemTakeInfo_Value(take, "I_PITCHMODE", md)
+    if changed then
+      reaper.SetMediaItemTakeInfo_Value(take, "I_PITCHMODE", md)
+    end
     
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Space()) and can_space then
       can_space = false
@@ -231,7 +249,7 @@ function main()
   
 end
 
-function loop()
+function Loop()
     reaper.ImGui_SetNextWindowSize(ctx, 400, 400, reaper.ImGui_Cond_FirstUseEver())
     local visible, open = reaper.ImGui_Begin(ctx, reastretch.window_title, true)
     if visible then
@@ -241,8 +259,8 @@ function loop()
         reaper.ImGui_End(ctx)
     end
 
-    if open then reaper.defer(loop) end
+    if open then reaper.defer(Loop) end
 end
 
-reaper.defer(loop)
+reaper.defer(Loop)
 
