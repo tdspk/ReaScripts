@@ -13,7 +13,9 @@ bitmask = {
   -- ReaReaRea
   rnd = 15,   -- 0000 0000 1111
   fdm = 1008,  -- 0011 1111 0000
-  shp = 3072  -- 1100 0000 0000
+  shp = 3072,  -- 1100 0000 0000
+  snc = 8192, -- 0010 0000 0000 0000
+  fds = 8255  -- 0010 0000 0011 1111
 }
 
 -- Helper tables for Synthesis
@@ -359,22 +361,113 @@ local slider_to_fdm = {
   [63] = 896
 }
 
-shp_to_slider = {
+local shp_to_slider = {
   [0] = 0,
   [1024] = 1,
   [2048] = 2
 }
 
-shp_names = {
+local shp_names = {
   [0] = "sin",
   [1] = "linear",
   [2] = "rectangular"
 }
 
-slider_to_shp = {
+local slider_to_shp = {
   [0] = 0,
   [1] = 1024,
   [2] = 2048
+}
+
+local snc_to_checkbox = {
+  [0] = false,
+  [8192] = true
+}
+
+local checkbox_to_snc = {
+  [false] = 0,
+  [true] = 8192
+}
+
+local fds_to_slider = {
+  [8192] = 0,
+  [8320] = 1,
+  [8448] = 2,
+  [8208] = 3,
+  [8336] = 4,
+  [8464] = 5,
+  [8224] = 6,
+  [8352] = 7,
+  [8480] = 8,
+  [8240] = 9,
+  [8368] = 10,
+  [8469] = 11,
+  [8256] = 12,
+  [8384] = 13,
+  [8512] = 14,
+  [8272] = 15,
+  [8400] = 16,
+  [8528] = 17,
+  [8288] = 18,
+  [8416] = 19,
+  [8544] = 20,
+  [8304] = 21,
+  [8432] = 22,
+  [8560] = 23
+}
+
+local fds_names = {
+  [0] = "1/128",
+  [1] = "1/128t",
+  [2] = "1/128d",
+  [3] = "1/64",
+  [4] = "1/64t",
+  [5] = "1/64d",
+  [6] = "1/32",
+  [7] = "1/32t",
+  [8] = "1/32d",
+  [9] = "1/16",
+  [10] = "1/16t",
+  [11] = "1/16d",
+  [12] = "1/8",
+  [13] = "1/8t",
+  [14] = "1/8d",
+  [15] = "¼",
+  [16] = "1/4t",
+  [17] = "1/4d",
+  [18] = "½",
+  [19] = "1/2t",
+  [20] = "1/2d",
+  [21] = "1/1",
+  [22] = "1/1t",
+  [23] = "1/1d"
+}
+
+local slider_to_fds = {
+  [0] = 8192,
+  [1] = 8320,
+  [2] = 8448,
+  [3] = 8208,
+  [4] = 8336,
+  [5] = 8464,
+  [6] = 8224,
+  [7] = 8352,
+  [8] = 8480,
+  [9] = 8240,
+  [10] = 8368,
+  [11] = 8469,
+  [12] = 8256,
+  [13] = 8384,
+  [14] = 8512,
+  [15] = 8272,
+  [16] = 8400,
+  [17] = 8528,
+  [18] = 8288,
+  [19] = 8416,
+  [20] = 8544,
+  [21] = 8304,
+  [22] = 8432,
+  [23] = 8560
 }
 
 reastretch = {
@@ -521,9 +614,24 @@ function RenderReaReaRea()
   reastretch.fdm = parms & bitmask.fdm
   reastretch.shp = parms & bitmask.shp
   
-  fdm_slider = fdm_to_slider[reastretch.fdm]
-  rv, fdm_slider = reaper.ImGui_SliderInt(ctx, "Fade", fdm_slider, 0, 63, fdm_names[fdm_slider])
-  reastretch.fdm = slider_to_fdm[fdm_slider]
+  reastretch.snc = parms & bitmask.snc
+  reastretch.fds = parms & bitmask.fds
+  
+  snc_checkbox = snc_to_checkbox[reastretch.snc]
+  rv, snc_checkbox = reaper.ImGui_Checkbox(ctx, "Tempo Synced", snc_checkbox)
+  reastretch.snc = checkbox_to_snc[snc_checkbox]
+  changed = changed or rv
+  
+  if snc_checkbox then
+    fds_slider = fds_to_slider[reastretch.fds]
+    rv, fds_slider = reaper.ImGui_SliderInt(ctx, "Fade", fds_slider, 0, 23, fds_names[fds_slider])
+    reastretch.fds = slider_to_fds[fds_slider]
+  else
+    fdm_slider = fdm_to_slider[reastretch.fdm]
+    rv, fdm_slider = reaper.ImGui_SliderInt(ctx, "Fade", fdm_slider, 0, 63, fdm_names[fdm_slider])
+    reastretch.fdm = slider_to_fdm[fdm_slider]
+  end
+  
   changed = changed or rv
   
   rv, reastretch.rnd = reaper.ImGui_SliderInt(ctx, "Randomize", reastretch.rnd, 0, 15, rnd_names[reastretch.rnd])
@@ -536,8 +644,14 @@ function RenderReaReaRea()
   
   md = 15 << 16
   md = md + reastretch.rnd
-  md = md + reastretch.fdm
   md = md + reastretch.shp
+  md = md + reastretch.snc
+  
+  if snc_checkbox then
+    md = md + reastretch.fds + reastretch.snc
+  else
+    md = md + reastretch.fdm
+  end
   
   if changed then
     reaper.SetMediaItemTakeInfo_Value(take, "D_PLAYRATE", reastretch.rate)
