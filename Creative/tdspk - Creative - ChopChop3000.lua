@@ -51,7 +51,7 @@ function RenderWindow()
     end
   
     rv, data.algo = reaper.ImGui_SliderInt(ctx, "Mode", data.algo, 0, 1, algo_names[data.algo])
-    rv, data.chop_amt = reaper.ImGui_SliderInt(ctx, "Chop Amount", data.chop_amt, 1, 20)
+    rv, data.chop_amt = reaper.ImGui_SliderInt(ctx, "Chop Amount", data.chop_amt, 1, 50)
     rv, data.rnd_length = reaper.ImGui_SliderDouble(ctx, "Random Length", data.rnd_length, 0, 1)
     rv, data.rnd_offset = reaper.ImGui_SliderDouble(ctx, "Random Offset", data.rnd_offset, 0, 1)
     rv, data.rnd_rev = reaper.ImGui_SliderDouble(ctx, "Random Reverse", data.rnd_rev, 0, 1)
