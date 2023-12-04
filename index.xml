@@ -1,5 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="40fe6dd43feba058fb2b777403729c6d80896d35">
+<index version="1" name="tdspk" commit="1838ff841189c1209ceddfd67d8f134f5286b04e">
+  <category name="Creative">
+    <reapack name="tdspk - Creative - ChopChop3000.lua" type="script" desc="ChopChop3000">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-12-04T18:47:45Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/1838ff841189c1209ceddfd67d8f134f5286b04e/Creative/tdspk%20-%20Creative%20-%20ChopChop3000.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Creative - ReaStretch.lua" type="script" desc="ReaStretch">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-12-04T18:47:45Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/1838ff841189c1209ceddfd67d8f134f5286b04e/Creative/tdspk%20-%20Creative%20-%20ReaStretch.lua</source>
+      </version>
+    </reapack>
+  </category>
   <category name="Editing">
     <reapack name="tdspk - Editing - Align item positions to first selected item.lua" type="script" desc="Align item position to first selected item">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
@@ -53,6 +67,14 @@
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-31T15:07:40Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/19279645d41defef525309aae35002c82fcfea4a/Editing/tdspk%20-%20Editing%20-%20Split%20selected%20items%20under%20cursor.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Memes">
+    <reapack name="tdspk - Memes - ReaDad.lua" type="script" desc="ReaDad - Dad Jokes for REAPER">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-12-04T18:46:04Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/3e41b01b3b252f7585c1bbf7fa760dafc0f5ac93/Memes/tdspk%20-%20Memes%20-%20ReaDad.lua</source>
       </version>
     </reapack>
   </category>
