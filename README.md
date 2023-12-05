@@ -44,3 +44,9 @@ These scripts are designed to be as modular as possible, so feel free to make sh
 - Unlink last touched parameter
 
 * Container support for Parameter Link is not supported at the moment!*
+
+# Donations
+
+These scripts are open source and free, but I do appreciate a donation:
+https://ko-fi.com/tdspkaudio
+https://coindrop.to/tdspkaudio
