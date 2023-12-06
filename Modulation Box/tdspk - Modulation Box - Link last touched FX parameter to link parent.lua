@@ -106,8 +106,8 @@ if rv then
     SetNamedConfigParm(target, child, param .. "param", parent_param, is_item)
     
     tcp_toggle = reaper.GetExtState("tdspk_mbox", "tcp_toggle")
-    if (tcp_toggle == "1" and not is_item) then
-      reaper.SNM_AddTCPFXParm(track, fx, param_id) -- add a knob to the tcp
+    if (tcp_toggle == "1" and is_item == false) then
+      reaper.SNM_AddTCPFXParm(target, fx, param_id) -- add a knob to the tcp
     end
   end
 end
