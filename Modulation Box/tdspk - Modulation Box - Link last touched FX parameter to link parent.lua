@@ -10,7 +10,7 @@ function GetLocalFxIndex(track, container, fx)
   for i=0, count - 1 do
     p = "container_item." .. i
     rv, fx_idx = reaper.TrackFX_GetNamedConfigParm(track, container, p)
-    if fx_idx == fx then
+    if tonumber(fx_idx) == tonumber(fx) then
       return i
     end
   end
@@ -24,6 +24,8 @@ if rv then
   data = reaper.GetExtState("tdspk_mbox", "link_parent")
   
   if data ~= "" then
+    a_log = {}
+  
     data_fx, data_param = string.match(data, "(.-);(.+)")
     
     -- check if it's not the same fx / param
@@ -38,6 +40,7 @@ if rv then
     
     parent_fx = data_fx
     parent_param = data_param
+    map_param = param_id
     
     if (c_id_child > c_id_parent) then
       -- child id needs to be overwritten with container maps
@@ -58,7 +61,8 @@ if rv then
     
     if (target_container ~= -1) then
       is_container, container_id = reaper.TrackFX_GetNamedConfigParm(track, map_target, "parent_container")
-      -- Recursevly expose container parameters, until same depth is reached
+      
+      -- expose container parameters, until same depth is reached
       while (container_id ~= target_container) do
         mapped_param = "container_map.add." .. map_target .. "." .. map_param
         rv, c_param = reaper.TrackFX_GetNamedConfigParm(track, container_id, mapped_param)
@@ -69,16 +73,14 @@ if rv then
 
       if (c_id_child > c_id_parent) then
         child = map_target
-        if (is_container) then
-          parent_fx = GetLocalFxIndex(track, container_id, parent_fx)
-        end
       else
         parent_fx = map_target
         parent_param = c_param
         map_param = data_param
-        if (is_container) then
-          child = GetLocalFxIndex(track, container_id, child)
-        end
+      end
+      
+      if (is_container) then
+        parent_fx = GetLocalFxIndex(track, container_id, parent_fx)
       end
     end
     

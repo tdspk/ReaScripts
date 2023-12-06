@@ -67,13 +67,13 @@ function paste_parameter_data(param_base, param_names, ext_section, ext_key)
 end
 
 function set_modulation(param_base, value)
-  rv, trackidx, itemidxidx, takeidx, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
+  rv, trackidx, itemidx, takeidx, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
   
   if rv then
     param = "param." .. param_id .. "." .. param_base
 
-    if (itemidxidx ~= -1) then
-      itemidx = reaper.GetMediaItem(0, itemidxidx)
+    if (itemidx ~= -1) then
+      itemidx = reaper.GetMediaItem(0, itemidx)
       take = reaper.GetTake(itemidx, takeidx)
       reaper.TakeFX_SetNamedConfigParm(take, fx, param, value)
     else
