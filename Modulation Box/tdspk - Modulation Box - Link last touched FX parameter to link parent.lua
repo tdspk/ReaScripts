@@ -8,14 +8,13 @@ script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 
 dofile(script_path .. '/tdspk - Modulation Box - Common Functions.lua')
 
+-- Returns the local index for a container item - needed for linking, since links work with index rather than fx id
 function GetLocalFxIndex(target, container, fx, is_item)
-  --rv, count = reaper.TrackFX_GetNamedConfigParm(track, container, "container_count")
   rv, count = GetNamedConfigParm(target, container, "container_count", is_item)
   count = tonumber(count)
   
   for i=0, count - 1 do
     p = "container_item." .. i
-    --rv, fx_idx = reaper.TrackFX_GetNamedConfigParm(track, container, p)
     rv, fx_idx = GetNamedConfigParm(target, container, p, is_item)
     if tonumber(fx_idx) == tonumber(fx) then
       return i
@@ -28,18 +27,17 @@ end
 rv, trackidx, itemidx, takeidx, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
 
 if rv then
-  data = reaper.GetExtState("tdspk_mbox", "link_parent")
+  data = reaper.GetExtState("tdspk_mbox", "link_parent") -- get data for link parent
   
-  if data ~= "" then
-    a_log = {}
-  
+  if data ~= "" then 
     data_fx, data_param = string.match(data, "(.-);(.+)")
     
-    -- check if it's not the same fx / param
+    -- check if it's not the same fx / param as link parent
     if tonumber(data_fx) == fx and tonumber(data_param) == param_id then
       return
     end
     
+    -- check if we're dealing with media items or tracks
     if (itemidx ~= -1) then
       itemidx = reaper.GetMediaItem(0, itemidx)
       target = reaper.GetTake(itemidx, takeidx)
@@ -49,13 +47,15 @@ if rv then
       is_item = false
     end
     
-    is_container, c_id_parent = GetNamedConfigParm(target, data_fx, "parent_container", is_item)
-    is_container, c_id_child = GetNamedConfigParm(target, fx, "parent_container", is_item)
+    -- get the container ids for link parent and link child
+    rv, c_id_parent = GetNamedConfigParm(target, data_fx, "parent_container", is_item)
+    rv, c_id_child = GetNamedConfigParm(target, fx, "parent_container", is_item)
     
     parent_fx = data_fx
     parent_param = data_param
     map_param = param_id
     
+    -- check which one is higher in the hiearchy
     if (c_id_child > c_id_parent) then
       -- child id needs to be overwritten with container maps
       target_container = c_id_parent
@@ -74,16 +74,14 @@ if rv then
     end
     
     if (target_container ~= -1) then
-      --is_container, container_id = reaper.TrackFX_GetNamedConfigParm(track, map_target, "parent_container")
       is_container, container_id = GetNamedConfigParm(target, map_target, "parent_container", is_item)
-      -- expose container parameters, until same depth is reached
+
+      -- expose container parameters, until current container reaches target container
       while (container_id ~= target_container) do
-        mapped_param = "container_map.add." .. map_target .. "." .. map_param
-        --rv, c_param = reaper.TrackFX_GetNamedConfigParm(track, container_id, mapped_param)
+        local mapped_param = "container_map.add." .. map_target .. "." .. map_param
         rv, c_param = GetNamedConfigParm(target, container_id, mapped_param, is_item)
         map_target = container_id
         map_param = c_param
-        --is_container, container_id = reaper.TrackFX_GetNamedConfigParm(track, map_target, "parent_container")
         is_container, container_id = GetNamedConfigParm(target, map_target, "parent_container", is_item)
       end
 
@@ -102,18 +100,15 @@ if rv then
     
     -- link child parameters to parent
     param = "param." .. map_param .. ".plink."
-    --reaper.TrackFX_SetNamedConfigParm(track, child, param .. "active", "1")
-    --reaper.TrackFX_SetNamedConfigParm(track, child, param .. "effect", parent_fx)
-    --reaper.TrackFX_SetNamedConfigParm(track, child, param .. "param", parent_param)
     
     SetNamedConfigParm(target, child, param .. "active", "1", is_item)
     SetNamedConfigParm(target, child, param .. "effect", parent_fx, is_item)
     SetNamedConfigParm(target, child, param .. "param", parent_param, is_item)
     
-    -- tcp_toggle = reaper.GetExtState("tdspk_mbox", "tcp_toggle")
-    -- if (tcp_toggle == "1") then
-    --   reaper.SNM_AddTCPFXParm(track, fx, param_id) -- add a knob to the tcp
-    -- end
+    tcp_toggle = reaper.GetExtState("tdspk_mbox", "tcp_toggle")
+    if (tcp_toggle == "1" and not is_item) then
+      reaper.SNM_AddTCPFXParm(track, fx, param_id) -- add a knob to the tcp
+    end
   end
 end
 
