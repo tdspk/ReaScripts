@@ -1,5 +1,5 @@
 -- @description Modulation Box
--- @version 1.0.4
+-- @version 1.1
 -- @author Tadej Supukovic (tdspk)
 -- @about
 --   # Modulation Box
