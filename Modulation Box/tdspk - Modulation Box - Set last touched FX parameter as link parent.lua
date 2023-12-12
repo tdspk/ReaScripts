@@ -3,7 +3,7 @@
 -- @author Tadej Supukovic (tdspk)
 -- @noindex
 
-rv, track_nr, item, take, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
+rv, trackidx, itemidx, takeidx, fx, param_id = reaper.GetTouchedOrFocusedFX(0) -- get last touched FX param
 
 if rv then
   data = fx .. ";" .. param_id
