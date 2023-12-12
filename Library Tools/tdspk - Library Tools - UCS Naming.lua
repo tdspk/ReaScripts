@@ -214,6 +214,18 @@ local function RenderWindow()
   
   reaper.ImGui_SameLine(ctx, 0, 10)
   
+  item_count = reaper.CountSelectedMediaItems(0)
+  if reaper.ImGui_Button(ctx, "Rename " .. item_count ..  " Item(s)", 0, 40) then
+    for i = 0, item_count - 1 do
+      item = reaper.GetSelectedMediaItem(0, i)
+      take = reaper.GetActiveTake(item)
+      local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+      reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
+    end
+  end
+  
+  reaper.ImGui_SameLine(ctx, 0, 10)
+  
   if reaper.ImGui_Button(ctx, "Clear all data", 0, 40) and track then
     fx_name, creator_id, source_id, user_cat, vendor_cat, user_data = ""
   end
