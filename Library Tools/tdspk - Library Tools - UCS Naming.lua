@@ -21,6 +21,11 @@ sub_items = ""
 cat_id = ""
 delimiter = "_"
 
+wildcards = {
+  ["$project"] = reaper.GetProjectName(0),
+  ["$author"] = select(2, reaper.GetSetProjectInfo_String(0, "PROJECT_AUTHOR", "", false))
+}
+
 local i = 0
 local prev_cat = ""
 
@@ -100,7 +105,13 @@ local function CreateUCSFilename(d, cat_id, ...)
   arg = {...}
   
   for i, v in ipairs(arg) do
-    if v ~= "" then
+    if v ~= "" then 
+      for k, w in pairs(wildcards) do
+        if string.find(v, k) then
+          v = string.gsub(v, k, wildcards[k])
+        end
+      end
+
       fname = fname .. d .. v
     end
   end
@@ -145,11 +156,8 @@ local function RenderWindow()
     end
   end
   
-  if track then
-    --rv, fx_name = reaper.GetTrackName(track)
-  end
-  
   rv, fx_name = reaper.ImGui_InputText(ctx, "FXName", fx_name)
+  
   rv, creator_id = reaper.ImGui_InputText(ctx, "CreatorID", creator_id)
   rv, source_id = reaper.ImGui_InputText(ctx, "SourceID", source_id)
   
@@ -188,13 +196,26 @@ local function RenderWindow()
   rv, user_data = reaper.ImGui_InputText(ctx, "UserData", user_data)
   
   reaper.ImGui_SeparatorText(ctx, "Results")
+  
   rv, delimiter = reaper.ImGui_InputText(ctx, "Delimiter", delimiter)
+  
   ucs_filename = CreateUCSFilename(delimiter, cat_id, user_cat, vendor_cat, fx_name, creator_id, source_id, user_data)
   
   reaper.ImGui_LabelText(ctx, "Filename", ucs_filename)
   
-  if reaper.ImGui_Button(ctx, "Apply to Track") and track then
-    reaper.GetSetMediaTrackInfo_String(track, "P_NAME", ucs_filename, true)
+  track_count = reaper.CountSelectedTracks(0)
+  if reaper.ImGui_Button(ctx, "Rename " .. track_count ..  " Track(s)", 0, 40) and track then
+    for i = 0, track_count - 1 do
+      track = reaper.GetSelectedTrack(0, i)
+      local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+      reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
+    end
+  end
+  
+  reaper.ImGui_SameLine(ctx, 0, 10)
+  
+  if reaper.ImGui_Button(ctx, "Clear all data", 0, 40) and track then
+    fx_name, creator_id, source_id, user_cat, vendor_cat, user_data = ""
   end
   
   reaper.ImGui_PopStyleVar(ctx)
