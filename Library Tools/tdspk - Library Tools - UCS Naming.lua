@@ -19,6 +19,7 @@ local sub_idx = {}
 cat_items = ""
 sub_items = ""
 cat_id = ""
+delimiter = "_"
 
 local i = 0
 local prev_cat = ""
@@ -41,7 +42,7 @@ for line in io.lines(ucs_file) do
 end
 
 local function ParseFilename(filename) 
-  cat_id, fx_name, creator_id, source_id = string.match(filename, "(.*)_(.*)_(.*)_(.*)")
+  local cat_id, fx_name, creator_id, source_id = string.match(filename, "(.*)_(.*)_(.*)_(.*)")
   return cat_id, fx_name, creator_id, source_id
 end
 
@@ -110,8 +111,8 @@ end
 local function RenderWindow()
   reaper.ImGui_PushFont(ctx, font)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, 10)
-
-  track = reaper.GetSelectedTrack(0, 0)
+  
+  reaper.ImGui_SeparatorText(ctx, "Mandatory Fields")
 
   cat_changed, cur_cat = reaper.ImGui_Combo(ctx, "Category", cur_cat, cat_items)
   
@@ -149,13 +150,48 @@ local function RenderWindow()
   end
   
   rv, fx_name = reaper.ImGui_InputText(ctx, "FXName", fx_name)
-  -- creator
   rv, creator_id = reaper.ImGui_InputText(ctx, "CreatorID", creator_id)
-  -- source
   rv, source_id = reaper.ImGui_InputText(ctx, "SourceID", source_id)
   
-  ucs_filename = CreateUCSFilename("_", cat_id, fx_name, creator_id, source_id)
-  rv, ucs_filename = reaper.ImGui_InputText(ctx, "Filename", ucs_filename)
+  -- Fill from Track feature
+  
+  track = reaper.GetSelectedTrack(0, 0)
+  
+  if track then
+    reaper.ImGui_BeginDisabled(ctx, false)
+  else
+    reaper.ImGui_BeginDisabled(ctx, true)
+  end
+  
+  if reaper.ImGui_Button(ctx, "Fill from Track") then
+    local rv, track_name = reaper.GetTrackName(track)
+    cat_id, fx_name, creator_id, source_id = ParseFilename(track_name)
+    
+    -- update categories if Category ID changed manually
+    local rv, cname, sname = ReverseLookup(cat_id)
+    
+    if rv then
+      cat_name = cname
+      sub_name = sname
+      sub_items = PopulateSubCategories(cat_name)
+      cur_cat = cat_idx[cat_name]
+      cur_sub = sub_idx[sub_name]
+    end
+    
+  end
+  reaper.ImGui_EndDisabled(ctx)
+  
+  reaper.ImGui_SeparatorText(ctx, "Optional")
+  
+  rv, user_cat = reaper.ImGui_InputText(ctx, "UserCategory", user_cat)
+  rv, vendor_cat = reaper.ImGui_InputText(ctx, "VendorCategory", vendor_cat)
+  rv, user_data = reaper.ImGui_InputText(ctx, "UserData", user_data)
+  
+  reaper.ImGui_SeparatorText(ctx, "Results")
+  rv, delimiter = reaper.ImGui_InputText(ctx, "Delimiter", delimiter)
+  ucs_filename = CreateUCSFilename(delimiter, cat_id, user_cat, vendor_cat, fx_name, creator_id, source_id, user_data)
+  
+  reaper.ImGui_LabelText(ctx, "Filename", ucs_filename)
   
   if reaper.ImGui_Button(ctx, "Apply to Track") and track then
     reaper.GetSetMediaTrackInfo_String(track, "P_NAME", ucs_filename, true)
@@ -166,7 +202,7 @@ local function RenderWindow()
 end
 
 local function Loop()
-  reaper.ImGui_SetNextWindowSize(ctx, 500, 300)
+  reaper.ImGui_SetNextWindowSize(ctx, 500, 600)
   local visible, open = reaper.ImGui_Begin(ctx, 'USC Naming', true)
   if visible then
     RenderWindow()
