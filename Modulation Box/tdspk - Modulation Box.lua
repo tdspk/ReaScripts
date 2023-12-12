@@ -1,6 +1,10 @@
 -- @description Modulation Box
 -- @version 1.0.4
 -- @author Tadej Supukovic (tdspk)
+-- @about
+--   # Modulation Box
+--   Scripts to accelerate the REAPER modulation workflow. These scripts use NamedConfigParms to quickly add, copy, and paste modulation data like ACS and LFO for FX parameters. Link parameters easily with two actions.
+--   These scripts are designed to be as modular as possible, so feel free to make shortcuts, add them to toolbars, use the scripts for your own scripts, etc.
 -- @provides
 --   [nomain] .
 --   tdspk - Modulation Box - Common Functions.lua
@@ -19,6 +23,7 @@
 --   [main] tdspk - Modulation Box - Toggle TCP Knob Visibility When Adding Modulators.lua
 --   [main] tdspk - Modulation Box - Unlink last touched parameter.lua
 -- @changelog
+--   Implemented support for FX containers and media item FX
 --   Fixed cmd_idbug in Toggle TCP Knob Visibility When Adding Modulations.lua
 --   Support for FX Containers
 --   Added support for tcp toggle
