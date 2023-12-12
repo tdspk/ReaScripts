@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="1838ff841189c1209ceddfd67d8f134f5286b04e">
+<index version="1" name="tdspk" commit="65579560a58facffacb2f7596992d0112c1d22b3">
   <category name="Creative">
     <reapack name="tdspk - Creative - ChopChop3000.lua" type="script" desc="ChopChop3000">
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-12-04T18:47:45Z">
@@ -25,6 +25,12 @@
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/c87b56e889e59fc9e70ac77085c0c6e9b8ced632/Editing/tdspk%20-%20Editing%20-%20Align%20item%20positions%20to%20project%20markers.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Media Item Spacer.lua" type="script" desc="Media Item Spacer">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-12-12T16:34:32Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/65579560a58facffacb2f7596992d0112c1d22b3/Editing/tdspk%20-%20Editing%20-%20Media%20Item%20Spacer.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Editing - Move next take marker to snap offset.lua" type="script" desc="Move next take marker to snap offset">
