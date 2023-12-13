@@ -119,9 +119,65 @@ local function CreateUCSFilename(d, cat_id, ...)
   return fname
 end
 
+function GetMediaExplorerFiles(hWnd)
+  local files = {}
+  
+  reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
+  reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
+  
+  local file_LV = reaper.JS_Window_FindChildByID(hWnd, 0x3E9) 
+  local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(file_LV)
+  if sel_count == 0 then return end
+
+  local index = 0
+  -- get path from combobox
+  local combo = reaper.JS_Window_FindChildByID(hWnd, 1002)
+  local edit = reaper.JS_Window_FindChildByID(combo, 1001)
+  local path = reaper.JS_Window_GetTitle(edit, "", 1024)
+
+  files[index] = path
+  -- get selected items in 1st column of ListView.
+  for ndx in string.gmatch(sel_indexes, '[^,]+') do
+    name = reaper.JS_ListView_GetItemText(file_LV, tonumber(ndx), 0)
+    index = index + 1
+    files[index] = name
+  end
+  
+  return files
+end
+
 local function RenderWindow()
   reaper.ImGui_PushFont(ctx, font)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, 10)
+  
+  -- Check if MX is open
+  local title = reaper.JS_Localize("Media Explorer", "common")
+  local hWnd = reaper.JS_Window_Find(title, true)
+  
+  if hWnd then
+    mx_open = true
+  else
+    mx_open = false
+  end
+  
+  if mx_open then
+    reaper.ImGui_Text(ctx, "Operating on Media Explorer files")
+  else
+    reaper.ImGui_Text(ctx, "Operating on Tracks and Items")
+  end
+  
+  if reaper.ImGui_Button(ctx, "Save Data") then
+    local data = fx_name .. ";" .. creator_id .. ";" .. source_id
+    reaper.SetExtState("tdspk_ucs", "data", data, false)
+  end
+  
+  reaper.ImGui_SameLine(ctx, 0, 10)
+  
+  if reaper.ImGui_Button(ctx, "Load Data") then
+    local data = reaper.GetExtState("tdspk_ucs", "data")
+    fx_name, creator_id, source_id = string.match(data, "(.*);(.*);(.*)")
+  end
+  
   
   reaper.ImGui_SeparatorText(ctx, "Mandatory Fields")
 
@@ -199,28 +255,51 @@ local function RenderWindow()
   
   rv, delimiter = reaper.ImGui_InputText(ctx, "Delimiter", delimiter)
   
+  if mx_open then
+    files = GetMediaExplorerFiles(hWnd)
+    if files then
+      reaper.ImGui_LabelText(ctx, "Directory", files[0])
+    end
+  end
+  
   ucs_filename = CreateUCSFilename(delimiter, cat_id, user_cat, vendor_cat, fx_name, creator_id, source_id, user_data)
   
   reaper.ImGui_LabelText(ctx, "Filename", ucs_filename)
   
-  track_count = reaper.CountSelectedTracks(0)
-  if reaper.ImGui_Button(ctx, "Rename " .. track_count ..  " Track(s)", 0, 40) and track then
-    for i = 0, track_count - 1 do
-      track = reaper.GetSelectedTrack(0, i)
-      local filename = string.gsub(ucs_filename, "$idx", tostring(i))
-      reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
+  if mx_open then
+    if files then
+      if reaper.ImGui_Button(ctx, "Rename " .. #files .. " File(s)", 0, 40) then
+        local dir = files[0]
+        for i, v in ipairs(files) do
+          local old_file = dir .. "/" .. v
+          local _, _, ext = string.match(v, "(.-)([^\\/]-%.?([^%.\\/]*))$")
+          
+          local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+          local new_file = dir .. "/" .. filename .. "." .. ext
+          rv, osbuf = os.rename(old_file, new_file)
+        end
+      end
     end
-  end
-  
-  reaper.ImGui_SameLine(ctx, 0, 10)
-  
-  item_count = reaper.CountSelectedMediaItems(0)
-  if reaper.ImGui_Button(ctx, "Rename " .. item_count ..  " Item(s)", 0, 40) then
-    for i = 0, item_count - 1 do
-      item = reaper.GetSelectedMediaItem(0, i)
-      take = reaper.GetActiveTake(item)
-      local filename = string.gsub(ucs_filename, "$idx", tostring(i))
-      reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
+  else
+    track_count = reaper.CountSelectedTracks(0)
+    if reaper.ImGui_Button(ctx, "Rename " .. track_count ..  " Track(s)", 0, 40) and track then
+      for i = 0, track_count - 1 do
+        track = reaper.GetSelectedTrack(0, i)
+        local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+        reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
+      end
+    end
+    
+    reaper.ImGui_SameLine(ctx, 0, 10)
+    
+    item_count = reaper.CountSelectedMediaItems(0)
+    if reaper.ImGui_Button(ctx, "Rename " .. item_count ..  " Item(s)", 0, 40) then
+      for i = 0, item_count - 1 do
+        item = reaper.GetSelectedMediaItem(0, i)
+        take = reaper.GetActiveTake(item)
+        local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+        reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
+      end
     end
   end
   
@@ -235,7 +314,7 @@ local function RenderWindow()
 end
 
 local function Loop()
-  reaper.ImGui_SetNextWindowSize(ctx, 500, 600)
+  reaper.ImGui_SetNextWindowSize(ctx, 500, 800)
   local visible, open = reaper.ImGui_Begin(ctx, 'USC Naming', true)
   if visible then
     RenderWindow()
