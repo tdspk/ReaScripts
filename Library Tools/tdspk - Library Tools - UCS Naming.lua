@@ -4,9 +4,12 @@ local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 ucs_file = script_path .. "UCS.csv"
 
-local ctx = reaper.ImGui_CreateContext("USC Naming")
-local font = reaper.ImGui_CreateFont("sans-serif", 16)
+ctx = reaper.ImGui_CreateContext("tdspk UCS Tool")
+local font = reaper.ImGui_CreateFont("sans-serif", 15)
 reaper.ImGui_Attach(ctx, font)
+
+local font_info = reaper.ImGui_CreateFont("sans-serif", 12)
+reaper.ImGui_Attach(ctx, font_info)
 
 local categories = {}
 
@@ -21,12 +24,20 @@ sub_items = ""
 cat_id = ""
 delimiter = "_"
 
+local cur_cat = 1
+local cur_sub = 1
+
 wildcards = {
   ["$project"] = reaper.GetProjectName(0),
   ["$author"] = select(2, reaper.GetSetProjectInfo_String(0, "PROJECT_AUTHOR", "", false))
 }
 
-local i = 0
+filter_cat = reaper.ImGui_CreateTextFilter()
+reaper.ImGui_Attach(ctx, filter_cat)
+filter_sub = reaper.ImGui_CreateTextFilter()
+reaper.ImGui_Attach(ctx, filter_sub)
+
+local i = 1
 local prev_cat = ""
 
 -- read UCS values from CSV to categories table
@@ -43,6 +54,7 @@ for line in io.lines(ucs_file) do
   if not categories[cat] then
     categories[cat] = {}
   end
+  
   categories[cat][subcat] = id
 end
 
@@ -79,7 +91,6 @@ local function PopulateSubCategories(cat_name)
   
   -- iterate categories table with the name and build data
   local result = ""
-  local i = 0
   
   sorted_keys = {}
   
@@ -89,6 +100,8 @@ local function PopulateSubCategories(cat_name)
   
   table.sort(sorted_keys)
   sub_idx = {}
+  
+  local i = 1
   
   for k, v in pairs(sorted_keys) do
     result = result .. v .. "\0"
@@ -119,6 +132,7 @@ local function CreateUCSFilename(d, cat_id, ...)
   return fname
 end
 
+-- Code from Edgemeal - adapted! Thank you!
 function GetMediaExplorerFiles(hWnd)
   local files = {}
   
@@ -146,9 +160,69 @@ function GetMediaExplorerFiles(hWnd)
   return files
 end
 
+local function Tooltip(ctx, text) 
+  if reaper.ImGui_IsItemHovered(ctx) then
+    if reaper.ImGui_BeginTooltip(ctx) then
+      reaper.ImGui_Text(ctx, text)
+      reaper.ImGui_EndTooltip(ctx)
+    end
+  end
+end
+
+function Licensing()
+  local width, height = reaper.ImGui_GetWindowSize(ctx)
+  
+  if reaper.GetExtState("tdspk_ucs", "license") ~= "1" then
+    if reaper.ImGui_Button(ctx, "SUPPORT THIS TOOL", width, 30) then
+      reaper.ImGui_OpenPopup(ctx, "Licensing")
+    end
+    
+    local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetMainViewport(ctx))
+    reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
+    
+    if reaper.ImGui_BeginPopupModal(ctx, "Licensing", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
+      reaper.ImGui_Text(ctx, "This tool is free and open source. And it will always be.")
+      reaper.ImGui_Text(ctx, "I am against restrictive licensing.\nHowever, I appreciate your support.")
+      reaper.ImGui_Text(ctx, "Purchasing a license will enable you to\nremove the 'SUPPORT THIS TOOL' button.")
+      
+      rv, buf = reaper.ImGui_InputText(ctx, "License Key", buf)
+      
+      if reaper.ImGui_Button(ctx, "Activate") then
+          abc = reaper.ExecProcess(
+                    "curl -s https://api.gumroad.com/v2/licenses/verify -d \"product_id=xj9IrqQHNS06kNyKPGMvBQ==\" -d \"license_key=" ..
+                        buf .. "\"  -X POST", 0)
+          success = string.match(abc, "\"success\":(.*),")
+          if (success == "true") then end
+      end
+      
+      reaper.ImGui_SameLine(ctx, 0, 10)
+      
+      if reaper.ImGui_Button(ctx, "Buy License") then
+        reaper.CF_ShellExecute("https://www.tdspkaudio.com")
+      end
+      
+      reaper.ImGui_SameLine(ctx, 0, 10)
+      
+      if reaper.ImGui_Button(ctx, "Close") then
+        reaper.ImGui_CloseCurrentPopup(ctx)
+      end
+      reaper.ImGui_EndPopup(ctx)
+    end
+  else
+    reaper.ImGui_PushFont(ctx, font_info)
+  
+    local email = reaper.GetExtState("tdspk_ucs", "email")
+    reaper.ImGui_Text(ctx, "Supported by: " .. email)
+    
+    reaper.ImGui_PopFont(ctx)
+  end
+end
+
 local function RenderWindow()
   reaper.ImGui_PushFont(ctx, font)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, 10)
+  
+  --Licensing()
   
   -- Check if MX is open
   local title = reaper.JS_Localize("Media Explorer", "common")
@@ -166,36 +240,55 @@ local function RenderWindow()
     reaper.ImGui_Text(ctx, "Operating on Tracks and Items")
   end
   
-  if reaper.ImGui_Button(ctx, "Save Data") then
-    local data = fx_name .. ";" .. creator_id .. ";" .. source_id
-    reaper.SetExtState("tdspk_ucs", "data", data, false)
-  end
-  
-  reaper.ImGui_SameLine(ctx, 0, 10)
-  
-  if reaper.ImGui_Button(ctx, "Load Data") then
-    local data = reaper.GetExtState("tdspk_ucs", "data")
-    fx_name, creator_id, source_id = string.match(data, "(.*);(.*);(.*)")
-  end
-  
-  
   reaper.ImGui_SeparatorText(ctx, "Mandatory Fields")
-
-  cat_changed, cur_cat = reaper.ImGui_Combo(ctx, "Category", cur_cat, cat_items)
   
+  if reaper.ImGui_BeginCombo(ctx, "Category", idx_cat[cur_cat]) then
+    reaper.ImGui_TextFilter_Draw(filter_cat, ctx, "Filter")
+    
+    for i, v in ipairs(idx_cat) do
+      if reaper.ImGui_TextFilter_PassFilter(filter_cat, v) then
+        if reaper.ImGui_Selectable(ctx, v) then 
+          cat_changed = true
+          cur_cat = i
+        end
+      end
+    end
+    
+    reaper.ImGui_EndCombo(ctx)
+  end
+
   if cat_changed or sub_items == "" then
     -- populate subcategories based on selected category
     cat_name = idx_cat[cur_cat]
     sub_items = PopulateSubCategories(cat_name)
-    cur_sub = 0
+    --cur_sub = 1
   end
   
-  sub_changed, cur_sub = reaper.ImGui_Combo(ctx, "Subcategory", cur_sub, sub_items)
+  if reaper.ImGui_BeginCombo(ctx, "Subcategory", idx_sub[cur_sub]) then
+    --reaper.ImGui_SetKeyboardFocusHere(ctx)
+    reaper.ImGui_TextFilter_Draw(filter_sub, ctx, "Filter")
+    
+    for i, v in ipairs(idx_sub) do
+      if reaper.ImGui_TextFilter_PassFilter(filter_sub, v) then
+        if reaper.ImGui_Selectable(ctx, v) then
+          sub_changed = true
+          cur_sub = i
+        end
+      end
+    end
+    
+    reaper.ImGui_EndCombo(ctx)
+  end
   
   if cat_changed or sub_changed or cat_id == "" then
     sub_name = idx_sub[cur_sub]
     cat_id = categories[cat_name][sub_name]
   end
+  
+  reaper.ImGui_Separator(ctx)
+  
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), 
+  reaper.ImGui_ColorConvertDouble4ToU32(0.2, 0.2, 0.2, 1))
   
   id_changed, cat_id = reaper.ImGui_InputText(ctx, "CatID", cat_id)
   
@@ -213,9 +306,10 @@ local function RenderWindow()
   end
   
   rv, fx_name = reaper.ImGui_InputText(ctx, "FXName", fx_name)
-  
   rv, creator_id = reaper.ImGui_InputText(ctx, "CreatorID", creator_id)
   rv, source_id = reaper.ImGui_InputText(ctx, "SourceID", source_id)
+  
+  reaper.ImGui_PopStyleColor(ctx)
   
   -- Fill from Track feature
   
@@ -241,9 +335,26 @@ local function RenderWindow()
       cur_cat = cat_idx[cat_name]
       cur_sub = sub_idx[sub_name]
     end
-    
   end
   reaper.ImGui_EndDisabled(ctx)
+  
+  reaper.ImGui_SameLine(ctx, 0, 10)
+  
+  if reaper.ImGui_Button(ctx, "Save Data") then
+    local data = fx_name .. ";" .. creator_id .. ";" .. source_id
+    reaper.SetExtState("tdspk_ucs", "data", data, false)
+  end
+  
+  Tooltip(ctx, "Saves FXName, CreatorID and SourceID")
+  
+  reaper.ImGui_SameLine(ctx, 0, 10)
+  
+  if reaper.ImGui_Button(ctx, "Load Data") then
+    local data = reaper.GetExtState("tdspk_ucs", "data")
+    fx_name, creator_id, source_id = string.match(data, "(.*);(.*);(.*)")
+  end
+  
+  Tooltip(ctx, "Loads FXName, CreatorID and SourceID")
   
   reaper.ImGui_SeparatorText(ctx, "Optional")
   
@@ -309,13 +420,17 @@ local function RenderWindow()
     fx_name, creator_id, source_id, user_cat, vendor_cat, user_data = ""
   end
   
+  reaper.ImGui_PushFont(ctx, font_info)
+  reaper.ImGui_Text(ctx, "tdspkaudio.com")
+  reaper.ImGui_PopFont(ctx)
+  
   reaper.ImGui_PopStyleVar(ctx)
   reaper.ImGui_PopFont(ctx)
 end
 
 local function Loop()
-  reaper.ImGui_SetNextWindowSize(ctx, 500, 800)
-  local visible, open = reaper.ImGui_Begin(ctx, 'USC Naming', true)
+  
+  local visible, open = reaper.ImGui_Begin(ctx, 'tdspk UCS Tool', true)
   if visible then
     RenderWindow()
     reaper.ImGui_End(ctx)
@@ -324,5 +439,7 @@ local function Loop()
     reaper.defer(Loop)
   end
 end
+
+reaper.ImGui_SetNextWindowSize(ctx, 500, 600)
 
 Loop()
