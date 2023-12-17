@@ -1,0 +1,753 @@
+Air;Blow;AIRBlow;compressed air, depressurise, release, puff, sputter, flutter, purge
+Air;Burst;AIRBrst;air blast, air poof, chuff, spurt, blast
+Air;Hiss;AIRHiss;air release, exhaust, expel, leak
+Air;Misc;AIRMisc;miscellaneous
+Air;Suction;AIRSuck;vacuum, suck, suction
+Aircraft;Door;AERODoor;cockpit door, aircraft door, hatch, emergency exit
+Aircraft;Helicopter;AEROHeli;gyrocopter, whirlybird, chopper, ghetto bird, bellcopter, police chopper, huey, chopper, blackhawk
+Aircraft;Interior;AEROInt;jet, airplane, aircraft, passenger jet, glider, zeppelin, airliner, jetliner, jumbo jet, learjet, airbus, boeing, bombardier, 737, 747, 777, A310, DC-10, A310, A330, A350, A380, fighter jet
+Aircraft;Jet;AEROJet;airliner, jetliner, jumbo jet, learjet, airbus, boeing, bombardier, 737, 747, 777, A310, DC-10, A310, A330, A350, A380
+Aircraft;Mechanism;AEROMech;landing gear, cockpit lever, rudder, flap
+Aircraft;Military;AEROMil;fighter jet, bomber, stealth bomber, blue angels, thunderbirds, lockheed, mig, F18, F16, F35, F22, A10, P52
+Aircraft;Misc;AEROMisc;blimp, glider, hot air balloon, ultralight, hang glider, zeppelin, dirigible
+Aircraft;Prop;AEROProp;biplane, triplane, turboprop, stunt plane, crop duster, piper cub, propeller, twin-prop, propjet, airscrew
+Aircraft;Radio Controlled;AERORadio;quadcopters, uav, unmanned aerial vehicle, rc jet, rc helicopter, drone
+Aircraft;Rocket;AERORckt;rocket, missile, jetpack, space shuttle, spacex, nasa, icbm, nuclear rocket, warhead
+Alarms;Bell;ALRMBell;fire bell, school bell, railroad crossing bell, alarm bell
+Alarms;Buzzer;ALRMBuzr;door buzzer, game show buzzer, front door buzzer, entry buzzer, intercom buzzer
+Alarms;Clock;ALRMClok;digital alarm clock, alarm clock, alarm clock
+Alarms;Electronic;ALRMElec;fire detector, smoke detector, CO2 detector, car alarm, home alarm
+Alarms;Misc;ALRMMisc;miscellaneous
+Alarms;Siren;ALRMSirn;klaxon, ahooga horn, air raid siren, tornado siren
+Ambience;Air;AMBAir;desert, winter, quiet air, night air, mountain air, night air
+Ambience;Alpine;AMBAlpn;alps, mountains, rockies, tetons, mountaineering, mountainous, snowcapped, mountainside, peak
+Ambience;Amusement;AMBAmus;disneyland, six-flags, theme park, amusement park, carnival, fair, county fair, midway, traveling fair, festival, haunted house, funhouse, arcade, pinball
+Ambience;Birdsong;AMBBird;dawn chorus, morning chorus, pretty bird, flocks, chirping, tweeting, peeping
+Ambience;Celebration;AMBCele;public gathering, event, party, gala, carnival, fest, fiesta, festival
+Ambience;Construction;AMBCnst;road construction, building, carpentry, remodel, home reno, road repair, rebuilding
+Ambience;Desert;AMBDsrt;desert, tumbleweed, oasis, barren, wasteland, sahara, arid, sand dunes, desolate
+Ambience;Designed;AMBDsgn;artificial, designed
+Ambience;Emergency;AMBEmrg;crime scene, fire fighting, police, medics, evidence, natural disaster, shooting, accident, catastrophe, injury, pileup casualty
+Ambience;Fantasy;AMBFant;fairy, fantasy, magical, realm, dream, middle earth, pandora
+Ambience;Farm;AMBFarm;farm, harvest, tilling, ranch, farmstead, grange, plantation, farmland, pen, barn, pasture, dairy, vineyard, corral, pastoral
+Ambience;Forest;AMBForst;forest, woods, timberland, boreal forest, rainforest, temperate rainforest, cloud forest, deciduous, conifer
+Ambience;Grassland;AMBGras;prairie, farmland, grass, meadow, grazing, pasture, plains
+Ambience;Historical;AMBHist;ghost town, old west, gold rush, ancient rome, ancient greece
+Ambience;Hitech;AMBTech;laboratory, machine room, server, data center, control room
+Ambience;Hospital;AMBHosp;emergency room, surgery, waiting room, sickhouse, clinic, sanatorium, infirmary
+Ambience;Industrial;AMBInd;factory, manufacturing, plant, mill, warehouse, workshop
+Ambience;Insect;AMBInsc;crickets, cicadas, katydids, swam, locusts
+Ambience;Lakeside;AMBLake;lakes, lakeside, lapping, swimming, reservoir, pond, loch
+Ambience;Market;AMBMrkt;market, market place, vendor, shopping district, bazaar, mart, exchange, flea market, square
+Ambience;Misc;AMBMisc;miscellaneous
+Ambience;Nautical;AMBNaut;nautical, shipyard, poopdeck, stern, bow, aft, seafaring, seagoing, oceanic, marine, maritime, marina
+Ambience;Office;AMBOffc;office, cubicle, workplace, department, station, branch, workstation
+Ambience;Park;AMBPark;park, playground, gardens, botantical gardens, city park, suburban park, ballpark, parkland
+Ambience;Prison;AMBPrisn;prison, jail, prison yard, penitentiary, slammer, jailhouse, detention, solitary confinement, penal institution
+Ambience;Protest;AMBPrtst;protest, rally, rallies, riot, chanting, yelling, screaming, angry crowd, marches, demonstration, turmoil, revolt, revolution, angry
+Ambience;Public place;AMBPubl;stores, lobbies, hotels, malls, museums, public squares, courtyards, gyms, fitness center, motel, library, courthouse, court
+Ambience;Religious;AMBRlgn;church, temple, mosque, chapel, derasar, cathedral
+Ambience;Residential;AMBHome;home, apartment, condo, mansion, house, townhouse, cabin, house, residence
+Ambience;Restaurant & Bar;AMBRest;restaurant, bar, pub, gastropub, foodcart, diner, cafe, cafeteria, canteen, tearoom, saloon, coffee shop, pizzeria, fast-food, wine bar, automat, commissary, tavern, nightclub, deli, eatery, brasserie, drive-in
+Ambience;Room Tone;AMBRoom;room tone, dead air, quiet air
+Ambience;Rural;AMBRurl;countryside, plain, prairie, grassland, mountain, rolling hill, savanna, tundra, meadow, canyon, coulee, scrub, scrubland, plateau
+Ambience;School;AMBSchl;grade school, middle school, highschool, college, preschool, university, classroom, assembly
+Ambience;Scifi;AMBSci;spaceship, tech center, command center, scifi, futuristic, high-tech, hi-tec
+Ambience;Seaside;AMBSea;beach, seaside, strand, coastal, shore, shoreline, seashore, seaboard, boardwalk, beach resort, beachfront, embankment, dock, pier, harbour, harbor
+Ambience;Sport;AMBSprt;nfl, football, nba, basketball, mlb, baseball, tennis, sport event, little league, practice
+Ambience;Suburban;AMBSubn;suburb, residential, neighborhood, cul-de-sac, village, barrio, outskirts, hamlet
+Ambience;Swamp;AMBSwmp;frog, bog, swamp, everglade, wetland, riparian, lakeside, lake, mangrove
+Ambience;Town;AMBTown;town, village, hamlet, small town, community, settlement
+Ambience;Traffic;AMBTraf;car bys, freeway, highway, boulevard, avenue, motorway
+Ambience;Transportation;AMBTran;train station, airport, bus station, subway station, tube station, metro station, terminal, depot, terminus
+Ambience;Tropical;AMBTrop;jungle, bush, tropical rainforest, cloud forest, tropical
+Ambience;Tundra;AMBTndra;artic, antartic, plateau, north pole, south pole, polar, glacier, snow, ice
+Ambience;Underground;AMBUndr;cave, drips, echoes, sewer, bunker, tunnel, dungeon, lava tube, cellar, subterranean, sunken, buried, belowground, basement, shaft, mine, passage, passageway
+Ambience;Underwater;AMBUndwtr;underwater, reef, coral, ocean trench, submerged, undersea, subaquatic, shipwreck
+Ambience;Urban;AMBUrbn;metropolis, dense city, city, downtown, inner city, metropolitan, bustling, rush hour, congestion, city center, slum, skid row, ghetto, financial district
+Ambience;Warfare;AMBWar;war, warfare, battle, skirmish, combat, fight, engagement, assault, offensive, blitz, air-raid, raid, bombardment, barrage, fusillade, blitzkrieg, salvo, flak, broadside, cannonade
+Animals;Amphibian;ANMLAmph;frog, toad, bullfrog, salamander, newt, chorus frog, peeper, croaker, axolotl
+Animals;Aquatic;ANMLAqua;whale, dolphin, porpoise, sea lion, seal, killer whale, orca, manatee, walrus, elephant seal, marine otter, sea otter, beluga, narwhal, dugong, shark, stingray, jellyfish, squid, octopus, crabs, lobsters, eels
+Animals;Bat;ANMLBat;flying fox, vampire bats, fruit bat
+Animals;Cat domestic;ANMLCat;meow, purr, kitten, kitty, feline, alley cat
+Animals;Cat wild;ANMLWcat;lion, tiger, puma, cougar, leopard, jaguar, snow leopard, cheetah, lynx, bobcat, caracal, ocelot, panther, serval
+Animals;Dog;ANMLDog;dog, hound, bark, puppy, doggie, lapdog, mutt, pooch
+Animals;Dog wild;ANMLWdog;wolf, fox, coyote, jackal, dingo, lupus, canid
+Animals;Farm;ANMLFarm;cow, sheep, goat, pig, cattle, llama, alpaca
+Animals;Horse;ANMLHors;donkey, mule, ass, zebra
+Animals;Insect;ANMLInsc;grasshopper, cricket, cicada, fly, bee, wasp, hornet, weta, conehead, locust, beetle, cockroach
+Animals;Misc;ANMLMisc;miscellaneous
+Animals;Primate;ANMLPrim;chimpanzee, ape, gorilla, lemur, orangutan, capuchin, marmoset, monkey, gibbon, bonobo, baboon
+Animals;Reptile;ANMLRept;snake, lizard, alligator, crocodile, turtle, gharial, caiman, gecko
+Animals;Rodent;ANMLRdnt;mouse, mice, rat, squirrel, mole, porcupine, guinea pig, chipmunk, beaver, gopher, raccoon, prairie dog, gerbil, hamster, marmot, lemming, muskrat, chinchilla, rodent
+Animals;Wild;ANMLWild;bear, giraffe, hippo, elephant, elk, deer, gazelle, badger, anteater, platypus, sloth, wolverine, boar, wombat, koala, kangaroo, wallaby, wildebeest, panda, antelope, racoon, elk, reindeer, rhino, aardvark, warthog, impala, hippopotamus, honey badger, buffalo, moose
+Archived;Adr;ADR;adr, loop, replacement dialog
+Archived;Asset;ASSET;asset, resource, tag
+Archived;Bounce;BNCE;bounce, crashdown
+Archived;Impulse response;IR;impulse response, IR, altiverb, reverb sample, convolution reverb
+Archived;Loop group;LPGRP;loop group, walla
+Archived;Mix;MIX;premix, final mix, stem, M&E, mixdown, printmaster
+Archived;Pfx;PFX;production
+Archived;Production;PROD;production take, dialog line, dx
+Archived;Raw;RAW;dat tape, raw files, unprocessed
+Archived;Reference;REF;reference, inspiration
+Archived;Scene;SCNE;readymade, prebuilt
+Archived;Test tone;TEST;adr beeps, test tones, bleeping tone, 2pops, white noise, pink noise, sine wave sweeps
+Archived;Trademarked;TMARK;trademark, copyright, product sound, licensed, registered, legal
+Archived;Work in progress;WIP;work in progress, wip, unfinished
+Archived;Wtf;WTF;uncategorizable, unknown, jokes
+Beeps;Appliance;BEEPAppl;microwave, dishwasher, washing machine, dryer
+Beeps;General;BEEP;beep
+Beeps;Lofi;BEEPLofi;atari, famicom, colecovision
+Beeps;Medical;BEEPMed;EKG, ECG, KDC, heart monitor, flatline, ultrasound
+Beeps;Timer;BEEPTimer;microwave, oven timer, digital watch, phone timer
+Beeps;Vehicle;BEEPVeh;forklift beep, backup beep
+Bells;Animal;BELLAnml;cowbell, hawkbell, collar bell, sheep bell
+Bells;Doorbell;BELLDoor;doorbell, door chime, ding dong, tring
+Bells;Gong;BELLGong;gong, gamelan, agung, bowl gong, tam-tam
+Bells;Handbell;BELLHand;hand bell, dinner bell, school bell, alter bell, sleigh bell, jinglebells, butler bell
+Bells;Large;BELLLrg;temple bell, church bell, peal, tower bell
+Bells;Misc;BELLMisc;bicycle bell, service bell, call bell
+Birds;Bird of prey;BIRDPrey;hawk, eagle, falcon, owl, vulture, condor, buzzard, kite, osprey, harrier, kestrel, caracara
+Birds;Crow;BIRDCrow;crow, raven, jay, blue jay, magpie, nutcracker
+Birds;Fowl;BIRDFowl;chicken, pheasant, turkey, geese, goose, grouse, duck, swan, partridge, teal, mallard, eider, guans, chachalacas, curassow, quail, grebe, chukar, ptarmigan
+Birds;Misc;BIRDMisc;ani, roadrunner, cuckoo, woodpecker, nighthawk, nightjar, poorwill, hummingbird
+Birds;Sea;BIRDSea;seagull, gannet, albatross, cormorant, pelican, penguin, petrel, gull, tern, frigatebird, booby, oystercatcher, plover, sandpiper, dunlin, auk, puffin, murrelet, auklet
+Birds;Songbird;BIRDSong;dove, flycatcher, grosbeak, mockingbird, nuthatch, pigeon, robin, sparrow, swallow, tanager, thrush, vireo, warbler, wren, tit, chickadee, titmouse, penduline, lark, kinglet, creeper, treecreeper, gnatcatcher, dipper, starling, blackbird, thrasher, waxwing, chat, troupial, cardinal, bunting, blackbird
+Birds;Tropical;BIRDTrop;parrot, toucan, kookaburra, lyrebird, peacock, macaw, hornbill, cockatoo, parakeet, ibis, spoonbill, flamingo
+Birds;Wading;BIRDWade;crane, egret, flamingo, ibis, rail, spoonbill, stork, heron, rail, sora, coot, crane, heron, bittern, egret, stork, snipe
+Boats;Air boat;BOATAir;fan boat, air boat, hovercraft
+Boats;Bow wash;BOATWash;bow wash, wake
+Boats;Door;BOATDoor;hatch, ferry door, boat door, watertight door, ship door
+Boats;Electric;BOATElec;trolling motor
+Boats;Fishing;BOATFish;crab boats, trawlers, seiner, line vessel, dredger, gillnetter, research vessel
+Boats;Horn;BOATHorn;ship horn, tug-boat horn
+Boats;Interior;BOATInt;ship, ferry, ferries, cruise ship, navy, military boat, tugboat, sailboat, yacht, oil tanker, cargo ship, freighter, submarine
+Boats;Mechanism;BOATMech;rigging, pulley, rope, ship wheel, throttle, net, cage, trap, anchor
+Boats;Military;BOATMil;patrol boat, destroyer, cruisier, battlecruiser, frigate, corvette, fast attack boat
+Boats;Misc;BOATMisc;paddleboat, paddleboard
+Boats;Motorboat;BOATMotr;small boat, personal fishing boat, speedboat, pontoon boat, duck boat, dinghy
+Boats;Racing;BOATRace;hydroplane, hydrofoil, jet boat
+Boats;Rowboat;BOATRow;canoe, rowboat, kayak, oar, paddle, dragon boat, row
+Boats;Sailboat;BOATSail;sailboat, schooner, yawl, sloop, ketch, motorsailer
+Boats;Ship;BOATShip;large ship, cruise ship, oil tanker, cargo ship, freighter
+Boats;Steam;BOATStm;steam paddle ship, paddle steamer,  steam engine
+Boats;Submarine;BOATSub;submarine, sonar, submersible, u-boat
+Boats;Underwater;BOATUndwtr;boat, ship, underwater, tanker, fishing boat, motorboat, underwater
+Bullets;By;BLLTBy;bullet whiz-by, fwip
+Bullets;Impact;BLLTImpt;bullet impact, bullet hit
+Bullets;Misc;BLLTMisc;miscellaneous
+Bullets;Ricochet;BLLTRico;ricos, ricochet, deflect
+Bullets;Shell;BLLTShel;shell, casing, eject
+Cartoon;Animal;TOONAnml;fake animal, hunting call, duck call
+Cartoon;Boing;TOONBoing;jaw harp, mouth harp
+Cartoon;Clang;TOONClang;clang, metallic
+Cartoon;Creak;TOONCreak;rubber, wood
+Cartoon;Horn;TOONHorn;bulb horn, honk, clown horn
+Cartoon;Impact;TOONImpt;bonk, boink, doink
+Cartoon;Machine;TOONMach;contraption, comical machine, rube goldberg machine
+Cartoon;Misc;TOONMisc;toon, squanch, blorb, flump
+Cartoon;Musical;TOONMx;gliss, ascend, descend,
+Cartoon;Pluck;TOONPluk;string pluck
+Cartoon;Pop;TOONPop;pop gun, mouth pop, suction cup, bubble pops
+Cartoon;Shake;TOONShake;rattle
+Cartoon;Splat;TOONSplt;splat, splort, squish
+Cartoon;Squeak;TOONSqk;squeak
+Cartoon;Stretch;TOONStrch;strain
+Cartoon;Swish;TOONSwsh;twirl, swirl
+Cartoon;Twang;TOONTwang;ruler
+Cartoon;Vehicle;TOONVeh;jetsons, contraption. Flintstones car, backfire
+Cartoon;Vocal;TOONVox;mumble, silly voice, cartoon voice
+Cartoon;Warble;TOONWarb;wobble
+Cartoon;Whistle;TOONWhis;slide whistle
+Cartoon;Zip;TOONZip;zip, rico, siren, whistle
+Ceramics;Break;CERMBrk;break, crack, shatter, crunch
+Ceramics;Crash & debris;CERMCrsh;fall, debris, shards
+Ceramics;Friction;CERMFric;stress, scrape, creak, squeak, screech
+Ceramics;Handle;CERMHndl;handle, grab, set, pickup, set down, toss, catch
+Ceramics;Impact;CERMImpt;hit, drop, impact, crash, clunk, clink
+Ceramics;Misc;CERMMisc;miscellaneous
+Ceramics;Movement;CERMMvmt;drag, roll, rattle, shake
+Ceramics;Tonal;CERMTonl;bowed, ring, shing, ping
+Chains;Break;CHAINBrk;snap, break, bend
+Chains;Handle;CHAINHndl;handle, grab, set, pickup, set down, toss, catch
+Chains;Impact;CHAINImpt;drop, hit, impact, slam, tension snaps
+Chains;Misc;CHAINMisc;miscellaneous
+Chains;Movement;CHAINMvmt;drag, handcuffs, prison chain, dog chain
+Chemicals;Acid;CHEMAcid;sizzle, melt, fizz
+Chemicals;Misc;CHEMMisc;miscellaneous
+Chemicals;Reaction;CHEMReac;bubbling, foaming, reaction
+Clocks;Chime;CLOCKChim;chime, bell, grandfather clock
+Clocks;Mechanics;CLOCKMech;winding, clock gears, cuckoo clock
+Clocks;Misc;CLOCKMisc;miscellaneous
+Clocks;Tick;CLOCKTick;tick, click, quartz, tick tock, stop watch, egg timer
+Cloth;Flap;CLOTHFlp;flap, flag, rustle, parachute, cape, sailcloth, sail, sheet
+Cloth;Handle;CLOTHHndl;handle, grab, set, pickup, set down, toss, catch
+Cloth;Impact;CLOTHImpt;hit, drop, impact, smack
+Cloth;Misc;CLOTHMisc;miscellaneous
+Cloth;Movement;CLOTHMvmt;zuzz, swish, rustle, ruffle, scrunch, mvmt
+Cloth;Rip;CLOTHRip;rip, tear, velcro
+Communications;Audio visual;COMAv;motion picture camera, spooling, film camera, projector, tape recorder, nagra, walkman, CD player, reel to reel, vcr, laserdisc player, betamax, slide projector, beamer, ipod, bolex, 8mm, 16mm
+Communications;Camera;COMCam;camera shutter, winding, flash bulb, kodak, nikon, canon, olympus, kodak, fuji, fujifilm, mamiya, hasselblad, leica, 35mm, 120mm
+Communications;Cellphone;COMCell;mobile phone, smartphone, iphone, blackberry, flip phone, android
+Communications;Microphone;COMMic;mic handling, mic tap, larsen, megaphone
+Communications;Misc;COMMisc;miscellaneous
+Communications;Phonograph;COMPhono;turntable, victrola, phonograph, stylus, vinyl record
+Communications;Radio;COMRadio;tuning, radio, shortwave, squelch, futz, radio broadcast
+Communications;Static;COMStatic;static, fuzz, scramble
+Communications;Telemetry;COMTelm;morse code, telegraph, telemetry, readout, sos
+Communications;Telephone;COMTelph;dial, payphone, rotary dial, key pad, landline, cord phone
+Communications;Television;COMTv;tv, remote, dial, show, program, futz, TV show, broadcast
+Communications;Transceiver;COMTran;walkie talkies, cb, ham radios, transceiver, squelch, intercom, dispatch
+Communications;Typewriter;COMType;typewriter, teleprinter, carriage return, platen knob
+Computers;Hard drive;CMPTDriv;skip, search, grind, hard disc, hard disk
+Computers;Keyboard & mouse;CMPTKey;keyboard, mouse, mice, trackpad
+Computers;Misc;CMPTMisc;palm pilot, pocket pc
+Creatures;Aquatic;CREAAqua;kraken, mermaid, giant squid
+Creatures;Avian;CREAAvian;alien birds, extraterrestrial birds, fantasy birds
+Creatures;Beast;CREABeast;wooly mammoth, mumakil, 
+Creatures;Blob;CREABlob;blob, gloop, goop
+Creatures;Dinosaur;CREADino;brontosaurus, velociraptor, triceratops, stegosaurus, tyrannosaurus, allosaurus, spinosaurus, brachiosaurus, archaeopteryx, pterosaurs, pterodactyl
+Creatures;Dragon;CREADrgn;dragon, drake, wyvern
+Creatures;Elemental;CREAElem;rock monster, fire monster, ice monster, rock giant, ice giant, golem
+Creatures;Ethereal;CREAEthr;ghosts, spirits, ethereal, wispy, spectre, soul, apparition, spectral, poltergeist, phantom, wraith
+Creatures;Humanoid;CREAHmn;zombie, undead, living dead, ghoul, vampire, elf, orcs, ogre, troll, tengu, leprechaun, bigfoot, swamp thing, werewolf, frankenstein, mummy
+Creatures;Insectoid;CREAInsc;giant ant, giant spider
+Creatures;Misc;CREAMisc;miscellaneous
+Creatures;Monster;CREAMnstr;godzilla, king kong, rancor, behemoth, xenomorph, chupacabra
+Creatures;Reptilian;CREARept;serpent, serpentine, giant lizard, giant snake
+Creatures;Small;CREASmall;fairy, pixie, gremlin, imp, fraggle
+Creatures;Source;CREASrce;bark, breath, call, caw, squawk, chitter, click, cry, effort, grunt, hiss, howl, growl, snarl, guttural, moan, groan, mouth, roar, scream, screech, squeal, whine
+Crowds;Angry;CRWDAngr;hooligan, riot, protest, shout, rowdy
+Crowds;Applause;CRWDApls;applause, cheer, clapping, encore
+Crowds;Battle;CRWDBatl;battle cries, shout, charge, rally, army, battle, scuffle, war, screaming, dying
+Crowds;Celebration;CRWDCele;celebrating, holiday, party, rowdy, birthday, new years, christmas, parade
+Crowds;Cheering;CRWDCheer;cheering, concert, stadium, audience, whooping, swells, chants
+Crowds;Children;CRWDChld;playground, recess, kids playing, park, play, tag
+Crowds;Conversation;CRWDConv;chatter, chat, talk, sparse walla, converse, conversation
+Crowds;Laughter;CRWDLaff;tv show, canned laughter, comedy club, laugh track
+Crowds;Loop group;CRWDLoop;loop group, adr, canned
+Crowds;Misc;CRWDMisc;miscellaneous
+Crowds;Panic;CRWDPanic;panic, chaos, shout, scream, cry, distress
+Crowds;Quiet;CRWDQuiet;murmur, whispering, hushing, mumbling
+Crowds;Reaction;CRWDReac;boo, ahh, ooh, studio reaction
+Crowds;Singing;CRWDSing;chant, choir, chorale, carol
+Crowds;Sport;CRWDSprt;applause, clapping, boo, cheer, stadium, yay, audience, olympics, shouting, woohoo
+Crowds;Walla;CRWDWalla;voices, talk, walla, conversation
+Designed;Bass dive;DSGNBass;bass dive, downer, bass drop, fall
+Designed;Boom;DSGNBoom;boom, deep hit, low sting, trailer
+Designed;Braam;DSGNBram;bramm
+Designed;Distortion;DSGNDist;distortion, squared off, distorted
+Designed;Drone;DSGNDron;pad, drone, texture, ominous, tension
+Designed;Eerie;DSGNErie;spooky, tense, strange, creepy, scary, chilling, haunting, freaky, frightful, 
+Designed;Ethereal;DSGNEthr;ethereal, celestial
+Designed;Granular;DSGNGran;granular, paulstretch, grains, slices
+Designed;Impact;DSGNImpt;impact, hit, slam, smash, collision
+Designed;Misc;DSGNMisc;miscellaneous
+Designed;Morph;DSGNMorph;morph, blend, transition
+Designed;Riser;DSGNRise;reverse, crescendo, rizer, riser, tension
+Designed;Rumble;DSGNRmbl;subharmonic, rumble, shake, earthquake
+Designed;Rhythmic;DSGNRythm;stutter, glitch, pulse, stattaco
+Designed;Source;DSGNSrce;source, raw, material, raw recording
+Designed;Stinger;DSGNStngr;sting, startle, trailer, cinematic
+Designed;Synthetic;DSGNSynth;synthesized, synth, mod synth, modular synth, granular, analog synth, modular synth
+Designed;Tonal;DSGNTonl;tinnitus, ringing, shell shock, subjective
+Designed;Vocal;DSGNVocl;enchantment, spell, processed, vocal, whisper, ghostly
+Designed;Whoosh;DSGNWhsh;whoosh, trailer swish, swish
+Destruction;Collapse;DESTRClpse;collapse, topple, fell, implode
+Destruction;Crash & debris;DESTRCrsh;crash, rupture, implode, smash, break, shatter
+Destruction;Misc;DESTRMisc;miscellaneous
+Dirt & sand;Crash & debris;DIRTCrsh;debris, sand, dirt, trickle, spray, crumble
+Dirt & sand;Dust;DIRTDust;fine, particle, sediment, silt, dust
+Dirt & sand;Handle;DIRTHndl;handle, grab, dig, catch
+Dirt & sand;Impact;DIRTImpt;dump, thud, unload, drop
+Dirt & sand;Misc;DIRTMisc;miscellaneous
+Dirt & sand;Movement;DIRTMvmt;pour, unload, flow, spill
+Dirt & sand;Tonal;DIRTTonl;sand dunes, singing sands
+Doors;Antique;DOORAntq;castle, abby, church, old, ancient, antique
+Doors;Appliance;DOORAppl;oven, microwave, refrigerator, dishwasher, laundry machine, dryer
+Doors;Cabinet;DOORCab;cabinet, kitchen cabinet, tool cabinet
+Doors;Composite;DOORComp;fiberglass, door
+Doors;Creak;DOORCreak;creak, door, dungeon, cellar, castle, wood door, metal door, door creak
+Doors;Dungeon;DOORDungn;castle, dungeon, large, cellar
+Doors;Electric;DOORElec;electric door, garage door, soundstage door, automatic door
+Doors;Gate;DOORGate;garden gate, fence gate, park gate, rail crossing, cattle gate, farm gate
+Doors;Glass;DOORGlas;glass door, store door, bay door, french door
+Doors;Hardware;DOORHdwr;doorknob, deadbolt, push bar, chain lock, hinge, latch, handle, hardware, lock picking, jiggle
+Doors;Hitech;DOORTech;lab door
+Doors;Hydraulic & pneumatic;DOORHydr;door closer, pneumatic, hydraulic, powered hatch
+Doors;Knock;DOORKnck;knock, rap, knocker, bang, thud, thump
+Doors;Metal;DOORMetl;rollup, vault, safe, hatch
+Doors;Misc;DOORMisc;miscellaneous
+Doors;Plastic;DOORPlas;porta john, porta let, porta pottie
+Doors;Prison;DOORPrisn;jail door, prison door
+Doors;Revolving;DOORRevl;revolve, rotate, revolving door, hotel, airport, mall
+Doors;Sliding;DOORSlid;sliding glass door, patio door, shower door
+Doors;Stone;DOORSton;tomb, crypt, temple, mausoleum, secret entrance
+Doors;Swinging;DOORSwng;saloon door, traffic door, restaurant door, church pulpit door
+Doors;Wood;DOORWood;entrance, front door, closet
+Drawers;Metal;DRWRMetl;tool box, rack drawer, filing cabinet, cash register, security drawer
+Drawers;Misc;DRWRMisc;miscellaneous
+Drawers;Plastic;DRWRPlas;parts bin, desk organizer
+Drawers;Wood;DRWRWood;kitchen drawer, bathroom drawer
+Electricity;Arc;ELECArc;jacob's ladder, tesla coil, ark, arch, power station, electrocute
+Electricity;Buzz & hum;ELECBuzz;ground hum, amp hum, amp buzz, speaker hum, speaker buzz, hum, buzz, induction hum
+Electricity;Electromagnetic;ELECEmf;emf, coil, pickup, induction
+Electricity;Misc;ELECMisc;miscellaneous
+Electricity;Sparks;ELECSprk;sparkler, weld, sputter, shorting
+Electricity;Zap;ELECZap;discharge, tase, taser, electrocute
+Equipment;Bridle & tack;EQUIPBridle;bridle, reigns, leash, harness, dog leash, saddle strap
+Equipment;Hitech;EQUIPTech;space suit, utility belt
+Equipment;Misc;EQUIPMisc;miscellaneous
+Equipment;Recreational;EQUIPRec;backpack, hike, hiking, mountaineering, climb, rock climb, camp, tent
+Equipment;Sport;EQUIPSprt;shoulder pad, knee pad, shin pad, jock strap
+Equipment;Tactical;EQUIPTact;belt, tactical, duty belt, ammo belt, police, military, bandoleer
+Explosions;Designed;EXPLDsgn;shockwave, sweetener, echo
+Explosions;Misc;EXPLMisc;detonation
+Explosions;Real;EXPLReal;bang, implosion, crack, pop
+Farts;Designed;FARTDsgn;putty, razzberry, raspberry, whoopie cushion, flarp, armpit, fartbag, balloon
+Farts;Misc;FARTMisc;animal fart
+Farts;Real;FARTReal;human fart, flatulence, poot, toot
+Fight;Bodyfall;FGHTBf;bodyfall, body drag, scuffle, body slam, tackle
+Fight;Cloth;FGHTClth;combat cloth, grab, snatch, cloth impact, cloth hit
+Fight;Grab;FGHTGrab;combat, grab, grapple, wrestle, judo
+Fight;Impact;FGHTImpt;punch, kick, body blow, slap, smack, brawl, shove, sock, uppercut, jab
+Fight;Misc;FGHTMisc;miscellaneous
+Fire;Burning;FIREBurn;bonfire, campfire, brush fire, structure fire, blaze, inferno, combustion, tinder, pyre
+Fire;Burst;FIREBrst;backdraft, dragon fire, engulf
+Fire;Crackle;FIRECrkl;pop, spit, snap, sparkle
+Fire;Gas;FIREGas;gas grill, bunsen burner, furnace, camping stove, kitchen stove, crematorium, gas range
+Fire;Ignite;FIREIgn;match, lighter, zippo, enflame, erupt, flame up, inflame
+Fire;Misc;FIREMisc;miscellaneous
+Fire;Sizzle;FIRESizz;fire poker, fuse, fuse burn
+Fire;Torch;FIRETrch;flare, fuse, torch, firebrand, flaming stick, cresset
+Fire;Turbulent;FIRETurb;fire swirl, violent fire, flame thrower, fire tornado, engulf, backdraft
+Fire;Whoosh;FIREWhsh;fireball, blaze, molotov, flare, backdraft
+Fireworks;Commercial;FRWKComr;mortar, firework, pyrotechnics, kaboom, shell, fireworks display
+Fireworks;Misc;FRWKMisc;miscellaneous
+Fireworks;Recreational;FRWKRec;firecracker, m80, sparkler, bottle rocket, smoke bomb, jumping jack, roman candle, popper, cherry bomb
+Foley;Cloth;FOLYClth;rustle, movement, mvmt, zuzz
+Foley;Feet;FOLYFeet;foot, shoe, footstep, surface
+Foley;Hands;FOLYHand;pat, grab, handle, set
+Foley;Misc;FOLYMisc;miscellaneous
+Foley;Prop;FOLYProp;prop, props
+Food & drink;Cooking;FOODCook;chopping, slicing, dicing, mixing, blending, whisking, saute, fry, boil, grill, sizzle, steam, stew, stir, saute
+Food & drink;Drinking;FOODDrnk;sip, slurp, drink, swallow, gulp, beverage, swig, chug, glug
+Food & drink;Eating;FOODEat;eat, crunch, chew, swallow, munch, chomp, bite, ingest, consume, feast, feed
+Food & drink;Glassware;FOODGware;bottle, glass, cup, jug, carafe, can
+Food & drink;Ingredients;FOODIngr;nut, seed, grain, vegetable, fruit, canned food, cereal, meat, oats, maize
+Food & drink;Kitchenware;FOODKware;pan, pot, stewpan, stockpot, frying pan, saucepan
+Food & drink;Misc;FOODMisc;miscellaneous
+Food & drink;Pour;FOODPour;pour, flow, spill, serve
+Food & drink;Tableware;FOODTware;silverware, utensils, glass clink
+Footsteps;Animal;FEETAnml;walk, run, sprint
+Footsteps;Creature;FEETCrea;dinosaur, creature, beast, dragon, mythical
+Footsteps;Horse;FEETHors;walk, trot, gallop, hoof, hooves, canter
+Footsteps;Human;FEETHmn;walk, run, foot, jog, sprint, jump, skip, hobble, hike, stride, footstep, feet, step, climb
+Footsteps;Misc;FEETMisc;miscellaneous
+Games;Arcade;GAMEArcd;pinball, whack-a-mole, skeeball, claw machine
+Games;Board;GAMEBoard;chess, checkers, go, backgammon
+Games;Casino;GAMECas;roulette, slot machine, craps, moneywheel, keno, poker machine
+Games;Misc;GAMEMisc;poker, card, jenga, dice, knucklebone,
+Games;Video;GAMEVideo;atari, ps4, xbox one, xbox 360, amstrad, famicom, snes, gameboy, nintendo 64, playstation, megadrive, psp
+Geothermal;Fumarole;GEOFuma;steam vent, geothermal, fumarole
+Geothermal;Geyser;GEOGeyser;spout, spray, bubble, boil
+Geothermal;Lava;GEOLava;lava, flow, crackle, viscous, flare, rumble, volcano
+Geothermal;Misc;GEOMisc;bubbling hot pool
+Geothermal;Mud pots;GEOMudpot;mudpot, paint pot, tar pit, mud, bubble, glop
+Glass;Break;GLASBrk;glass break, smash, shatter
+Glass;Crash & debris;GLASCrsh;shard, fragment, crash, debris
+Glass;Friction;GLASFric;stress, scrape, creak, squeak, screech
+Glass;Handle;GLASHndl;handle, grab, set, pickup, set down, toss, catch
+Glass;Impact;GLASImpt;hit, drop, impact, clink
+Glass;Misc;GLASMisc;miscellaneous
+Glass;Movement;GLASMvmt;rattle, roll, ping, clatter
+Glass;Tonal;GLASTonl;resonate, ring, tonal, glass harmonica, crystal bowl
+Gore;Blood;GOREBlood;drip, flow, gush, spurt, spray
+Gore;Bone;GOREBone;bone snap, bone break, bone shatter, jaw snap, jaws
+Gore;Burn;GOREBurn;sizzle, cauterize, seer, brand
+Gore;Flesh;GOREFlsh;rip, peel, tear, rend, intestine, meat, wound
+Gore;Misc;GOREMisc;miscellaneous
+Gore;Ooze;GOREOoze;ooze, slime, flow, gelatin
+Gore;Source;GORESrce;goosh, squish, goop, slime, ooze, glop, organ, intestine, juicy, goo, splat, ooze, rip, peel, stab, tear, rend, intestine, meat, wound, slice, impale, juicy, splat
+Gore;Splat;GORESplt;goosh, squish, goop, slime, ooze, glop, organ, intestine, juicy, goo, splat
+Gore;Squish;GORESqsh;squish, flesh, organ, goosh, intestine, juicy, splat
+Gore;Stab;GOREStab;slice, impale, stab, cut, vorpal, dismember
+Guns;Antique;GUNAntq;muzzleloader, musket, black powder, flintlock, longrifle, fire lance
+Guns;Artillery;GUNArtl;howitzer, anti-aircraft gun, missile launcher, bazooka, mortar, rocket, naval
+Guns;Automatic;GUNAuto;ak-47, m16, machine gun, tommy gun, uzi, m249, M1919, gatling gun, minigun, 
+Guns;Cannon;GUNCano;blunderbuss, handcannon, cannon, black powder
+Guns;Handle;GUNHndl;holster, gun, gun grab, gun catch, gun drop, gun load
+Guns;Hitech;GUNTech;rail gun, spy gun
+Guns;Mechanism;GUNMech;clip, cocking, gun rattle, bolt slide, magazine, bullet loading, gun cock
+Guns;Misc;GUNMisc;flare gun, air gun, paintball gun
+Guns;Pistol;GUNPis;9mm, pistol, revolver, glock, handgun, colt, smith & wesson, sig sauer, luger, walther ppk, browning, ruger, beretta
+Guns;Rifle;GUNRif;rifle, mauser, casull, arisaka, luger, carbine, powell, sniper, hunting, semi-automatic
+Guns;Shotgun;GUNShotg;shotgun, double barrel, mossberg, winchester, coach gun
+Guns;Suppressed;GUNSupr;silenced, silencer
+Horns;Air powered;HORNAir;fog horn, air horn, factory horn
+Horns;Celebration;HORNCele;party horn, vuvuzela
+Horns;Misc;HORNMisc;hunting call, elk call, duck call, fox bugle
+Horns;Traditional;HORNTrad;shofar, conch, conch shell, battle horn, alphorn, alpine horn, alpenhorn
+Human;Blow;HMNBlow;blow, exhale
+Human;Breath;HMNBrth;breath, sigh, inhale, exhale, gasp, pant, wheeze, huff, heave, whoop, respiration, inhalation, exhalation
+Human;Burp;HMNBurp;burp, belch, hiccup
+Human;Cough;HMNCough;hack, ahem, hoarse, clear throat
+Human;Heartbeat;HMNHart;palpitation, bumbum
+Human;Kiss;HMNKiss;smooch, peck
+Human;Misc;HMNMisc;miscellaneous
+Human;Pee;HMNPee;peeing, urinating, pee, urinate, tinkle, wizz
+Human;Skin;HMNSkin;rubbing, scratching, skin, itch, slap, hand grab, handshake, caress, rub, backrub
+Human;Sneeze;HMNSneez;sneeze, ah-choo
+Human;Sniff;HMNSniff;sniff, sniffing, smell, sniffle
+Human;Snore;HMNSnor;snore, zzz, congested, heavy breathing, apnea
+Human;Spit;HMNSpit;spit, hock, spew, spittoon, drool
+Human;Vomit;HMNVomit;vomit, puke, upchuck, expunge, heave, gag, retch, hurl, spew, seasick
+Ice;Break;ICEBrk;break, crack, rips, shatter, crunch
+Ice;Crash & debris;ICECrsh;crash, fall, debris
+Ice;Friction;ICEFric;stress, scrape, creak, squeak, screech
+Ice;Handle;ICEHndl;handle, grab, set, pickup, set down, toss, catch
+Ice;Impact;ICEImpt;hit, drop, impact, crash, clunk, clang, clink, chop
+Ice;Misc;ICEMisc;miscellaneous
+Ice;Movement;ICEMvmt;drag, roll, rattle, shake
+Ice;Tonal;ICETonl;bow, ring, shing
+Lasers;Beam;LASRBeam;beam, gamma, ray
+Lasers;Gun;LASRGun;plasma weapon, blaster, laser cannon
+Lasers;Impact;LASRImpt;laser, blaster, impact, hit, sizzle
+Lasers;Misc;LASRMisc;miscellaneous
+Leather;Creak;LETHRCreak;creak, stress, tension
+Leather;Handle;LETHRHndl;handle, grab, set, pickup, set down, toss, catch
+Leather;Impact;LETHRImpt;hit, impact, grab, thud, thump
+Leather;Misc;LETHRMisc;miscellaneous
+Leather;Movement;LETHRMvmt;flap, flop, rustle, mvmt, slide
+Liquid & mud;Bubbles;LIQBubl;bubble, foam, pop, mud
+Liquid & mud;Impact;LIQImpt;splat, splatter, hit, impact, plop, kerplunk, plunk, mud
+Liquid & mud;Misc;LIQMisc;miscellaneous
+Liquid & mud;Movement;LIQMvmt;ooze, slime, goo, mud
+Liquid & mud;Suction;LIQSuct;suction, slurp, glomp, plunger, mud
+Machines;Amusement;MACHAmus;rollercoaster, merry-go-round, scrambler, tilt-a-whirl, kiddy ride, theme park ride, pinball, skeeball
+Machines;Antique;MACHAntq;printing press, sewing machine, olive press, butter churn
+Machines;Appliance;MACHAppl;oven, fridge, refrigerator, blender, food processor, hair dryer, ice maker, washing machine, dryer, iron, coffee maker, dishwasher, electric can opener, garbage disposal, humidifier, dehumidifier, sewing machine, toaster, waffle maker, griddle, hot plate
+Machines;Construction;MACHCnst;crane, cement mixer, wood chipper
+Machines;Elevator;MACHElev;paternoster, freight elevator, passenger elevator, lift
+Machines;Escalator;MACHEscl;travelator, moving walkway
+Machines;Fan;MACHFan;fan, ceiling fan, box fan, industrial fan, bladeless fan
+Machines;Garden;MACHGrdn;lawnmower, weedwhacker, edger, chainsaw, trimmer, polesaw, mulcher, cultivator
+Machines;Gym;MACHGym;treadmill, eliptical, rowing machine, exercise bike, stationary bike, nordictrack, stair climber.
+Machines;Hitech;MACHTech;gadget, digital, handheld
+Machines;Hvac;MACHHvac;aircon, air conditioning, heating.
+Machines;Industrial;MACHInd;hydraulic press, assembly line, distillery, punch press, form press+F437:F450
+Machines;Mechanism;MACHMech;puzzle box, rube goldberg, gizmo
+Machines;Medical;MACHMed;x-ray machines, mri, cat scan, pet scan, blood pressure machine, lab test machine, centrifuge, ventilator, defibrillator
+Machines;Misc;MACHMisc;miscellaneous
+Machines;Office;MACHOffc;fax machine, facsimile machine, telefax, copy machine, printer, shredder, xerox, photocopier, mimeograph, laser printer, inkjet, paper shredder, plotter
+Machines;Pump;MACHPump;water pump, sump pump, compressor, air compressor
+Magic;Angelic;MAGAngl;holy, celestial, ethereal, divine, spiritual, beatific, righteous, saintly
+Magic;Elemental;MAGElem;fire, water, earth, electric, air, wind
+Magic;Evil;MAGEvil;dark, devil, summon, necromancy, voodoo, black magic, forbidden
+Magic;Misc;MAGMisc;miscellaneous
+Magic;Poof;MAGPoof;chuff, foomp, blast
+Magic;Shimmer;MAGShim;twinkle, sparkle, bell tree, chime, glint, glisten, glitter, scintillation, glow, glimmer, gleam
+Magic;Spell;MAGSpel;witch, wizard, sorcerer, cast, incantation, hex, rune, sorcery, enchant, invocation, bewitch, exorcism, curse, trance
+Mechanical;Click;MECHClik;click, clack, snap, toggle, button
+Mechanical;Gears;MECHGear;gear, cog, pinion, rack and pinion, transmission, cogwheel, gearwheel, flywheel
+Mechanical;Hydraulic & pneumatic;MECHHydr;hydraulic, pneumatic, pressurized, valve
+Mechanical;Latch;MECHLtch;latch, hardware, lock, clasp, hasp, bolt
+Mechanical;Lever;MECHLvr;lever, switch, clunk, clank
+Mechanical;Lock;MECHLock;padlock, deadbolt
+Mechanical;Misc;MECHMisc;miscellaneous
+Mechanical;Pulley;MECHPuly;squeak, chirp, roll
+Mechanical;Ratchet;MECHRtch;ratchet, snap, click, wind, crank, winch
+Mechanical;Relay;MECHRelay;flip, toggle, clack
+Mechanical;Roller;MECHRolr;roll, belt, lineshaft
+Mechanical;Switch;MECHSwtch;switch, click, clack, toggle, button
+Metal;Break;METLBrk;break, crack, rip, shatter, crunch
+Metal;Crash & debris;METLCrsh;crash, fall, debris
+Metal;Friction;METLFric;stress, scrape, creak, squeak, screech
+Metal;Handle;METLHndl;handle, grab, set, pickup, set down, toss, catch
+Metal;Impact;METLImpt;hit, drop, impact, crash, clunk, clang
+Metal;Misc;METLMisc;miscellaneous
+Metal;Movement;METLMvmt;drag, roll, rattle, shake
+Metal;Tonal;METLTonl;bow, ring, wronk, shing, warp, bend, resonate
+Motors;Antique;MOTRAntq;kerosene engine, paraffin engine
+Motors;Combustion;MOTRComb;diesel engine, gas engine, combustion engine, two-stroke engine
+Motors;Electric;MOTRElec;toothbrush, electric razor, electric motor, garbage disposal, dentist drill
+Motors;Misc;MOTRMisc;miscellaneous
+Motors;Servo;MOTRSrvo;robot, rc car, camera focus, car antenna, printer
+Motors;Turbine;MOTRTurb;windmill, airplane, aircraft, generator
+Movement;Activity;MOVEActv;activity, moving, cleaning, shopping, unpacking
+Movement;Animal;MOVEAnml;stampede, herd, charge, trample, scramble
+Movement;Creature;MOVECrea;slither, crawl, slide, squirm, wriggle
+Movement;Crowd;MOVECrwd;walk, run, march, mill, shuffle, scuffle, sit, stand, lie, slip, jump, skip
+Movement;Human;MOVEHmn;walk, run, march, mill, shuffle, scuffle, sit, stand, lie, slip, jump, skip
+Movement;Insect;MOVEInsc;swarm, hive, beehive, slither, maggots
+Movement;Misc;MOVEMisc;miscellaneous
+Movement;Presence;MOVEPres;adjust, shuffle, scuffle, light movement, shift
+Musical;Bells;MUSCBell;tubular bells, carillon, gamelan, singing bowl, hand bell, cowbell, gong, gamelan, agung, bowl gong, tam-tam
+Musical;Brass;MUSCBrass;tuba, french horn, trombone, trumpet, mellophone, euphorium, sousaphone, flugelhorn, bugle, saxhorn, cornet
+Musical;Chime;MUSCChim;wind chime, bell tree, tinkle, twinkle, shimmer
+Musical;Choral;MUSCChor;choir, choral, gospel, church
+Musical;Experimental;MUSCExpr;theremin, glass armonica, pyrophone, stylophone, cristal baschet, electrified cactus, aeolian wind harp
+Musical;Instrument;MUSCInst;instrument
+Musical;Keyed;MUSCKeyd;piano, organ, harpsicord, accordian, melodica, celesta, spinet, clavinet, clavichord, harmonium, dulcitone
+Musical;Loop;MUSCLoop;music loops, sample loops, drum loops
+Musical;Misc;MUSCMisc;miscellaneous, harmonica, kazoo
+Musical;Percussion;MUSCPerc;timpani, kettle drum, bass drum, toms, war drums, taiko, kick drum, snare drum
+Musical;Percussion tuned;MUSCTnprc;glockenspiel, xylophone, vibraphone, metallophone,  bell lyre, steel drum, marimba
+Musical;Performance;MUSCPrfm;band, street musician, live concert, show, nightclub, 
+Musical;Plucked;MUSCPluck;guitar, banjo, ukelele, harp, acoustic guitar, bass guitar, mandolin,  balalaika, sitar, pipa, thumb piano, jaw harp, zither, balalaika, autoharp, kora, lute, lyre, oud, tambura, karimba
+Musical;Sample;MUSCSmpl;samples, raw samples, one-shot
+Musical;Shaken;MUSCShake;maracas, tambourine, rattles, rainstick, shekere , egg shaker, chajchas, monkey stick, katsa, sistrum, shaker, cabasa
+Musical;Song & phrase;MUSCSong;music, player piano, ringtone, musical car by, phrase
+Musical;Stinger;MUSCStngr;music sting, news sting, title
+Musical;Stringed;MUSCStr;violin, cello, viola, violoncello, bass, double bass
+Musical;Synthesized;MUSCSynth;synth, moog, casio, roland, arp, synthesizer, oberheim, minimoog, yamaha, korg
+Musical;Toy;MUSCToy;music box, jack in the box
+Musical;Woodwind;MUSCWind;flute, piccolo, oboe, bassoon, recorder, clarinet, saxophone, bass clarinet, ney, bansuri, kaval, pan flute, xiao, fife, 
+Natural disaster;Avalanche;NATDAval;landslide, mudslide
+Natural disaster;Earthquake;NATDQuak;earthquake, rumble, rattle, fissure, lfe
+Natural disaster;Misc;NATDMisc;miscellaneous
+Natural disaster;Tornado;NATDTorn;twister, vortex, waterspout
+Natural disaster;Tsunami;NATDTsun;tidal wave, tsunami
+Natural disaster;Typhoon;NATDThyp;typhoon, hurricane, cyclone, tropical storm
+Natural disaster;Volcano;NATDVolc;eruption, lava, lava bombs, eruptions, pyroclast
+Objects;Bag;OBJBag;duffle, backpack, back pack, purse, handbag, shoulder bag, camera bag
+Objects;Book;OBJBook;book, cover, magazine, catalog, textbook, dictionary, tome, volume, bible, publication
+Objects;Coin;OBJCoin;toss, flip, ping, dump, spin, piggy bank, clink, coinage, loose change, change, silver dollar, penny, nickel, dime, quarter
+Objects;Container;OBJCont;box, carboard box, container, package, jewelly box, plastic container, lid, tupperware, capsule, breadbox, canister, toolbox, pill box
+Objects;Fashion;OBJFash;shoes, boots, mascara, lipstick, makeup, belt, sash, scarf, high-heels, eyeliner, sunglasses, glasses, wallet, hat, gloves, watches, shawl, socks, bandana, headband, ties, muffs, suspenders, robe, hankerchief
+Objects;Furniture;OBJFurn;chesterfield, sofa, rocking chair, table, chair, loveseat, stool, cabinet, bookcase, bed, couch, chest
+Objects;Garden;OBJGrdn;flower pot, garden sculpture, hose, faucet, watering can, bird feeder, composter
+Objects;Gym;OBJGym;weight, dumbell, barbell, mat, weight bench, jumprope, exercise ball, yoga mat, weight bench, resistance band, kettlebell, fitness ball, exercise ball
+Objects;Household;OBJHsehld;domestic, home, house
+Objects;Jewelry;OBJJewl;bracelet, necklace, crown, earing, ring, nosering, pendant, tie pin, cufflinks
+Objects;Keys;OBJKey;keyring, keychain, lanyard
+Objects;Luggage;OBJLug;suitcase, baggage, duffel bag, duffel
+Objects;Medical;OBJMed;manual blood pressure meter, stethoscope, rubber gloves, clamp, syringe, forcep
+Objects;Misc;OBJMisc;miscellaneous
+Objects;Office;OBJOffc;stapler, paper cutter, hole punch, scissors, paper tray, paperweight, folder, binder, report
+Objects;Packaging;OBJPack;cardboard, styrofoam, packing peanuts, labels, packing paper, bubblewrap
+Objects;Tape;OBJTape;tape, velcro, flypaper, glue, packing tape, masking tape, duct tape, gaffer tape, scotch tape, double stick tape
+Objects;Umbrella;OBJUmbr;shake, rustle, pop, thump
+Objects;Wheeled;OBJWhled;pram, perambulator, baby carriage, wheelchair, dolly, stroller, cart, gurney
+Objects;Writing;OBJWrite;pen, pencil, marker, chalk, crayon, dry erase board, sharpie, signature
+Objects;Zipper;OBJZipr;zipper, pants, jacket, tent, bag
+Paper;Flutter;PAPRFltr;flutter, flap, fall, confetti, cardboard, paper
+Paper;Friction;PAPRFric;sliding, scraping, cardboard, paper
+Paper;Handle;PAPRHndl;turn, page, flip, browse, peruse, cardboard, paper
+Paper;Impact;PAPRImpt;paper hit, smack, slap, newspaper, magazine, cardboard, paper
+Paper;Misc;PAPRMisc;miscellaneous
+Paper;Rip;PAPRRip;tear, rip, shred, cardboard, paper
+Paper;Tonal;PAPRTonl;tonal, singing, ringing, paper, cardboard
+Plastic;Break;PLASBrk;break, crack, rip, shatter, crunch
+Plastic;Crash & debris;PLASCrsh;fall, crash, debris
+Plastic;Friction;PLASFric;stress, scrape, creaks, squeaks, screech
+Plastic;Handle;PLASHndl;handle, grab, set, pickup, set down, toss, catch
+Plastic;Impact;PLASImpt;hit, drop, impact
+Plastic;Misc;PLASMisc;miscellaneous
+Plastic;Movement;PLASMvmt;drag, roll, rattle, shake
+Plastic;Tonal;PLASTonl;tonal, singing, ringing
+Rain;Cloth;RAINClth;rain, cloth, jacket, umbrella, cotton
+Rain;Concrete;RAINConc;rain, cement, pavement, asphalt
+Rain;General;RAIN;rain, rainstorm, downpour
+Rain;Glass;RAINGlas;rain, glass, skylight, window, sunroof, greenhouse
+Rain;Interior;RAINInt;rain, rainstorm, interior rain, windhield rain, rain on roof
+Rain;Metal;RAINMetl;rain, metal, car, can, tin, roof
+Rain;Plastic;RAINPlas;rain, plastic, vinyl, plexiglass
+Rain;Vegetation;RAINVege;Rain on a metal surface, so rain on a car, or metal sheet, etc.
+Rain;Water;RAINWatr;rain, puddle, lake, pond
+Rain;Wood;RAINWood;rain, wood, deck, roof, shed, floor
+Robots;Misc;ROBTMisc;automaton, droid, bot
+Robots;Movement;ROBTMvmt;servo, solenoid, mechanism, pneumatic, hydraulic, droid, bot
+Robots;Vocal;ROBTVox;droid, chirp, beep, whistle, bot
+Rocks;Break;ROCKBrk;Breaks, Cracks, Rips, Shatters, Crunches
+Rocks;Crash & debris;ROCKCrsh;Fall, Debris
+Rocks;Friction;ROCKFric;Stress, Scrapes, Creaks, Squeaks, Screech
+Rocks;Handle;ROCKHndl;handle, grab, set, pickup, set down, toss, catch
+Rocks;Impact;ROCKImpt;Hit, Drop, Impact, Crash, Clunk, Clang, Clink, Chop
+Rocks;Misc;ROCKMisc;miscellaneous
+Rocks;Movement;ROCKMvmt;Drag, Roll, Rattle, Shake
+Rocks;Tonal;ROCKTonl;Bowed, Ring, Wronk, Shing, Warp
+Rope;Creak;ROPECreak;stretch, tension, pull
+Rope;Handle;ROPEHndl;handle, grab, set, pickup, set down, toss, catch
+Rope;Impact;ROPEImpt;hit, drop, impact
+Rope;Misc;ROPEMisc;miscellaneous
+Rope;Movement;ROPEMvmt;zuzz, zipline, zip, knot, tie
+Rubber;Crash & debris;RUBRCrsh;debris, scatter, plop
+Rubber;Friction;RUBRFric;squeak, creak, drag, rub, scrape, groan
+Rubber;Handle;RUBRHndl;handle, grab, set, pickup, set down, toss, catch
+Rubber;Impact;RUBRImpt;smack, impact, hit, bounce, drop
+Rubber;Misc;RUBRMisc;miscellaneous
+Rubber;Movement;RUBRMvmt;movement, drag, flap, flop
+Rubber;Tonal;RUBRTonl;tonal, rubber, singing
+Scifi;Alarm;SCIAlrm;sci-fi alarm, alert, warning
+Scifi;Computer;SCICmpt;computer, console, interface, holoscreen
+Scifi;Door;SCIDoor;sci-fi door, airlock
+Scifi;Energy;SCIEnrg;particle, vortex, transporter, hologram, force field
+Scifi;Impact;SCIImpt;energy hit, energy wave, force field
+Scifi;Machine;SCIMach;teleporter, food replicators, holodeck
+Scifi;Mechanism;SCIMech;tricorder, scifi device, gizmo
+Scifi;Misc;SCIMisc;miscellaneous
+Scifi;Retro;SCIRetro;old sci-fi
+Scifi;Spaceship;SCIShip;spaceship, ufo, mothership, battlecruiser, starship
+Scifi;Vehicle;SCIVeh;moon rover, landspeeder, speeder bike, hoverboard, podracer
+Scifi;Weapon;SCIWeap;lightsabers, exotic weapon
+Snow;Crash & debris;SNOWCrsh;snowball, snow crash
+Snow;Friction;SNOWFric;stress, scrape, creak, squeak, screech
+Snow;Handle;SNOWHndl;handle, grab, set, pickup, set down, toss, catch
+Snow;Impact;SNOWImpt;snowball, snow drift, topple, fall
+Snow;Misc;SNOWMisc;miscellaneous
+Snow;Movement;SNOWMvmt;wade, drag, plow, fumble
+Sports;Court;SPRTCourt;basketball, tennis, fencing, volleyball, racquetball, badminton, netball, squash, dodgeball, shuffleboard, handball
+Sports;Field;SPRTField;soccer, football, baseball, field hockey, cricket, rugby, polo, lacrosse
+Sports;Gym;SPRTGym;boxing, wrestling, gymnastics, weight training, martial arts, karate, judo, tae kwon do, dojo, kung fu
+Sports;Indoor;SPRTIndor;bowling, billiards, ping pong, darts
+Sports;Misc;SPRTMisc;golf
+Sports;Skate;SPRTSkate;skateboarding, roller skating, rollerblading, push scooter
+Sports;Track & field;SPRTTrck;long jump, running, pole vault, shot put, javelin throw
+Sports;Water;SPRTWatr;swimming, water polo, water volleyball, diving, water skiing, surfing, kiteboarding, scuba, snorkeling
+Sports;Winter;SPRTWntr;skiing, snowboarding, bobsledding, ice skating, sledding, curling, ice hockey, luge, speed skating
+Swooshes;Swish;SWSH;swish, kungfu, whizby, flutter, swing
+Swooshes;Whoosh;WHSH;woosh
+Tools;Garden;TOOLGrdn;rake, hoe, spade, trowel, broom, pruning sheer, garden fork, tiller, loppers, shovel, weeder
+Tools;Hand;TOOLHand;hammer, screwdriver, pliers, wrench, ratchet, socket, hand saw, clamp, cutter, pry bar, chisel, scraper, staple gun, file, scissors
+Tools;Misc;TOOLMisc;miscellaneous
+Tools;Pneumatic;TOOLPneu;jackhammer, air tool, air ratchet, nail guns
+Tools;Power;TOOLPowr;drill, power saw, circular saw, jigsaw, sander, belt sander, router, power screwdriver, heat gun, drill press, table saw
+Toys;Electronic;TOYElec;remote controlled car, slot car, speak and spell, furby
+Toys;Mechanical;TOYMech;windup toy, toy robot, winding toy
+Toys;Misc;TOYMisc;action figure, doll, stuffed animal
+Trains;Brake;TRNBrake;breaks, screech, grind
+Trains;Clack;TRNClak;clack
+Trains;Door;TRNDoor;train door, subway door
+Trains;Diesel;TRNDiesl;diesel train
+Trains;Electric;TRNElec;commuter train, regional train, city line, inter-city train, light rail
+Trains;High speed;TRNHspd;hi-tech train, maglev, monorails, hyperloop, bullet train
+Trains;Horn;TRNHorn;train horn, subway horn
+Trains;Interior;TRNInt;commuter train, regional train, city line, inter-city train, light rail, freight train, subway, monorail
+Trains;Mechanism;TRNMech;shunt, decouple
+Trains;Misc;TRNMisc;miscellaneous
+Trains;Steam;TRNSteam;steam train, coal train
+Trains;Subway;TRNSbwy;metro, subway, the tube, rer
+Trains;Tram;TRNTram;tram, trolley, cable car, funicular, grip car
+User interface;Alert;UIAlert;alert, tone, text message, notification, startup
+User interface;Beep;UIBeep;computer beep, phone beep
+User interface;Click;UIClick;click, tap, type
+User interface;Data;UIData;data, processing, information, thinking
+User interface;Glitch;UIGlitch;glitch, malfunction, failure, kernel panic, guru meditation error
+User interface;Misc;UIMisc;miscellaneous
+User interface;Motion;UIMvmt;swipe, scroll, zoom, page
+Vegetation;Grass;VEGEGras;grass rustle, walk through, hay, wheat
+Vegetation;Leaves;VEGELeaf;leaf swirl, leaf fall, leaves falling, leaf pile
+Vegetation;Misc;VEGEMisc;foliage
+Vegetation;Tree;VEGETree;tree fall, branch snap, branch break, twig
+Vehicles;Alarm;VEHAlrm;car, auto, automobile, car alarm, arm chirp, disarm chirp, fob
+Vehicles;Antique;VEHAntq;car, auto, automobile, oldsmobile, model a, model t
+Vehicles;Atv;VEHAtv;quad, three-wheeler, four-wheeler, quadricycle, dune buggy
+Vehicles;Bicycle;VEHBike;bicycle, bike, recumbent, unicycle, tandem, bmx
+Vehicles;Brake;VEHBrake;brake squeal, screech, grind
+Vehicles;Bus;VEHBus;city bus, school bus, greyhound bus, coach bus, tour bus, double decker
+Vehicles;Car;VEHCar;car, auto, automobile
+Vehicles;Construction;VEHCnst;crane, bulldozer, backhoe, excavator, digger, forklift
+Vehicles;Door;VEHDoor;car, auto, automobile, car door, van door, truck door
+Vehicles;Electric;VEHElec;segway, golf cart, electric scooter, electric car, electric motorcycle, tesla, electric gokart
+Vehicles;Emergency;VEHEmrg;fire truck, firetruck, ambulance, police car, SWAT van
+Vehicles;Farm;VEHFarm;tractor, combine, husker, harvester
+Vehicles;Freight;VEHFrght;big rigs, lorry, semi-truck, u-haul truck, penske, box truck, freight truck
+Vehicles;Generic by;VEHBy;car, auto, automobile, pass by
+Vehicles;Horn;VEHHorn;car, auto, automobile, car horn
+Vehicles;Interior;VEHInt;car, truck, van, interior, driving, onboard, bus
+Vehicles;Jalopy;VEHJalop;car, auto, automobile, hoopty, clunker, junker, false start, misfiring, malfunctioning, misfire, backfire
+Vehicles;Mechanism;VEHMech;window crank, glove box, windshield, wiper, trunk, seat belt, seatbelt, turn signal, gear shift
+Vehicles;Military;VEHMil;tank, APC, armored personnel carrier, humvee, jeep
+Vehicles;Misc;VEHMisc;snowmobile
+Vehicles;Motorcycle;VEHMoto;scooter, motorcycle, motorbike, vespa, motocross, dirt bike
+Vehicles;Racing;VEHRace;car, auto, automobile, race car, drag race car, indy, formula 1, nascar, grand prix, monster truck
+Vehicles;Siren;VEHSirn;ambulance, police, siren, fire truck, fire fighter
+Vehicles;Skid;VEHSkid;tire skid, peel out, chuff, burnout
+Vehicles;Suspension;VEHSusp;suspension, shock springs, squeak, rattle
+Vehicles;Tire;VEHTire;tire, tyre, roll
+Vehicles;Truck van & suv;VEHTruck;car, auto, automobile, passenger truck, pickup truck, vans, suv, flatbed, 
+Vehicles;Utility;VEHUtil;utv, sxs, side by side, rzr, ranger, cushman, gator
+Vehicles;Wagon;VEHWagn;wagon, stagecoach, buggy, carriage, wood cart
+Vehicles;Window;VEHWndw;car, auto, automobile, automatic window, power window
+Voices;Alien;VOXAlien;alien language, chewbacca
+Voices;Baby;VOXBaby;coo, babble, fuss, snuffle
+Voices;Cheer;VOXCheer;clap, boo, cheer, yay, shout, woohoo, holler
+Voices;Child;VOXChld;child, teen, tween
+Voices;Crying;VOXCry;cry, pout, sob, whimper, bawl, fuss, wounded
+Voices;Efforts;VOXEfrt;effort, grunt, struggle, strain, exert
+Voices;Female;VOXFem;woman, female
+Voices;Futzed;VOXFutz;speaker, public address, announcement
+Voices;Historical;VOXHist;speech, lecture, broadcast, news, historical
+Voices;Laugh;VOXLaff;giggle, chuckle, laugh, hoot, holler, maniacal, hysterical
+Voices;Male;VOXMale;male, man
+Voices;Misc;VOXMisc;miscellaneous
+Voices;Reaction;VOXReac;oh, ooh, ooo, ah, ahh, ahhh, er, em, hmm, hm
+Voices;Scream;VOXScrm;shout, yell, scream, death, fall
+Voices;Singing;VOXSing;sing, hum, ditty
+Voices;Whisper;VOXWhsp;whisper, murmur, hush
+Water;Bubbles;WATRBubl;bubble, boil, simmer, blub, glub, cauldron, potion
+Water;Drain;WATRDran;drain, gurgle, burble, sewer, shower, sink, storm drain
+Water;Drip;WATRDrip;drip, plip, plop, trickle, leak, cave
+Water;Fizz;WATRFizz;fizz, sizzle, seltzer, foam, hiss
+Water;Flow;WATRFlow;river, stream, creek, current, watercourse, tributary, brook, runnel, rivulet, spring
+Water;Fountain;WATRFoun;fountain, spray, trickle, hiss
+Water;Impact;WATRImpt;splash, bellyflop, cannonball, depth charge, sploosh
+Water;Lap;WATRLap;ripple, lap, hull, slap, slosh
+Water;Misc;WATRMisc;miscellaneous
+Water;Movement;WATRMvmt;slosh, wade, splash, sweep, tread
+Water;Plumbing;WATRPlmb;toilet flush, sink, shower,
+Water;Pour;WATRPour;pour, fill, dump, empty
+Water;Splash;WATRSplsh;splash, swim, wade, dive, plunge, slosh, submerge
+Water;Spray;WATRSpray;spray, spritz, squirt, gush, sprinkle
+Water;Steam;WATRStm;spritz, mist, steam, wet hiss, sputter
+Water;Surf;WATRSurf;coastline, shoreline, seashore, beach, wash
+Water;Turbulent;WATRTurb;whirlpool, wave pool, rapids, maelstrom, swirl
+Water;Underwater;WATRUndwtr;underwater, flow, turbulent
+Water;Waterfall;WATRFall;waterfall, cascading, dam, torrent, niagara
+Water;Wave;WATRWave;wave, breakwater, tides, seashore, jetty, lapping
+Weapons;Armor;WEAPArmr;armour, chainmail, helm, scale armor, breastplate, cuirass, domaru, splint, haramaki, shield
+Weapons;Arrow;WEAPArro;arrow, bolt, fletch, quiver
+Weapons;Axe;WEAPAxe;ax, axe, chop, throwing ax
+Weapons;Blunt;WEAPBlnt;club, bat, mace, ball and chain, nunchuck, war hammer, warhammer, stave, brass knuckles, flail, tonfa, nightstick, cudgel
+Weapons;Bow;WEAPBow;longbow, compound box, crossbow
+Weapons;Knife;WEAPKnif;switchblade, jack knife, butterfly knife, hunting knife, utility knife, cleaver, butcher knife, trench knife, chef knife
+Weapons;Misc;WEAPMisc;slingshot
+Weapons;Polearm;WEAPPole;spear, pike, harpoon, halberd, javelin, poleaxe, pollaxe
+Weapons;Siege;WEAPSiege;catapult, trebuchet, battering ram, ballista, siege tower
+Weapons;Sword;WEAPSwrd;falchion, scimitar, broadsword, rapier, longsword, samurai, cutlass, fencing sword, kattana, machete, sabre, viking sword, foil
+Weapons;Whip;WEAPWhip;bullwhip, horse whip, lash, whipcrack
+Weather;Hail;HAIL;hail, ice, sleet
+Weather;Misc;WTHR;miscellaneous
+Weather;Storm;STORM;hurricane, thunderstorm, typhoon, sleet, sandstorm, tornado, cyclone, hailstorm,
+Weather;Thunder;THUN;thunderstorm, lightning, thunderclap, thunderbolt, lightening, thunder, crack, roll, rumble
+Whistles;Human;WHSTHmn;whistle, cheering, human, wolf whistle, signal
+Whistles;Mechanical;WHSTMech;steamship, referee, toot, police whistle, tea pot, train whistle
+Whistles;Misc;WHSTMisc;ref, nose flute
+Wind;Designed;WINDDsgn;wind machine, synthetic, artificial, tonal
+Wind;General;WIND;miscellaneous
+Wind;Gust;WINDGust;gust, blustery, wisps, breeze, buffet, waft, gale, flurry
+Wind;Interior;WINDInt;interior, shutter, rattle, moan, draft
+Wind;Tonal;WINDTonl;howl, whistle, moan, tonal
+Wind;Turbulent;WINDTurb;buffet, turbulent wind, strong wind, violent wind, buffet
+Wind;Vegetation;WINDVege;foliage, vegetation, grass, tree, leaf, plant, rustle
+Windows;Covering;WNDWCover;curtain, blind, shutter, blackout, shades
+Windows;Hardware;WNDWHdwr;window latch, window cranks, window lock, window seal
+Windows;Knock;WNDWKnck;knock, pane, rattle
+Windows;Metal;WNDWMetl;metal frame
+Windows;Misc;WNDWMisc;miscellaneous
+Windows;Plastic;WNDWPlas;plastic frame
+Windows;Wood;WNDWWood;wood frame
+Wings;Bird;WINGBird;bird wing, flap, flutter
+Wings;Creature;WINGCrea;dragon wing, fairy wing, griffin wing, sphinx wing, angel wing, phoenix wing, giant bird wing
+Wings;Insect;WINGInsc;fly, bee, dragonfly, moth, butterfly, beetle, scarab, hornet, wasp, locust
+Wings;Misc;WINGMisc;miscellaneous
+Wood;Break;WOODBrk;breaks, cracks, rips, shatters, crunches, splinter
+Wood;Crash & debris;WOODCrsh;fall, debris, crash, fell, timber
+Wood;Friction;WOODFric;stress, scrapes, creaks, squeaks, screech
+Wood;Handle;WOODHandl;handle, grab, set, pickup, set down, toss, catch
+Wood;Impact;WOODImpt;hit, drop, impact, crash, clunk, clang, clink, chop
+Wood;Misc;WOODMisc;miscellaneous
+Wood;Movement;WOODMvmt;drag, roll, rattle, shake
+Wood;Tonal;WOODTonl;bowed, ring, wronk, shing, warp

@@ -2,16 +2,26 @@ dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')(
 
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
-ucs_file = script_path .. "UCS.csv"
+--ucs_file = script_path .. "../data/UCS.csv"
 
-ctx = reaper.ImGui_CreateContext("tdspk UCS Tool")
+ctx = reaper.ImGui_CreateContext("tdspk UCS Tookit")
 local font = reaper.ImGui_CreateFont("sans-serif", 15)
 reaper.ImGui_Attach(ctx, font)
 
 local font_info = reaper.ImGui_CreateFont("sans-serif", 12)
 reaper.ImGui_Attach(ctx, font_info)
 
+target = 0 -- 0 Tracks, 1 Items, 2 Regions
+
+windows = {}
+
+colors = {
+  red = reaper.ImGui_ColorConvertDouble4ToU32(1, 0, 0, 1),
+  blue = reaper.ImGui_ColorConvertDouble4ToU32(0, 0.91, 1, 1)
+}
+
 local categories = {}
+local synonyms = {}
 
 local idx_cat = {}
 local cat_idx = {}
@@ -39,10 +49,11 @@ reaper.ImGui_Attach(ctx, filter_sub)
 
 local i = 1
 local prev_cat = ""
+selected_cat = 1
 
 -- read UCS values from CSV to categories table
 for line in io.lines(ucs_file) do
-  cat, subcat, id = string.match(line, "(.*),(.*),(.*)")
+  local cat, subcat, id, syn = string.match(line, "(.*);(.*);(.*);(.*)")
   if cat ~= prev_cat then
     cat_items = cat_items .. cat .. "\0"
     idx_cat[i] = cat
@@ -56,6 +67,18 @@ for line in io.lines(ucs_file) do
   end
   
   categories[cat][subcat] = id
+  table.insert(synonyms, id .. ";" .. syn)
+end
+
+function string.split(input, sep)
+  if sep == nil then
+   sep = "%s"
+  end
+  local t={}
+  for str in string.gmatch(input, "([^"..sep.."]+)") do
+    table.insert(t, str)
+  end
+  return t
 end
 
 local function ParseFilename(filename) 
@@ -136,9 +159,6 @@ end
 function GetMediaExplorerFiles(hWnd)
   local files = {}
   
-  reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
-  reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
-  
   local file_LV = reaper.JS_Window_FindChildByID(hWnd, 0x3E9) 
   local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(file_LV)
   if sel_count == 0 then return end
@@ -218,30 +238,40 @@ function Licensing()
   end
 end
 
-local function RenderWindow()
-  reaper.ImGui_PushFont(ctx, font)
-  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, 10)
-  
-  --Licensing()
-  
-  -- Check if MX is open
+local function IsWindowOpen(name)
   local title = reaper.JS_Localize("Media Explorer", "common")
   local hWnd = reaper.JS_Window_Find(title, true)
   
   if hWnd then
-    mx_open = true
+    return true, hWnd
   else
-    mx_open = false
+    return false
   end
-  
+end
+
+local function OperationMode() 
   if mx_open then
-    reaper.ImGui_Text(ctx, "Operating on Media Explorer files")
+    reaper.ImGui_Text(ctx, "Operating on ")
+    reaper.ImGui_SameLine(ctx)
+    reaper.ImGui_TextColored(ctx, colors.red, "Media Explorer Files")
   else
-    reaper.ImGui_Text(ctx, "Operating on Tracks and Items")
+    reaper.ImGui_Text(ctx, "Operating in ")
+    reaper.ImGui_SameLine(ctx)
+    reaper.ImGui_TextColored(ctx, colors.blue, "Arrange View")
+    
+    --[[
+    reaper.ImGui_Text(ctx, "Renaming: ")
+    reaper.ImGui_SameLine(ctx)
+    rv, target = reaper.ImGui_RadioButtonEx(ctx, "Tracks", target, 0)
+    reaper.ImGui_SameLine(ctx)
+    rv, target = reaper.ImGui_RadioButtonEx(ctx, "Media Items", target, 1)
+    reaper.ImGui_SameLine(ctx)
+    rv, target = reaper.ImGui_RadioButtonEx(ctx, "Regions", target, 2)
+    ]]--
   end
-  
-  reaper.ImGui_SeparatorText(ctx, "Mandatory Fields")
-  
+end
+
+local function CategoryFields()
   if reaper.ImGui_BeginCombo(ctx, "Category", idx_cat[cur_cat]) then
     reaper.ImGui_TextFilter_Draw(filter_cat, ctx, "Filter")
     
@@ -284,6 +314,199 @@ local function RenderWindow()
     sub_name = idx_sub[cur_sub]
     cat_id = categories[cat_name][sub_name]
   end
+end
+
+local function CategorySearch()
+  rv, search = reaper.ImGui_InputText(ctx, "Search category...", search)
+  if rv then
+    selected_cat = 1
+  end
+  if rv and not is_list_open then
+    is_list_open = true
+  elseif search == "" then
+    is_list_open = false
+  end
+  
+  if is_list_open then
+    local syn_filter = reaper.ImGui_CreateTextFilter(search)
+    
+    -- Filter Synonys manually
+    local syns = {}
+    for i=1, #synonyms do
+      local entry = synonyms[i]
+      if reaper.ImGui_TextFilter_PassFilter(syn_filter, entry) then
+        table.insert(syns, entry)
+      end
+    end
+    
+    select_next = -1
+    
+    if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_DownArrow(), false) then
+      selected_cat = selected_cat + 1
+    elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_UpArrow(), false) then
+      selected_cat = selected_cat - 1
+    elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter(), false) then
+      select_next = selected_cat
+    end
+    
+    if reaper.ImGui_BeginListBox(ctx, "Autosearch Categories") then 
+      for i=1, #syns do
+        local entry = syns[i]
+        local id, syn = string.match(entry, "(.*);(.*)")
+        
+        selectable = reaper.ImGui_Selectable(ctx, id .. "\n" .. syn, selected_cat == i);reaper.ImGui_Separator(ctx)
+        if selectable or select_next == i then
+          cat_id = id
+          search = ""
+          is_list_open = false
+          selected_cat = 1
+        end
+      end
+    
+      reaper.ImGui_EndListBox(ctx)
+    end
+    
+    -- update categories if Category ID changed manually
+    local rv, cname, sname = ReverseLookup(cat_id)
+    
+    if rv then
+      cat_name = cname
+      sub_name = sname
+      sub_items = PopulateSubCategories(cat_name)
+      cur_cat = cat_idx[cat_name]
+      cur_sub = sub_idx[sub_name]
+    end
+  end
+end
+
+local function Rename()
+  if mx_open then
+    autoplay = reaper.GetToggleCommandStateEx(32063, 1011) --Autoplay: Toggle on/off
+    if autoplay == 1 then
+      reaper.ImGui_TextColored(ctx, colors.red, "Autoplay is enabled! Please ")
+      reaper.ImGui_SameLine(ctx)
+      if reaper.ImGui_SmallButton(ctx, "DISABLE") then
+        reaper.JS_Window_OnCommand(hWnd, 40036)
+      end
+      reaper.ImGui_SameLine(ctx)
+      reaper.ImGui_TextColored(ctx, colors.red, " it to avoid weird behaviour.")
+    end
+    
+    if files then
+      if reaper.ImGui_Button(ctx, "Rename " .. #files .. " File(s)", 0, 40) then
+        local dir = files[0]
+        
+        reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
+        reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
+        
+        for i, v in ipairs(files) do
+          local old_file = dir .. "/" .. v
+          local _, _, ext = string.match(v, "(.-)([^\\/]-%.?([^%.\\/]*))$")
+          
+          local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+          local new_file = dir .. "/" .. filename .. "." .. ext
+          rv, osbuf = os.rename(old_file, new_file)
+        end
+      end
+    end
+  else
+    track_count = reaper.CountSelectedTracks(0)
+    
+    if reaper.ImGui_Button(ctx, "Rename " .. track_count ..  " Track(s)", 0, 40) and track then
+      for i = 0, track_count - 1 do
+        track = reaper.GetSelectedTrack(0, i)
+        local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+        reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
+      end
+    end
+    
+    reaper.ImGui_SameLine(ctx, 0, 10)
+    
+    item_count = reaper.CountSelectedMediaItems(0)
+    if reaper.ImGui_Button(ctx, "Rename " .. item_count ..  " Item(s)", 0, 40) then
+      for i = 0, item_count - 1 do
+        item = reaper.GetSelectedMediaItem(0, i)
+        take = reaper.GetActiveTake(item)
+        local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+        reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
+      end
+    end
+    
+    reaper.ImGui_SameLine(ctx, 0, 10)
+    
+    -- find out if region/marker manager is open
+    local title = reaper.JS_Localize("Region/Marker Manager", "common")
+    local hWnd = reaper.JS_Window_Find(title, true)
+    
+    if hWnd then
+      local manager = reaper.JS_Window_FindChildByID(hWnd, 0x42F)
+      sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
+      
+      sel_regions = string.split(sel_indexes, ",")
+      
+      if reaper.ImGui_Button(ctx, "Rename " .. #sel_regions .. " Region(s)", 0, 40) then
+        -- get region IDs from selection, cache in table
+        regions = {}
+        for i, v in ipairs(sel_regions) do
+          local r_id = reaper.JS_ListView_GetItemText(manager, tonumber(v), 1)
+          r_id = string.gsub(r_id, "R", "")
+          table.insert(regions, tonumber(r_id))
+        end
+      
+        local rv, _, region_count = reaper.CountProjectMarkers(0)
+        
+        for i, v in ipairs(regions) do
+          for i=0, region_count - 1 do
+            local rv, isrgn, pos, rgn_end, _, idx = reaper.EnumProjectMarkers(i)
+            if idx == v then
+              local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+              reaper.SetProjectMarker2(0, idx, true, pos, rgn_end, filename)
+              break;
+            end
+          end
+        end
+      end
+    else
+      -- rename regions in time selection
+      local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
+      local rv, _, region_count = reaper.CountProjectMarkers(0)
+      
+      local regions = {}
+      
+      for i=0, region_count - 1 do
+        local rv, isrgn, pos, rgn_end, _, idx = reaper.EnumProjectMarkers(i)
+        if isrgn then
+          if pos >= loop_start and rgn_end <= loop_end then
+            local rgn = { [1] = idx, [2] = pos, [3] = rgn_end }
+            table.insert(regions, rgn)
+          end
+        end
+      end
+      
+      if reaper.ImGui_Button(ctx, "Rename " .. #regions .. " Region(s)", 0, 40) then
+        for i, v in ipairs(regions) do
+          local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+          reaper.SetProjectMarker2(0, v[1], true, v[2], v[3], filename)
+        end
+      end
+    end
+    
+  end
+end
+
+local function RenderWindow()
+  reaper.ImGui_PushFont(ctx, font)
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, 10)
+  
+  --Licensing()
+  mx_open, hWnd = IsWindowOpen("Media Explorer")
+  OperationMode()
+  
+  reaper.ImGui_SeparatorText(ctx, "Mandatory Fields")
+  
+  CategoryFields()
+  
+  CategorySearch()
   
   reaper.ImGui_Separator(ctx)
   
@@ -377,44 +600,7 @@ local function RenderWindow()
   
   reaper.ImGui_LabelText(ctx, "Filename", ucs_filename)
   
-  if mx_open then
-    if files then
-      if reaper.ImGui_Button(ctx, "Rename " .. #files .. " File(s)", 0, 40) then
-        local dir = files[0]
-        for i, v in ipairs(files) do
-          local old_file = dir .. "/" .. v
-          local _, _, ext = string.match(v, "(.-)([^\\/]-%.?([^%.\\/]*))$")
-          
-          local filename = string.gsub(ucs_filename, "$idx", tostring(i))
-          local new_file = dir .. "/" .. filename .. "." .. ext
-          rv, osbuf = os.rename(old_file, new_file)
-        end
-      end
-    end
-  else
-    track_count = reaper.CountSelectedTracks(0)
-    if reaper.ImGui_Button(ctx, "Rename " .. track_count ..  " Track(s)", 0, 40) and track then
-      for i = 0, track_count - 1 do
-        track = reaper.GetSelectedTrack(0, i)
-        local filename = string.gsub(ucs_filename, "$idx", tostring(i))
-        reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
-      end
-    end
-    
-    reaper.ImGui_SameLine(ctx, 0, 10)
-    
-    item_count = reaper.CountSelectedMediaItems(0)
-    if reaper.ImGui_Button(ctx, "Rename " .. item_count ..  " Item(s)", 0, 40) then
-      for i = 0, item_count - 1 do
-        item = reaper.GetSelectedMediaItem(0, i)
-        take = reaper.GetActiveTake(item)
-        local filename = string.gsub(ucs_filename, "$idx", tostring(i))
-        reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
-      end
-    end
-  end
-  
-  reaper.ImGui_SameLine(ctx, 0, 10)
+  Rename()
   
   if reaper.ImGui_Button(ctx, "Clear all data", 0, 40) and track then
     fx_name, creator_id, source_id, user_cat, vendor_cat, user_data = ""
@@ -429,8 +615,7 @@ local function RenderWindow()
 end
 
 local function Loop()
-  
-  local visible, open = reaper.ImGui_Begin(ctx, 'tdspk UCS Tool', true)
+  local visible, open = reaper.ImGui_Begin(ctx, 'tdspk - UCS Toolkit', true)
   if visible then
     RenderWindow()
     reaper.ImGui_End(ctx)
@@ -440,6 +625,6 @@ local function Loop()
   end
 end
 
-reaper.ImGui_SetNextWindowSize(ctx, 500, 600)
+reaper.ImGui_SetNextWindowSize(ctx, 500, 800)
 
 Loop()
