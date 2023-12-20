@@ -150,6 +150,14 @@ function string.split(input, sep)
   return t
 end
 
+function table.contains(table, value)
+  for i, v in ipairs(table) do
+    if v == value then return true end
+  end
+  
+  return false
+end
+
 local function ParseFilename(filename) 
   local cat_id, fx_name, creator_id, source_id = string.match(filename, "(.*)_(.*)_(.*)_(.*)")
   return cat_id, fx_name, creator_id, source_id
@@ -642,7 +650,43 @@ local function CountTargets()
     
     if hWnd then -- if Region/Marker Manager is open, count there
       local manager = reaper.JS_Window_FindChildByID(hWnd, 0x42F)
-      sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
+      local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
+      
+      if sel_count > 0 then
+        local selection = string.split(sel_indexes, ",")
+        
+        local marker_ids = {}
+        local region_ids = {}
+        
+        for i, v in ipairs(selection) do
+          local id = reaper.JS_ListView_GetItemText(manager, tonumber(v), 1)
+          if string.find(id, "R") then
+            id = string.gsub(id, "R", "")
+            table.insert(region_ids, tonumber(id))
+          else
+            id = string.gsub(id, "M", "")
+            table.insert(marker_ids, tonumber(id))
+          end
+        end
+        
+        local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
+        
+        for i=0, marker_count + region_count do
+          local rv, isrgn, pos, rgn_end, name, idx = reaper.EnumProjectMarkers(i)
+          if isrgn then
+            if table.contains(region_ids, idx) then
+              local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
+              table.insert(data.selected_regions, rgn)
+            end
+          else
+            if table.contains(marker_ids, idx) then
+              local mrk = { [1] = idx, [2] = pos, [3] = name }
+              table.insert(data.selected_markers, mrk)
+            end
+          end
+        end
+      end
+      
       return sel_count
     else -- otherwise, count time selected items
       local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
@@ -667,12 +711,12 @@ local function CountTargets()
         local marker_count, region_count = reaper.CountProjectMarkers(0)
         
         for i=0, marker_count + region_count - 1 do
-          local rv, is_rgn, pos, _, name  = reaper.EnumProjectMarkers(i)
+          local rv, isrgn, pos, _, name  = reaper.EnumProjectMarkers(i)
           
           local cursor_pos = reaper.GetCursorPosition()
           
           if cursor_pos == pos then
-            if is_rgn then
+            if isrgn then
               local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
               table.insert(data.selected_regions, rgn)
               return 1, 0, 1 -- return 1 counted, 0 markers, 1 region
