@@ -41,11 +41,70 @@ data = {
   delimiter = "_",
   target = 0,
   target_self = "",
+  selected_markers = {},
+  selected_regions = {}
 }
 
 wildcards = {
   ["$project"] = reaper.GetProjectName(0),
-  ["$author"] = select(2, reaper.GetSetProjectInfo_String(0, "PROJECT_AUTHOR", "", false))
+  ["$author"] = select(2, reaper.GetSetProjectInfo_String(0, "PROJECT_AUTHOR", "", false)),
+  ["$track"] = (
+  function()
+    local track = reaper.GetSelectedTrack(0, 0)
+
+    if track then
+      local rv, tname = reaper.GetTrackName(track)
+      return tname
+    end
+    
+    return ""
+  end),
+  ["$item"] = (
+  function()
+    local item = reaper.GetSelectedMediaItem(0, 0)
+    
+    if item then
+      local take = reaper.GetActiveTake(item)
+      if take then return reaper.GetTakeName(take) end
+    end
+    
+    return ""
+  end),
+  ["$marker"] = (
+  function()
+    local marker_count = reaper.CountProjectMarkers(0)
+    
+    for i=0, marker_count - 1 do
+      local rv, is_rgn, pos, _, name  = reaper.EnumProjectMarkers(i)
+      
+      local cursor_pos = reaper.GetCursorPosition()
+      
+      if cursor_pos == pos and not is_rgn then
+        return name
+      end
+    end
+    
+    return ""
+  
+  end),
+  ["$region"] = (
+  function()
+    local marker_count = reaper.CountProjectMarkers(0)
+    
+    for i=0, marker_count - 1 do
+      local rv, is_rgn, pos, rgnend, name  = reaper.EnumProjectMarkers(i)
+      
+      local cursor_pos = reaper.GetCursorPosition()
+      
+      if is_rgn then
+        if cursor_pos >= pos and cursor_pos <= rgnend then
+          return name
+        end
+      end
+    end
+    
+    return ""
+  end)
 }
 
 filter_cat = reaper.ImGui_CreateTextFilter()
@@ -77,7 +136,7 @@ for line in io.lines(ucs_file) do
 end
 
 function Init()
-  if reaper.HasExtState(ext_section, "target") then data.target = reaper.GetExtState(ext_section, "target") end
+  if reaper.HasExtState(ext_section, "target") then data.target = tonumber(reaper.GetExtState(ext_section, "target")) end
 end
 
 function string.split(input, sep)
@@ -147,7 +206,7 @@ local function PopulateSubCategories(cat_name)
 end
 
 local function CreateUCSFilename(d, cat_id, ...)
-  fname = cat_id
+  local fname = cat_id
   arg = {...}
   
   for i, v in ipairs(arg) do
@@ -160,10 +219,6 @@ local function CreateUCSFilename(d, cat_id, ...)
 
       fname = fname .. d .. v
     end
-  end
-  
-  if data.target_self ~= "" then
-    fname = string.gsub(fname, "$self", data.target_self)
   end
   
   return fname
@@ -416,9 +471,18 @@ local function Apply()
   return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl()) and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter(), false)
 end
 
-local function RenameTracks()
-  track_count = reaper.CountSelectedTracks(0)
+local function SubstituteIdx(index)
+ -- check if $idx exists
+  local idx = string.find(ucs_filename, "$idx")
   
+  if idx then
+    return string.gsub(ucs_filename, "$idx", tostring(index))
+  end
+  
+  return ucs_filename .. " " .. tostring(index)
+end
+
+local function RenameTracks(track_count) 
   if track_count == 1 then
     local track = reaper.GetSelectedTrack(0, 0)
     local rv, track_name = reaper.GetTrackName(track)
@@ -430,17 +494,14 @@ local function RenameTracks()
   if reaper.ImGui_Button(ctx, "Rename " .. track_count ..  " Track(s)", 0, 40) or Apply() then
     for i = 0, track_count - 1 do
       local track = reaper.GetSelectedTrack(0, i)
-      local rv, track_name = reaper.GetTrackName(track)
-      local filename = string.gsub(ucs_filename, "$idx", tostring(i))
-      filename = string.gsub(filename, "$self", track_name)
+      local filename = SubstituteIdx(i + 1)
+      
       reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
     end
   end
 end
 
-local function RenameMediaItems()
-  item_count = reaper.CountSelectedMediaItems(0)
-  
+local function RenameMediaItems(item_count)
   if item_count == 1 then
     local item = reaper.GetSelectedMediaItem(0, 0)
     local take = reaper.GetActiveTake(item)
@@ -455,40 +516,33 @@ local function RenameMediaItems()
       local item = reaper.GetSelectedMediaItem(0, i)
       local take = reaper.GetActiveTake(item)
       local take_name = reaper.GetTakeName(take)
-      local filename = string.gsub(ucs_filename, "$idx", tostring(i))
-      filename = string.gsub(filename, "$self", take_name)
+      local filename = SubstituteIdx(i + 1)
+      
       reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
     end
   end
 end
 
-local function RenameMarkers()
-  -- Render Buttons for Marker/Region Manager and Navigation <>, Arrows
-  if reaper.ImGui_ArrowButton(ctx, "Previous Marker", reaper.ImGui_Dir_Left()) 
-    or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false) then
-    reaper.Main_OnCommand(40172, 0) -- Markers: Go to previous marker/project start
-  end
-  
-  reaper.ImGui_SameLine(ctx, 0, 10)
-  
-  if reaper.ImGui_ArrowButton(ctx, "Next Marker", reaper.ImGui_Dir_Right())
-    or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false) then
-    reaper.Main_OnCommand(40173, 0) -- Markers: Go to next marker/project end
-  end
-
+local function RenameMarkers(marker_count)
   -- find out if region/marker manager is open
   local title = reaper.JS_Localize("Region/Marker Manager", "common")
   local hWnd = reaper.JS_Window_Find(title, true)
   
-  if hWnd then
+  if hWnd then 
     local manager = reaper.JS_Window_FindChildByID(hWnd, 0x42F)
     sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
     
     sel_regions = string.split(sel_indexes, ",")
+  
+    if reaper.ImGui_Button(ctx, "Rename " .. #sel_regions .. " Regions(s)", 0, 40) then
+      local manager = reaper.JS_Window_FindChildByID(hWnd, 0x42F)
+      sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
+      
+      sel_regions = string.split(sel_indexes, ",")
     
-    if reaper.ImGui_Button(ctx, "Rename " .. #sel_regions .. " Region(s)", 0, 40) then
       -- get region IDs from selection, cache in table
       regions = {}
+      
       for i, v in ipairs(sel_regions) do
         local r_id = reaper.JS_ListView_GetItemText(manager, tonumber(v), 1)
         r_id = string.gsub(r_id, "R", "")
@@ -536,40 +590,104 @@ local function RenameMarkers()
         end
       end
     end
+  end 
+end
+
+local function RenameRegions(region_count)
+  
+end
+
+local function RenameFiles()
+  autoplay = reaper.GetToggleCommandStateEx(32063, 1011) --Autoplay: Toggle on/off
+  if autoplay == 1 then
+    reaper.ImGui_TextColored(ctx, color.red, "Autoplay is enabled! Please ")
+    reaper.ImGui_SameLine(ctx)
+    if reaper.ImGui_SmallButton(ctx, "DISABLE") then
+      reaper.JS_Window_OnCommand(hWnd, 40036)
+    end
+    reaper.ImGui_SameLine(ctx)
+    reaper.ImGui_TextColored(ctx, color.red, " it to avoid weird behaviour.")
+  end
+  
+  if files then
+    if reaper.ImGui_Button(ctx, "Rename " .. #files .. " File(s)", 0, 40) then
+      local dir = files[0]
+      
+      reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
+      reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
+      
+      for i, v in ipairs(files) do
+        local old_file = dir .. "/" .. v
+        local _, _, ext = string.match(v, "(.-)([^\\/]-%.?([^%.\\/]*))$")
+        
+        local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+        local new_file = dir .. "/" .. filename .. "." .. ext
+        rv, osbuf = os.rename(old_file, new_file)
+      end
+    end
   end
 end
 
-local function Rename()
-  if mx_open then
-    autoplay = reaper.GetToggleCommandStateEx(32063, 1011) --Autoplay: Toggle on/off
-    if autoplay == 1 then
-      reaper.ImGui_TextColored(ctx, color.red, "Autoplay is enabled! Please ")
-      reaper.ImGui_SameLine(ctx)
-      if reaper.ImGui_SmallButton(ctx, "DISABLE") then
-        reaper.JS_Window_OnCommand(hWnd, 40036)
-      end
-      reaper.ImGui_SameLine(ctx)
-      reaper.ImGui_TextColored(ctx, color.red, " it to avoid weird behaviour.")
-    end
+local function CountTargets()
+  if data.target == 0 then
+    return reaper.CountSelectedTracks(0)
+  elseif data.target == 1 then
+    return reaper.CountSelectedMediaItems(0)
+  elseif data.target == 2 then
+    data.selected_markers = {}
+    data.selected_regions = {}
+  
+    local title = reaper.JS_Localize("Region/Marker Manager", "common")
+    local hWnd = reaper.JS_Window_Find(title, true)
     
-    if files then
-      if reaper.ImGui_Button(ctx, "Rename " .. #files .. " File(s)", 0, 40) then
-        local dir = files[0]
+    if hWnd then -- if Region/Marker Manager is open, count there
+      local manager = reaper.JS_Window_FindChildByID(hWnd, 0x42F)
+      sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
+      return sel_count
+    else -- otherwise, count time selected items
+      local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
+      if loop_start < loop_end then
+        local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
         
-        reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
-        reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
+        for i=0, marker_count + region_count - 1 do
+          local rv, isrgn, pos, rgn_end, name, idx = reaper.EnumProjectMarkers(i)
+          if pos >= loop_start and rgn_end <= loop_end then
+            if isrgn then
+              local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
+              table.insert(data.selected_regions, rgn)
+            else
+              local mrk = { [1] = idx, [2] = pos, [3] = name }
+              table.insert(data.selected_markers, mrk)
+            end
+          end
+        end
         
-        for i, v in ipairs(files) do
-          local old_file = dir .. "/" .. v
-          local _, _, ext = string.match(v, "(.-)([^\\/]-%.?([^%.\\/]*))$")
+        return #data.selected_markers + #data.selected_regions
+      else
+        local marker_count, region_count = reaper.CountProjectMarkers(0)
+        
+        for i=0, marker_count + region_count - 1 do
+          local rv, is_rgn, pos, _, name  = reaper.EnumProjectMarkers(i)
           
-          local filename = string.gsub(ucs_filename, "$idx", tostring(i))
-          local new_file = dir .. "/" .. filename .. "." .. ext
-          rv, osbuf = os.rename(old_file, new_file)
+          local cursor_pos = reaper.GetCursorPosition()
+          
+          if cursor_pos == pos then
+            if is_rgn then
+              local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
+              table.insert(data.selected_regions, rgn)
+              return 1, 0, 1 -- return 1 counted, 0 markers, 1 region
+            else
+              local mrk = { [1] = idx, [2] = pos, [3] = name }
+              table.insert(data.selected_markers, mrk)
+              return 1, 1, 0 -- return 1 counter, 1 marker, 0 regions
+            end
+          end
         end
       end
     end
   end
+  
+  return 0
 end
 
 local function RenderWindow()
@@ -669,6 +787,10 @@ local function RenderWindow()
   
   reaper.ImGui_SeparatorText(ctx, "Results")
   
+  -- pre-calculate file names
+  -- check selected tracks, items, regions for wildcard
+  -- pre cache new filename(s)
+  
   if mx_open then
     files = GetMediaExplorerFiles(hWnd)
     if files then
@@ -678,21 +800,65 @@ local function RenderWindow()
   
   ucs_filename = CreateUCSFilename(data.delimiter, cat_id, user_cat, vendor_cat, fx_name, creator_id, source_id, user_data)
   
-  reaper.ImGui_LabelText(ctx, "Filename(s)", ucs_filename)
+  local rename_count, marker_count, region_count = CountTargets()
+  
+  if rename_count <= 1 then
+    local filename = string.gsub(ucs_filename, "$idx", 1)
+    reaper.ImGui_LabelText(ctx, "Filename", filename)
+  else
+    local filenames = ""
+    local format = ucs_filename .. " $idx" .. "\0"
+    
+    -- check if $idx exists
+    local idx = string.find(ucs_filename, "$idx")
+    
+    if idx then
+      format = ucs_filename .. "\0"
+    end
+    
+    for i=1, rename_count do
+      local fname = string.gsub(format, "$idx", tostring(i))
+      filenames = filenames .. fname
+    end
+    
+    reaper.ImGui_Combo(ctx, "Filenames", 0, filenames)
+  end
   
   reaper.ImGui_Separator(ctx)
   
   mx_open, hWnd = IsWindowOpen("Media Explorer")
   OperationMode()
   
-  if data.target == 0 then
-    RenameTracks()
-  elseif data.target == 1 then
-    RenameMediaItems()
-  elseif data.target == 2 then
-    RenameMarkers()
+  if mx_open then
+    RenameFiles()
+  else
+    if data.target == 0 then
+      RenameTracks(rename_count)
+    elseif data.target == 1 then
+      RenameMediaItems(rename_count)
+    elseif data.target == 2 then
+      -- Render Buttons for Marker/Region Manager and Navigation <>, Arrows
+      if reaper.ImGui_ArrowButton(ctx, "Previous Marker", reaper.ImGui_Dir_Left()) 
+        or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false) then
+        reaper.Main_OnCommand(40172, 0) -- Markers: Go to previous marker/project start
+      end
+      
+      reaper.ImGui_SameLine(ctx, 0, 10)
+      
+      if reaper.ImGui_ArrowButton(ctx, "Next Marker", reaper.ImGui_Dir_Right())
+        or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false) then
+        reaper.Main_OnCommand(40173, 0) -- Markers: Go to next marker/project end
+      end
+      
+      reaper.ImGui_Text(ctx, tostring(#data.selected_markers))
+    
+      --RenameMarkers(marker_count)
+      reaper.ImGui_SameLine(ctx, 0, 10)
+      reaper.ImGui_Text(ctx, tostring(#data.selected_regions))
+      --RenameRegions(region_count)
+    end
   end
-  
+    
   if reaper.ImGui_Button(ctx, "Clear all data", 0, 40) and track then
     fx_name, creator_id, source_id, user_cat, vendor_cat, user_data = ""
   end
