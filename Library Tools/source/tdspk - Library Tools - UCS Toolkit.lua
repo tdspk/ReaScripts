@@ -502,7 +502,9 @@ local function RenameTracks(track_count)
   if reaper.ImGui_Button(ctx, "Rename " .. track_count ..  " Track(s)", 0, 40) or Apply() then
     for i = 0, track_count - 1 do
       local track = reaper.GetSelectedTrack(0, i)
-      local filename = SubstituteIdx(i + 1)
+      
+      local filename = ucs_filename
+      if track_count > 1 then filename = SubstituteIdx(i + 1) end
       
       reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
     end
@@ -524,7 +526,9 @@ local function RenameMediaItems(item_count)
       local item = reaper.GetSelectedMediaItem(0, i)
       local take = reaper.GetActiveTake(item)
       local take_name = reaper.GetTakeName(take)
-      local filename = SubstituteIdx(i + 1)
+      
+      local filename = ucs_filename
+      if item_count > 1 then filename = SubstituteIdx(i + 1) end
       
       reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
     end
@@ -532,77 +536,32 @@ local function RenameMediaItems(item_count)
 end
 
 local function RenameMarkers(marker_count)
-  -- find out if region/marker manager is open
-  local title = reaper.JS_Localize("Region/Marker Manager", "common")
-  local hWnd = reaper.JS_Window_Find(title, true)
-  
-  if hWnd then 
-    local manager = reaper.JS_Window_FindChildByID(hWnd, 0x42F)
-    sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
-    
-    sel_regions = string.split(sel_indexes, ",")
-  
-    if reaper.ImGui_Button(ctx, "Rename " .. #sel_regions .. " Regions(s)", 0, 40) then
-      local manager = reaper.JS_Window_FindChildByID(hWnd, 0x42F)
-      sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
+  if reaper.ImGui_Button(ctx, "Rename " .. marker_count .. " Markers(s)", 0, 40) or Apply() then
+    for i, v in ipairs(data.selected_markers) do
+      local idx = v[1]
+      local pos = v[2]
       
-      sel_regions = string.split(sel_indexes, ",")
-    
-      -- get region IDs from selection, cache in table
-      regions = {}
+      local filename = ucs_filename
+      if #data.selected_markers > 1 then filename = SubstituteIdx(i + 1) end
       
-      for i, v in ipairs(sel_regions) do
-        local r_id = reaper.JS_ListView_GetItemText(manager, tonumber(v), 1)
-        r_id = string.gsub(r_id, "R", "")
-        table.insert(regions, tonumber(r_id))
-      end
-    
-      local rv, _, region_count = reaper.CountProjectMarkers(0)
-      
-      for i, v in ipairs(regions) do
-        for i=0, region_count - 1 do
-          local rv, isrgn, pos, rgn_end, _, idx = reaper.EnumProjectMarkers(i)
-          if idx == v then
-            local filename = string.gsub(ucs_filename, "$idx", tostring(i))
-            filename = string.gsub(filename, "$self", track_name)
-            reaper.SetProjectMarker2(0, idx, true, pos, rgn_end, filename)
-            break;
-          end
-        end
-      end
+      reaper.SetProjectMarker(idx, false, pos, pos, filename)
     end
-  else
-    -- rename regions in time selection, if time selection applies
-    local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
-    if loop_start < loop_end then
-      local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
-      
-      regions = {}
-      
-      for i=0, marker_count + region_count - 1 do
-        rv, isrgn, pos, rgn_end, name, idx = reaper.EnumProjectMarkers(i)
-        if isrgn then
-          if pos >= loop_start and rgn_end <= loop_end then
-            local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
-            table.insert(regions, rgn)
-          end
-        end
-      end
-      
-      if reaper.ImGui_Button(ctx, "Rename " .. #regions .. " Region(s)", 0, 40) then
-        for i, v in ipairs(regions) do
-          local filename = string.gsub(ucs_filename, "$idx", tostring(i))
-          filename = string.gsub(filename, "$self", v[4])
-
-          reaper.SetProjectMarker2(0, v[1], true, v[2], v[3], filename)
-        end
-      end
-    end
-  end 
+  end
 end
 
 local function RenameRegions(region_count)
-  
+  if reaper.ImGui_Button(ctx, "Rename " .. region_count .. " Regions(s)", 0, 40) or Apply() then
+    for i, v in ipairs(data.selected_regions) do
+      local idx = v[1]
+      local pos = v[2]
+      local rgnend = v[3]
+      
+      local filename = ucs_filename
+      if #data.selected_regions > 1 then filename = SubstituteIdx(i + 1) end
+      
+      reaper.SetProjectMarker(idx, true, pos, rgnend, filename)
+    end
+  end
 end
 
 local function RenameFiles()
@@ -688,21 +647,23 @@ local function CountTargets()
       end
       
       return sel_count
-    else -- otherwise, count time selected items
+    else -- otherwise, count time selected items or current cursor position
       local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
       if loop_start < loop_end then
         local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
         
         for i=0, marker_count + region_count - 1 do
           local rv, isrgn, pos, rgn_end, name, idx = reaper.EnumProjectMarkers(i)
-          if pos >= loop_start and rgn_end <= loop_end then
-            if isrgn then
+          if isrgn then
+            if pos >= loop_start and rgn_end <= loop_end then
               local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
               table.insert(data.selected_regions, rgn)
-            else
+            end
+          else
+            if pos >= loop_start and pos <= loop_end then
               local mrk = { [1] = idx, [2] = pos, [3] = name }
               table.insert(data.selected_markers, mrk)
-            end
+            end 
           end
         end
         
@@ -711,13 +672,13 @@ local function CountTargets()
         local marker_count, region_count = reaper.CountProjectMarkers(0)
         
         for i=0, marker_count + region_count - 1 do
-          local rv, isrgn, pos, _, name  = reaper.EnumProjectMarkers(i)
+          local rv, isrgn, pos, rgnend, name, idx  = reaper.EnumProjectMarkers(i)
           
           local cursor_pos = reaper.GetCursorPosition()
           
           if cursor_pos == pos then
             if isrgn then
-              local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
+              local rgn = { [1] = idx, [2] = pos, [3] = rgnend, [4] = name  }
               table.insert(data.selected_regions, rgn)
               return 1, 0, 1 -- return 1 counted, 0 markers, 1 region
             else
@@ -893,13 +854,10 @@ local function RenderWindow()
         or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false) then
         reaper.Main_OnCommand(40173, 0) -- Markers: Go to next marker/project end
       end
-      
-      reaper.ImGui_Text(ctx, tostring(#data.selected_markers))
     
-      --RenameMarkers(marker_count)
+      RenameMarkers(#data.selected_markers)
       reaper.ImGui_SameLine(ctx, 0, 10)
-      reaper.ImGui_Text(ctx, tostring(#data.selected_regions))
-      --RenameRegions(region_count)
+      RenameRegions(#data.selected_regions)
     end
   end
     
