@@ -4,20 +4,17 @@ local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 ucs_file = script_path .. "../data/UCS.csv"
 
-ctx = reaper.ImGui_CreateContext("tdspk UCS Tookit")
-local font = reaper.ImGui_CreateFont("sans-serif", 15)
-reaper.ImGui_Attach(ctx, font)
-
-local font_info = reaper.ImGui_CreateFont("sans-serif", 12)
-reaper.ImGui_Attach(ctx, font_info)
-
-windows = {}
-
 color = {
   red = reaper.ImGui_ColorConvertDouble4ToU32(1, 0, 0, 1),
   blue = reaper.ImGui_ColorConvertDouble4ToU32(0, 0.91, 1, 1),
   gray = reaper.ImGui_ColorConvertDouble4ToU32(0.75, 0.75, 0.75, 1),
 }
+
+-- variables for UCS data storage
+-- TODO refactor in meaningful table
+
+-- ucs data
+-- 
 
 local categories = {}
 local synonyms = {}
@@ -28,9 +25,9 @@ local cat_idx = {}
 local idx_sub = {}
 local sub_idx = {}
 
-cat_items = ""
-sub_items = ""
-cat_id = ""
+local cat_items = ""
+local sub_items = ""
+local cat_id = ""
 
 local cur_cat = 1
 local cur_sub = 1
@@ -45,7 +42,7 @@ data = {
   selected_regions = {}
 }
 
-wildcards = {
+local wildcards = {
   ["$project"] = reaper.GetProjectName(0),
   ["$author"] = select(2, reaper.GetSetProjectInfo_String(0, "PROJECT_AUTHOR", "", false)),
   ["$track"] = (
@@ -107,11 +104,6 @@ wildcards = {
   end)
 }
 
-filter_cat = reaper.ImGui_CreateTextFilter()
-reaper.ImGui_Attach(ctx, filter_cat)
-filter_sub = reaper.ImGui_CreateTextFilter()
-reaper.ImGui_Attach(ctx, filter_sub)
-
 local i = 1
 local prev_cat = ""
 selected_cat = 1
@@ -136,6 +128,21 @@ for line in io.lines(ucs_file) do
 end
 
 function Init()
+  ctx = reaper.ImGui_CreateContext("tdspk UCS Tookit")
+  
+  font = reaper.ImGui_CreateFont("sans-serif", 15)
+  reaper.ImGui_Attach(ctx, font)
+  
+  font_info = reaper.ImGui_CreateFont("sans-serif", 12)
+  reaper.ImGui_Attach(ctx, font_info)
+  
+  filter_cat = reaper.ImGui_CreateTextFilter()
+  reaper.ImGui_Attach(ctx, filter_cat)
+  filter_sub = reaper.ImGui_CreateTextFilter()
+  reaper.ImGui_Attach(ctx, filter_sub)
+  
+  reaper.ImGui_SetNextWindowSize(ctx, 500, 800)
+  
   if reaper.HasExtState(ext_section, "target") then data.target = tonumber(reaper.GetExtState(ext_section, "target")) end
 end
 
@@ -402,6 +409,21 @@ local function CategoryFields()
   if cat_changed or sub_changed or cat_id == "" then
     sub_name = idx_sub[cur_sub]
     cat_id = categories[cat_name][sub_name]
+  end
+  
+  id_changed, cat_id = reaper.ImGui_InputText(ctx, "CatID", cat_id)
+  
+  if id_changed and cat_id ~= "" then
+    -- update categories if Category ID changed manually
+    local rv, cname, sname = ReverseLookup(cat_id)
+    
+    if rv then
+      cat_name = cname
+      sub_name = sname
+      sub_items = PopulateSubCategories(cat_name)
+      cur_cat = cat_idx[cat_name]
+      cur_sub = sub_idx[sub_name]
+    end
   end
 end
 
@@ -711,21 +733,6 @@ local function RenderWindow()
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), 
   reaper.ImGui_ColorConvertDouble4ToU32(0.2, 0.2, 0.2, 1))
   
-  id_changed, cat_id = reaper.ImGui_InputText(ctx, "CatID", cat_id)
-  
-  if id_changed and cat_id ~= "" then
-    -- update categories if Category ID changed manually
-    local rv, cname, sname = ReverseLookup(cat_id)
-    
-    if rv then
-      cat_name = cname
-      sub_name = sname
-      sub_items = PopulateSubCategories(cat_name)
-      cur_cat = cat_idx[cat_name]
-      cur_sub = sub_idx[sub_name]
-    end
-  end
-  
   rv, fx_name = reaper.ImGui_InputText(ctx, "FXName", fx_name)
   Tooltip(ctx, "Brief Description or Title (under 25 characters preferably)")
   
@@ -883,8 +890,6 @@ local function Loop()
     reaper.defer(Loop)
   end
 end
-
-reaper.ImGui_SetNextWindowSize(ctx, 500, 800)
 
 Init()
 Loop()
