@@ -21,7 +21,7 @@ local ucs = {
   synonyms = {}
 }
 
-combo = {
+local combo = {
   idx_cat = {},
   cat_idx = {},
   idx_sub = {},
@@ -30,11 +30,12 @@ combo = {
   sub_items = ""
 }
 
-form = {
+local form = {
   search = "",
+  search_cat = 1,
   cat_id = "",
-  cur_cat = 1,
-  cur_sub = 1,
+  cur_cat = 0,
+  cur_sub = 0,
   cat_name = "",
   sub_name = "",
   fx_name = "",
@@ -117,11 +118,10 @@ local wildcards = {
   end)
 }
 
-local prev_cat = ""
-selected_cat = 1
 
 local function ReadUcsData()
-  local i = 1
+  local prev_cat = ""
+  local i = 0
   
   -- read UCS values from CSV to categories table
   for line in io.lines(ucs_file) do
@@ -220,7 +220,7 @@ local function PopulateSubCategories(cat_name)
   combo.sub_idx = {}
   combo.idx_sub = {}
   
-  local i = 1
+  local i = 0
   
   for k, v in pairs(sorted_keys) do
     result = result .. v .. "\0"
@@ -380,6 +380,10 @@ local function OperationMode()
 end
 
 local function CategoryFields()
+  local cat_changed, sub_changed, id_changed
+  cat_changed, form.cur_cat = reaper.ImGui_Combo(ctx, "Category", form.cur_cat, combo.cat_items)
+  
+  --[[
   if reaper.ImGui_BeginCombo(ctx, "Category", combo.idx_cat[form.cur_cat]) then
     reaper.ImGui_TextFilter_Draw(filter_cat, ctx, "Filter")
     
@@ -394,14 +398,17 @@ local function CategoryFields()
     
     reaper.ImGui_EndCombo(ctx)
   end
+  ]]--
 
   if cat_changed or combo.sub_items == "" then
     -- populate subcategories based on selected category
     form.cat_name = combo.idx_cat[form.cur_cat]
     combo.sub_items = PopulateSubCategories(form.cat_name)
-    --form.cur_sub = 1
   end
   
+  sub_changed, form.cur_sub = reaper.ImGui_Combo(ctx, "Subcategory", form.cur_sub, combo.sub_items)
+  
+  --[[
   if reaper.ImGui_BeginCombo(ctx, "Subcategory", combo.idx_sub[form.cur_sub]) then
     --reaper.ImGui_SetKeyboardFocusHere(ctx)
     reaper.ImGui_TextFilter_Draw(filter_sub, ctx, "Filter")
@@ -417,17 +424,35 @@ local function CategoryFields()
     
     reaper.ImGui_EndCombo(ctx)
   end
+  ]]--
   
   if cat_changed or sub_changed or form.cat_id == "" then
     form.sub_name = combo.idx_sub[form.cur_sub]
     form.cat_id = ucs.categories[form.cat_name][form.sub_name]
   end
+  
+  id_changed, form.cat_id = reaper.ImGui_InputText(ctx, "CatID", form.cat_id)
+  
+  if id_changed and form.cat_id ~= "" then
+    -- update categories if Category ID changed manually
+    local rv, cname, sname = ReverseLookup(form.cat_id)
+    
+    if rv then
+      form.cat_name = cname
+      form.sub_name = sname
+      combo.sub_items = PopulateSubCategories(form.cat_name)
+      form.cur_cat = combo.cat_idx[form.cat_name]
+      form.cur_sub = combo.sub_idx[form.sub_name]
+    end
+  end
 end
 
 local function CategorySearch()
+  local rv
   rv, form.search = reaper.ImGui_InputText(ctx, "Search category...", form.search)
+  
   if rv then
-    selected_cat = 1
+    form.search_cat = 1
   end
   if rv and not is_list_open then
     is_list_open = true
@@ -450,13 +475,13 @@ local function CategorySearch()
     select_next = -1
     
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_DownArrow(), false) then
-      selected_cat = selected_cat + 1
-      if selected_cat > #syns then selected_cat = 1 end
+      form.search_cat = form.search_cat + 1
+      if form.search_cat > #syns then form.search_cat = 1 end
     elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_UpArrow(), false) then
-      selected_cat = selected_cat - 1
-      if selected_cat < 1 then selected_cat = #syns end
+      form.search_cat = form.search_cat - 1
+      if form.search_cat < 1 then form.search_cat = #syns end
     elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter(), false) then
-      select_next = selected_cat
+      select_next = form.search_cat
     end
     
     if reaper.ImGui_BeginListBox(ctx, "Autosearch Categories") then 
@@ -464,9 +489,9 @@ local function CategorySearch()
         local entry = syns[i]
         local id, syn = string.match(entry, "(.*);(.*)")
         
-        selectable = reaper.ImGui_Selectable(ctx, id .. "\n" .. syn, selected_cat == i);reaper.ImGui_Separator(ctx)
+        local selectable = reaper.ImGui_Selectable(ctx, id .. "\n" .. syn, form.search_cat == i);reaper.ImGui_Separator(ctx)
         a_max = reaper.ImGui_GetScrollMaxY(ctx)
-        if selected_cat == i then
+        if form.search_cat == i then
           reaper.ImGui_SetScrollHereY(ctx, 1)
         end
         
@@ -474,7 +499,7 @@ local function CategorySearch()
           form.cat_id = id
           form.search = ""
           is_list_open = false
-          selected_cat = 1
+          form.search_cat = 1
         end
       end
     
@@ -499,7 +524,7 @@ local function Apply()
 end
 
 local function SubstituteIdx(index)
- -- check if $idx exists
+  -- check if $idx exists
   local idx = string.find(ucs_filename, "$idx")
   
   if idx then
@@ -509,21 +534,25 @@ local function SubstituteIdx(index)
   return ucs_filename .. " " .. tostring(index)
 end
 
-local function RenameTracks(track_count) 
-  if track_count == 1 then
-    local track = reaper.GetSelectedTrack(0, 0)
-    local rv, track_name = reaper.GetTrackName(track)
-    data.target_self = track_name
-  else
-    data.target_self = ""
+local function SubstituteSelf(name)
+  local self = string.find(ucs_filename, "$self")
+  
+  if self then
+    return string.gsub(ucs_filename, "$self", name)
   end
   
+  return ucs_filename
+end
+
+local function RenameTracks(track_count) 
   if reaper.ImGui_Button(ctx, "Rename " .. track_count ..  " Track(s)", 0, 40) or Apply() then
     for i = 0, track_count - 1 do
       local track = reaper.GetSelectedTrack(0, i)
+      local rv, track_name = reaper.GetTrackName(track)
       
       local filename = ucs_filename
       if track_count > 1 then filename = SubstituteIdx(i + 1) end
+      filename = SubstituteSelf(track_name)
       
       reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
     end
@@ -531,15 +560,6 @@ local function RenameTracks(track_count)
 end
 
 local function RenameMediaItems(item_count)
-  if item_count == 1 then
-    local item = reaper.GetSelectedMediaItem(0, 0)
-    local take = reaper.GetActiveTake(item)
-    local take_name = reaper.GetTakeName(take)
-    data.target_self = take_name
-  else
-    data.target_self = ""
-  end
-  
   if reaper.ImGui_Button(ctx, "Rename " .. item_count ..  " Item(s)", 0, 40) or Apply() then
     for i = 0, item_count - 1 do
       local item = reaper.GetSelectedMediaItem(0, i)
@@ -548,6 +568,7 @@ local function RenameMediaItems(item_count)
       
       local filename = ucs_filename
       if item_count > 1 then filename = SubstituteIdx(i + 1) end
+      filename = SubstituteSelf(take_name)
       
       reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
     end
@@ -714,7 +735,7 @@ local function CountTargets()
   return 0
 end
 
-local function RenderWindow()
+local function Main()
   reaper.ImGui_PushFont(ctx, font)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, 10)
   
@@ -729,21 +750,6 @@ local function RenderWindow()
   
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), 
   reaper.ImGui_ColorConvertDouble4ToU32(0.2, 0.2, 0.2, 1))
-  
-  id_changed, form.cat_id = reaper.ImGui_InputText(ctx, "CatID", form.cat_id)
-  
-  if id_changed and form.cat_id ~= "" then
-    -- update categories if Category ID changed manually
-    local rv, cname, sname = ReverseLookup(form.cat_id)
-    
-    if rv then
-      form.cat_name = cname
-      form.sub_name = sname
-      combo.sub_items = PopulateSubCategories(form.cat_name)
-      form.cur_cat = combo.cat_idx[form.cat_name]
-      form.cur_sub = combo.sub_idx[form.sub_name]
-    end
-  end
   
   rv, form.fx_name = reaper.ImGui_InputText(ctx, "FXName", form.fx_name)
   Tooltip(ctx, "Brief Description or Title (under 25 characters preferably)")
@@ -786,6 +792,12 @@ local function RenderWindow()
   
   --reaper.ImGui_SameLine(ctx, 0, 10)
   
+  reaper.ImGui_Button(ctx, "Wildcard Info...")
+  
+  Tooltip(ctx, "Future Wildcard Dropdown")
+  
+  reaper.ImGui_SameLine(ctx, 0, 10)
+  
   if reaper.ImGui_Button(ctx, "Save Data") then
     local data = form.fx_name .. ";" .. form.creator_id .. ";" .. form.source_id
     reaper.SetExtState("tdspk_ucs", "data", data, false)
@@ -797,6 +809,8 @@ local function RenderWindow()
     local data = reaper.GetExtState("tdspk_ucs", "data")
     form.fx_name, form.creator_id, form.source_id = string.match(data, "(.*);(.*);(.*)")
   end
+  
+  Tooltip(ctx, "Save and load FXName, CreatorID and SourceID from local memory")
   
   reaper.ImGui_SeparatorText(ctx, "Optional")
   
@@ -810,10 +824,6 @@ local function RenderWindow()
   Tooltip(ctx, "A user defined space, ofter used for an ID or Number for guaranteeing that the Filename is 100% unique...")
   
   reaper.ImGui_SeparatorText(ctx, "Results")
-  
-  -- pre-calculate file names
-  -- check selected tracks, items, regions for wildcard
-  -- pre cache new filename(s)
   
   if mx_open then
     files = GetMediaExplorerFiles(hWnd)
@@ -880,7 +890,7 @@ local function RenderWindow()
     end
   end
     
-  if reaper.ImGui_Button(ctx, "Clear all data", 0, 40) and track then
+  if reaper.ImGui_Button(ctx, "Clear all data", 0, 40) then
     form.fx_name, form.creator_id, form.source_id, form.user_cat, form.vendor_cat, form.user_data = ""
   end
   
@@ -895,7 +905,7 @@ end
 local function Loop()
   local visible, open = reaper.ImGui_Begin(ctx, 'tdspk - UCS Toolkit', true)
   if visible then
-    RenderWindow()
+    Main()
     reaper.ImGui_End(ctx)
   end
   if open then
