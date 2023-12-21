@@ -16,21 +16,34 @@ color = {
 -- ucs data
 -- 
 
-local categories = {}
-local synonyms = {}
+local ucs = {
+  categories = {},
+  synonyms = {}
+}
 
-local idx_cat = {}
-local cat_idx = {}
+combo = {
+  idx_cat = {},
+  cat_idx = {},
+  idx_sub = {},
+  sub_idx = {},
+  cat_items = "",
+  sub_items = ""
+}
 
-local idx_sub = {}
-local sub_idx = {}
-
-local cat_items = ""
-local sub_items = ""
-local cat_id = ""
-
-local cur_cat = 1
-local cur_sub = 1
+form = {
+  search = "",
+  cat_id = "",
+  cur_cat = 1,
+  cur_sub = 1,
+  cat_name = "",
+  sub_name = "",
+  fx_name = "",
+  creator_id = "",
+  source_id = "",
+  user_cat = "",
+  vendor_cat = "",
+  user_data = "",
+}
 
 local ext_section = "tdspk_ucs"
 
@@ -104,45 +117,43 @@ local wildcards = {
   end)
 }
 
-local i = 1
 local prev_cat = ""
 selected_cat = 1
 
--- read UCS values from CSV to categories table
-for line in io.lines(ucs_file) do
-  local cat, subcat, id, syn = string.match(line, "(.*);(.*);(.*);(.*)")
-  if cat ~= prev_cat then
-    cat_items = cat_items .. cat .. "\0"
-    idx_cat[i] = cat
-    cat_idx[cat] = i
-    i = i + 1
-  end
-  prev_cat = cat
+local function ReadUcsData()
+  local i = 1
   
-  if not categories[cat] then
-    categories[cat] = {}
+  -- read UCS values from CSV to categories table
+  for line in io.lines(ucs_file) do
+    local cat, subcat, id, syn = string.match(line, "(.*);(.*);(.*);(.*)")
+    if cat ~= prev_cat then
+      combo.cat_items = combo.cat_items .. cat .. "\0"
+      combo.idx_cat[i] = cat
+      combo.cat_idx[cat] = i
+      i = i + 1
+    end
+    prev_cat = cat
+    
+    if not ucs.categories[cat] then
+      ucs.categories[cat] = {}
+    end
+    
+    ucs.categories[cat][subcat] = id
+    table.insert(ucs.synonyms, id .. ";" .. syn)
   end
-  
-  categories[cat][subcat] = id
-  table.insert(synonyms, id .. ";" .. syn)
 end
 
 function Init()
-  ctx = reaper.ImGui_CreateContext("tdspk UCS Tookit")
-  
   font = reaper.ImGui_CreateFont("sans-serif", 15)
   reaper.ImGui_Attach(ctx, font)
   
   font_info = reaper.ImGui_CreateFont("sans-serif", 12)
   reaper.ImGui_Attach(ctx, font_info)
   
-  filter_cat = reaper.ImGui_CreateTextFilter()
-  reaper.ImGui_Attach(ctx, filter_cat)
-  filter_sub = reaper.ImGui_CreateTextFilter()
-  reaper.ImGui_Attach(ctx, filter_sub)
-  
   reaper.ImGui_SetNextWindowSize(ctx, 500, 800)
   
+  ReadUcsData()
+
   if reaper.HasExtState(ext_section, "target") then data.target = tonumber(reaper.GetExtState(ext_section, "target")) end
 end
 
@@ -177,7 +188,7 @@ local function ReverseLookup(cat_id)
   
   -- iterate tables and look for id
   -- TODO optimize in future?
-  for k, v in pairs(categories) do
+  for k, v in pairs(ucs.categories) do
     for j, id in pairs(v) do
       if (cat_id == id) then
         cat = k
@@ -192,7 +203,7 @@ local function ReverseLookup(cat_id)
 end
 
 local function PopulateSubCategories(cat_name)
-  if not categories[cat_name] then
+  if not ucs.categories[cat_name] then
     return
   end
   
@@ -201,19 +212,20 @@ local function PopulateSubCategories(cat_name)
   
   sorted_keys = {}
   
-  for k in pairs(categories[cat_name]) do
+  for k in pairs(ucs.categories[cat_name]) do
     table.insert(sorted_keys, k)
   end
   
   table.sort(sorted_keys)
-  sub_idx = {}
+  combo.sub_idx = {}
+  combo.idx_sub = {}
   
   local i = 1
   
   for k, v in pairs(sorted_keys) do
     result = result .. v .. "\0"
-    idx_sub[i] = v
-    sub_idx[v] = i
+    combo.idx_sub[i] = v
+    combo.sub_idx[v] = i
     i = i + 1
   end
   
@@ -368,14 +380,14 @@ local function OperationMode()
 end
 
 local function CategoryFields()
-  if reaper.ImGui_BeginCombo(ctx, "Category", idx_cat[cur_cat]) then
+  if reaper.ImGui_BeginCombo(ctx, "Category", combo.idx_cat[form.cur_cat]) then
     reaper.ImGui_TextFilter_Draw(filter_cat, ctx, "Filter")
     
-    for i, v in ipairs(idx_cat) do
+    for i, v in ipairs(combo.idx_cat) do
       if reaper.ImGui_TextFilter_PassFilter(filter_cat, v) then
         if reaper.ImGui_Selectable(ctx, v) then 
           cat_changed = true
-          cur_cat = i
+          form.cur_cat = i
         end
       end
     end
@@ -383,22 +395,22 @@ local function CategoryFields()
     reaper.ImGui_EndCombo(ctx)
   end
 
-  if cat_changed or sub_items == "" then
+  if cat_changed or combo.sub_items == "" then
     -- populate subcategories based on selected category
-    cat_name = idx_cat[cur_cat]
-    sub_items = PopulateSubCategories(cat_name)
-    --cur_sub = 1
+    form.cat_name = combo.idx_cat[form.cur_cat]
+    combo.sub_items = PopulateSubCategories(form.cat_name)
+    --form.cur_sub = 1
   end
   
-  if reaper.ImGui_BeginCombo(ctx, "Subcategory", idx_sub[cur_sub]) then
+  if reaper.ImGui_BeginCombo(ctx, "Subcategory", combo.idx_sub[form.cur_sub]) then
     --reaper.ImGui_SetKeyboardFocusHere(ctx)
     reaper.ImGui_TextFilter_Draw(filter_sub, ctx, "Filter")
     
-    for i, v in ipairs(idx_sub) do
+    for i, v in ipairs(combo.idx_sub) do
       if reaper.ImGui_TextFilter_PassFilter(filter_sub, v) then
         if reaper.ImGui_Selectable(ctx, v) then
           sub_changed = true
-          cur_sub = i
+          form.cur_sub = i
         end
       end
     end
@@ -406,45 +418,30 @@ local function CategoryFields()
     reaper.ImGui_EndCombo(ctx)
   end
   
-  if cat_changed or sub_changed or cat_id == "" then
-    sub_name = idx_sub[cur_sub]
-    cat_id = categories[cat_name][sub_name]
-  end
-  
-  id_changed, cat_id = reaper.ImGui_InputText(ctx, "CatID", cat_id)
-  
-  if id_changed and cat_id ~= "" then
-    -- update categories if Category ID changed manually
-    local rv, cname, sname = ReverseLookup(cat_id)
-    
-    if rv then
-      cat_name = cname
-      sub_name = sname
-      sub_items = PopulateSubCategories(cat_name)
-      cur_cat = cat_idx[cat_name]
-      cur_sub = sub_idx[sub_name]
-    end
+  if cat_changed or sub_changed or form.cat_id == "" then
+    form.sub_name = combo.idx_sub[form.cur_sub]
+    form.cat_id = ucs.categories[form.cat_name][form.sub_name]
   end
 end
 
 local function CategorySearch()
-  rv, search = reaper.ImGui_InputText(ctx, "Search category...", search)
+  rv, form.search = reaper.ImGui_InputText(ctx, "Search category...", form.search)
   if rv then
     selected_cat = 1
   end
   if rv and not is_list_open then
     is_list_open = true
-  elseif search == "" then
+  elseif form.search == "" then
     is_list_open = false
   end
   
   if is_list_open then
-    local syn_filter = reaper.ImGui_CreateTextFilter(search)
+    local syn_filter = reaper.ImGui_CreateTextFilter(form.search)
     
     -- Filter Synonys manually
     local syns = {}
-    for i=1, #synonyms do
-      local entry = synonyms[i]
+    for i=1, #ucs.synonyms do
+      local entry = ucs.synonyms[i]
       if reaper.ImGui_TextFilter_PassFilter(syn_filter, entry) then
         table.insert(syns, entry)
       end
@@ -474,8 +471,8 @@ local function CategorySearch()
         end
         
         if selectable or select_next == i then
-          cat_id = id
-          search = ""
+          form.cat_id = id
+          form.search = ""
           is_list_open = false
           selected_cat = 1
         end
@@ -485,14 +482,14 @@ local function CategorySearch()
     end
     
     -- update categories if Category ID changed manually
-    local rv, cname, sname = ReverseLookup(cat_id)
+    local rv, cname, sname = ReverseLookup(form.cat_id)
     
     if rv then
-      cat_name = cname
-      sub_name = sname
-      sub_items = PopulateSubCategories(cat_name)
-      cur_cat = cat_idx[cat_name]
-      cur_sub = sub_idx[sub_name]
+      form.cat_name = cname
+      form.sub_name = sname
+      combo.sub_items = PopulateSubCategories(form.cat_name)
+      form.cur_cat = combo.cat_idx[form.cat_name]
+      form.cur_sub = combo.sub_idx[form.sub_name]
     end
   end
 end
@@ -733,13 +730,28 @@ local function RenderWindow()
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), 
   reaper.ImGui_ColorConvertDouble4ToU32(0.2, 0.2, 0.2, 1))
   
-  rv, fx_name = reaper.ImGui_InputText(ctx, "FXName", fx_name)
+  id_changed, form.cat_id = reaper.ImGui_InputText(ctx, "CatID", form.cat_id)
+  
+  if id_changed and form.cat_id ~= "" then
+    -- update categories if Category ID changed manually
+    local rv, cname, sname = ReverseLookup(form.cat_id)
+    
+    if rv then
+      form.cat_name = cname
+      form.sub_name = sname
+      combo.sub_items = PopulateSubCategories(form.cat_name)
+      form.cur_cat = combo.cat_idx[form.cat_name]
+      form.cur_sub = combo.sub_idx[form.sub_name]
+    end
+  end
+  
+  rv, form.fx_name = reaper.ImGui_InputText(ctx, "FXName", form.fx_name)
   Tooltip(ctx, "Brief Description or Title (under 25 characters preferably)")
   
-  rv, creator_id = reaper.ImGui_InputText(ctx, "CreatorID", creator_id)
+  rv, form.creator_id = reaper.ImGui_InputText(ctx, "CreatorID", form.creator_id)
   Tooltip(ctx, "Sound Designer, Recordist or Vendor (or abbreviaton for them")
   
-  rv, source_id = reaper.ImGui_InputText(ctx, "SourceID", source_id)
+  rv, form.source_id = reaper.ImGui_InputText(ctx, "SourceID", form.source_id)
   Tooltip(ctx, "Project, Show or Library name (or abbreviation representing it")
   
   reaper.ImGui_PopStyleColor(ctx)
@@ -756,17 +768,17 @@ local function RenderWindow()
   
   if reaper.ImGui_Button(ctx, "Fill from Track") then
     local rv, track_name = reaper.GetTrackName(track)
-    cat_id, fx_name, creator_id, source_id = ParseFilename(track_name)
+    form.cat_id, form.fx_name, form.creator_id, form.source_id = ParseFilename(track_name)
     
     -- update categories if Category ID changed manually
-    local rv, cname, sname = ReverseLookup(cat_id)
+    local rv, cname, sname = ReverseLookup(form.cat_id)
     
     if rv then
-      cat_name = cname
-      sub_name = sname
-      sub_items = PopulateSubCategories(cat_name)
-      cur_cat = cat_idx[cat_name]
-      cur_sub = sub_idx[sub_name]
+      form.cat_name = cname
+      form.sub_name = sname
+      combo.sub_items = PopulateSubCategories(form.cat_name)
+      form.cur_cat = combo.cat_idx[form.cat_name]
+      form.cur_sub = combo.sub_idx[form.sub_name]
     end
   end
   reaper.ImGui_EndDisabled(ctx)
@@ -775,7 +787,7 @@ local function RenderWindow()
   --reaper.ImGui_SameLine(ctx, 0, 10)
   
   if reaper.ImGui_Button(ctx, "Save Data") then
-    local data = fx_name .. ";" .. creator_id .. ";" .. source_id
+    local data = form.fx_name .. ";" .. form.creator_id .. ";" .. form.source_id
     reaper.SetExtState("tdspk_ucs", "data", data, false)
   end
   
@@ -783,18 +795,18 @@ local function RenderWindow()
   
   if reaper.ImGui_Button(ctx, "Load Data") then
     local data = reaper.GetExtState("tdspk_ucs", "data")
-    fx_name, creator_id, source_id = string.match(data, "(.*);(.*);(.*)")
+    form.fx_name, form.creator_id, form.source_id = string.match(data, "(.*);(.*);(.*)")
   end
   
   reaper.ImGui_SeparatorText(ctx, "Optional")
   
-  rv, user_cat = reaper.ImGui_InputText(ctx, "UserCategory", user_cat)
+  rv, form.user_cat = reaper.ImGui_InputText(ctx, "UserCategory", form.user_cat)
   Tooltip(ctx, "An optional tail extension of the CatID block that can be used\nas a user defined category, microphone, perspective, etc.")
   
-  rv, vendor_cat = reaper.ImGui_InputText(ctx, "VendorCategory", vendor_cat)
+  rv, form.vendor_cat = reaper.ImGui_InputText(ctx, "VendorCategory", form.vendor_cat)
   Tooltip(ctx, "An option head extension to the FXName Block usable by vendors to\ndefine a library specific category. For example, the specific name\nof a gun, vehicle, location, etc.")
   
-  rv, user_data = reaper.ImGui_InputText(ctx, "UserData", user_data)
+  rv, form.user_data = reaper.ImGui_InputText(ctx, "UserData", form.user_data)
   Tooltip(ctx, "A user defined space, ofter used for an ID or Number for guaranteeing that the Filename is 100% unique...")
   
   reaper.ImGui_SeparatorText(ctx, "Results")
@@ -810,7 +822,7 @@ local function RenderWindow()
     end
   end
   
-  ucs_filename = CreateUCSFilename(data.delimiter, cat_id, user_cat, vendor_cat, fx_name, creator_id, source_id, user_data)
+  ucs_filename = CreateUCSFilename(data.delimiter, form.cat_id, form.user_cat, form.vendor_cat, form.fx_name, form.creator_id, form.source_id, form.user_data)
   
   local rename_count, marker_count, region_count = CountTargets()
   
@@ -869,7 +881,7 @@ local function RenderWindow()
   end
     
   if reaper.ImGui_Button(ctx, "Clear all data", 0, 40) and track then
-    fx_name, creator_id, source_id, user_cat, vendor_cat, user_data = ""
+    form.fx_name, form.creator_id, form.source_id, form.user_cat, form.vendor_cat, form.user_data = ""
   end
   
   reaper.ImGui_PushFont(ctx, font_info)
@@ -891,5 +903,6 @@ local function Loop()
   end
 end
 
+ctx = reaper.ImGui_CreateContext("tdspk UCS Tookit")
 Init()
 Loop()
