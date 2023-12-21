@@ -735,6 +735,28 @@ local function CountTargets()
   return 0
 end
 
+local function Navigate(next)
+  if data.target == 0 then
+    if next then
+      reaper.Main_OnCommand(40285, 0) -- Track: Go to next track
+    else
+      reaper.Main_OnCommand(40286, 0) -- Track: Go to previous track
+    end
+  elseif data.target == 1 then
+    if next then
+      reaper.Main_OnCommand(40417, 0) -- Item navigation: Select and move to next item
+    else
+      reaper.Main_OnCommand(40416, 0) -- Item navigation: Select and move to previous item
+    end
+  elseif data.target == 2 then
+    if next then
+      reaper.Main_OnCommand(40173, 0) -- Markers: Go to next marker/project end
+    else
+      reaper.Main_OnCommand(40172, 0) -- Markers: Go to previous marker/project start
+    end
+  end
+end
+
 local function Main()
   reaper.ImGui_PushFont(ctx, font)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, 10)
@@ -866,24 +888,24 @@ local function Main()
   if mx_open then
     RenameFiles()
   else
+    -- Render Buttons for Marker/Region Manager and Navigation <>, Arrows
+    if reaper.ImGui_ArrowButton(ctx, "Previous", reaper.ImGui_Dir_Left())
+      or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false) then
+      Navigate(false)
+    end
+    
+    reaper.ImGui_SameLine(ctx, 0, 10)
+    
+    if reaper.ImGui_ArrowButton(ctx, "Next", reaper.ImGui_Dir_Right())
+      or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false) then
+      Navigate(true)
+    end
+  
     if data.target == 0 then
       RenameTracks(rename_count)
     elseif data.target == 1 then
       RenameMediaItems(rename_count)
     elseif data.target == 2 then
-      -- Render Buttons for Marker/Region Manager and Navigation <>, Arrows
-      if reaper.ImGui_ArrowButton(ctx, "Previous Marker", reaper.ImGui_Dir_Left()) 
-        or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false) then
-        reaper.Main_OnCommand(40172, 0) -- Markers: Go to previous marker/project start
-      end
-      
-      reaper.ImGui_SameLine(ctx, 0, 10)
-      
-      if reaper.ImGui_ArrowButton(ctx, "Next Marker", reaper.ImGui_Dir_Right())
-        or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false) then
-        reaper.Main_OnCommand(40173, 0) -- Markers: Go to next marker/project end
-      end
-    
       RenameMarkers(#data.selected_markers)
       reaper.ImGui_SameLine(ctx, 0, 10)
       RenameRegions(#data.selected_regions)
