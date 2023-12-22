@@ -1,3 +1,23 @@
+local imgui_exists = reaper.APIExists("ImGui_GetVersion")
+local sws_exists = reaper.APIExists("CF_GetSWSVersion")
+local js_exists = reaper.APIExists("JS_ReaScriptAPI_Version")
+
+if not imgui_exists or not sws_exists or not js_exists then
+  local msg = "UCS Toolkit requires the following extensions/packages to work:\n"
+  if not sws_exists then
+    msg = msg .. "SWS Extension - please visit https://www.sws-extension.org\n"
+  end
+  if not js_exists then
+    mgs = msg .. "js_ReaScriptAPI: API functions for ReaScripts - please install via ReaPack\n"
+  end
+  if not imgui_exists then
+    msg = msg .. "ReaImGui: ReaScript binding for Dear ImGui - please install via ReaPack\n"
+  end
+  
+  reaper.ShowMessageBox(msg, "Missing extensions/packages", 0)
+  goto eof
+end
+
 dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8')
 
 local info = debug.getinfo(1, 'S');
@@ -8,9 +28,24 @@ color = {
   red = reaper.ImGui_ColorConvertDouble4ToU32(1, 0, 0, 1),
   blue = reaper.ImGui_ColorConvertDouble4ToU32(0, 0.91, 1, 1),
   gray = reaper.ImGui_ColorConvertDouble4ToU32(0.75, 0.75, 0.75, 1),
+  green = reaper.ImGui_ColorConvertDouble4ToU32(0, 1, 0, 0.5),
+  yellow = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 0, 0.5),
+  mainfields = reaper.ImGui_ColorConvertDouble4ToU32(0.2, 0.2, 0.2, 1),
+  transparent = reaper.ImGui_ColorConvertDouble4ToU32(0, 0, 0, 0)
+}
+
+local style = {
+  window_width = 450,
+  window_height = 760,
+  item_spacing_x = 10,
+  item_spacing_y = 10,
+  big_btn_height = 50,
+  frame_rounding = 2,
+  frame_border = 1
 }
 
 local ucs = {
+  version = 0.0,
   categories = {},
   synonyms = {}
 }
@@ -47,6 +82,7 @@ data = {
   rename_count = 0,
   track_count = 0,
   item_count = 0,
+  file_count = 0,
   selected_markers = {},
   selected_regions = {},
   ticks = 0,
@@ -59,7 +95,8 @@ default_settings = {
   font_size = 15,
   save_state = false,
   delimiter = "_",
-  update_interval = 1
+  update_interval = 1,
+  tooltips = true
 }
 
 settings = {
@@ -129,33 +166,40 @@ local wildcards = {
 }
 
 
-local function ReadUcsData()
+function ReadUcsData()
   local prev_cat = ""
+  local got_version = false
   local i = 0
   
   -- read UCS values from CSV to categories table
   for line in io.lines(ucs_file) do
-    local cat, subcat, id, syn = string.match(line, "(.*);(.*);(.*);(.*)")
-    if cat ~= prev_cat then
-      combo.cat_items = combo.cat_items .. cat .. "\0"
-      combo.idx_cat[i] = cat
-      combo.cat_idx[cat] = i
-      i = i + 1
+    if not got_version then
+      ucs.version =  string.match(line, "(.*);;;")
+      got_version = true
+    else
+      local cat, subcat, id, syn = string.match(line, "(.*);(.*);(.*);(.*)")
+      
+      if cat ~= prev_cat then
+        combo.cat_items = combo.cat_items .. cat .. "\0"
+        combo.idx_cat[i] = cat
+        combo.cat_idx[cat] = i
+        i = i + 1
+      end
+      prev_cat = cat
+      
+      if not ucs.categories[cat] then
+        ucs.categories[cat] = {}
+      end
+      
+      ucs.categories[cat][subcat] = id
+      table.insert(ucs.synonyms, id .. ";" .. syn)
     end
-    prev_cat = cat
-    
-    if not ucs.categories[cat] then
-      ucs.categories[cat] = {}
-    end
-    
-    ucs.categories[cat][subcat] = id
-    table.insert(ucs.synonyms, id .. ";" .. syn)
   end
 end
 
-local function LoadSettings() 
+function LoadSettings() 
   for k, v in pairs(default_settings) do
-    ext_value = reaper.GetExtState(ext_section, k)
+    local ext_value = reaper.GetExtState(ext_section, k)
     
     if ext_value == "" then
       settings[k] = v
@@ -174,14 +218,21 @@ end
 
 function Init()
   LoadSettings()
+  
+  data.os = reaper.GetOS()
 
-  font = reaper.ImGui_CreateFont("sans-serif", settings.font_size)
-  reaper.ImGui_Attach(ctx, font)
+  style.font = reaper.ImGui_CreateFont("sans-serif", settings.font_size)
+  reaper.ImGui_Attach(ctx, style.font)
   
-  font_info = reaper.ImGui_CreateFont("sans-serif", math.floor(settings.font_size * 0.8))
-  reaper.ImGui_Attach(ctx, font_info)
+  style.font_info = reaper.ImGui_CreateFont("sans-serif", math.floor(settings.font_size * 0.8))
+  reaper.ImGui_Attach(ctx, style.font_info)
   
-  reaper.ImGui_SetNextWindowSize(ctx, 500, 800)
+  style.font_menu = reaper.ImGui_CreateFont("sans-serif", 12)
+  reaper.ImGui_Attach(ctx, style.font_menu)
+  
+  style.window_padding = reaper.ImGui_GetStyleVar(ctx, reaper.ImGui_StyleVar_WindowPadding())
+  
+  reaper.ImGui_SetNextWindowSize(ctx, style.window_width, style.window_height)
   
   ReadUcsData()
 
@@ -199,11 +250,6 @@ function string.split(input, sep)
   return t
 end
 
-string.bool = {
-  ["true"] = true,
-  ["false"] = false
-}
-
 function table.contains(table, value)
   for i, v in ipairs(table) do
     if v == value then return true end
@@ -212,12 +258,12 @@ function table.contains(table, value)
   return false
 end
 
-local function ParseFilename(filename) 
+function ParseFilename(filename) 
   local cat_id, fx_name, creator_id, source_id = string.match(filename, "(.*)_(.*)_(.*)_(.*)")
   return cat_id, fx_name, creator_id, source_id
 end
 
-local function ReverseLookup(cat_id)
+function ReverseLookup(cat_id)
   local cat = ""
   local sub = ""
   local rv = false
@@ -238,7 +284,7 @@ local function ReverseLookup(cat_id)
   return rv, cat, sub
 end
 
-local function PopulateSubCategories(cat_name)
+function PopulateSubCategories(cat_name)
   if not ucs.categories[cat_name] then
     return
   end
@@ -246,7 +292,7 @@ local function PopulateSubCategories(cat_name)
   -- iterate categories table with the name and build data
   local result = ""
   
-  sorted_keys = {}
+  local sorted_keys = {}
   
   for k in pairs(ucs.categories[cat_name]) do
     table.insert(sorted_keys, k)
@@ -268,9 +314,9 @@ local function PopulateSubCategories(cat_name)
   return result
 end
 
-local function CreateUCSFilename(d, cat_id, ...)
+function CreateUCSFilename(d, cat_id, ...)
   local fname = cat_id
-  arg = {...}
+  local arg = {...}
   
   for i, v in ipairs(arg) do
     if v ~= "" then 
@@ -288,12 +334,12 @@ local function CreateUCSFilename(d, cat_id, ...)
 end
 
 -- Code from Edgemeal - adapted! Thank you!
-function GetMediaExplorerFiles(hWnd)
+function GetMediaExplorerFiles()
   local files = {}
   
-  local file_LV = reaper.JS_Window_FindChildByID(hWnd, 0x3E9) 
+  local file_LV = reaper.JS_Window_FindChildByID(data.mx_handle, 0x3E9) 
   local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(file_LV)
-  if sel_count == 0 then return end
+  if sel_count == 0 then return 0, files end
 
   local index = 0
   -- get path from combobox
@@ -309,38 +355,45 @@ function GetMediaExplorerFiles(hWnd)
     files[index] = name
   end
   
-  return files
+  return sel_count, files
 end
 
-local function Tooltip(ctx, text)
-  reaper.ImGui_SameLine(ctx, 0, 10)
-  reaper.ImGui_PushFont(ctx, font_info)
-  reaper.ImGui_TextColored(ctx, color.gray, "?")
-  reaper.ImGui_PopFont(ctx)
-  
-  if reaper.ImGui_IsItemHovered(ctx) then
-    if reaper.ImGui_BeginTooltip(ctx) then
-      reaper.ImGui_Text(ctx, text)
-      reaper.ImGui_EndTooltip(ctx)
+function Tooltip(ctx, text)
+  if settings.tooltips then
+    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x / 2)
+    reaper.ImGui_PushFont(ctx, style.font_info)
+    reaper.ImGui_TextColored(ctx, color.gray, "?")
+    reaper.ImGui_PopFont(ctx)
+    
+    if reaper.ImGui_IsItemHovered(ctx) then
+      if reaper.ImGui_BeginTooltip(ctx) then
+        reaper.ImGui_Text(ctx, text)
+        reaper.ImGui_EndTooltip(ctx)
+      end
     end
   end
 end
 
-local function SaveSettings()
+function SaveSettings()
   for k, v in pairs(default_settings) do
     reaper.SetExtState(ext_section, k, tostring(settings[k]), false)
   end
 end
 
-local function Settings()
-  if reaper.ImGui_Button(ctx, "Settings", 0, 40) then
+function Settings()
+  if reaper.ImGui_Button(ctx, "Settings") then
     reaper.ImGui_OpenPopup(ctx, "Settings")
   end
   
   local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetWindowViewport(ctx))
   reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
   
+  reaper.ImGui_PushFont(ctx, style.font)
+  
   if reaper.ImGui_BeginPopupModal(ctx, "Settings", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
+    reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, style.item_spacing_x)
+    reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), style.frame_border)
+  
     rv, settings.font_size = reaper.ImGui_SliderInt(ctx, "Font Size", settings.font_size, 10, 18)
     settings.changed = rv or settings.changed
     
@@ -351,7 +404,7 @@ local function Settings()
     rv, settings.delimiter = reaper.ImGui_InputText(ctx, "Delimiter", settings.delimiter)
     settings.delimiter = string.sub(settings.delimiter, 1, 1)
     
-    rv, settings.save_state = reaper.ImGui_Checkbox(ctx, "Save state", settings.save_state)
+    rv, settings.tooltips = reaper.ImGui_Checkbox(ctx, "Display Tooltips", settings.tooltips)
     
     rv, settings.update_interval = reaper.ImGui_DragInt(ctx, "Poll Interval", settings.update_interval, 1, 1, 30, "%d ticks")
     
@@ -360,13 +413,65 @@ local function Settings()
       reaper.ImGui_CloseCurrentPopup(ctx)
     end
     
-    reaper.ImGui_SameLine(ctx, 0, 10)
+    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
     
     if reaper.ImGui_Button(ctx, "Reset") then
       for k, v in pairs(default_settings) do
         settings[k] = v
       end
       SaveSettings()
+    end
+    
+    reaper.ImGui_PopStyleVar(ctx)
+    reaper.ImGui_PopStyleVar(ctx)
+    
+    reaper.ImGui_EndPopup(ctx)
+  end
+
+  reaper.ImGui_PopFont(ctx)
+end
+
+function WildcardInfo()
+  if reaper.ImGui_Button(ctx, "Wildcard Info") then
+    reaper.ImGui_OpenPopup(ctx, "Wildcard Info")
+  end
+  
+  local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetWindowViewport(ctx))
+  reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
+  
+  if reaper.ImGui_BeginPopupModal(ctx, "Wildcard Info", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
+    reaper.ImGui_Text(ctx, "This tool featues a small set of wildcards. These can be used in any field.")
+    reaper.ImGui_Text(ctx, "Supported wildcards are:")
+    
+    reaper.ImGui_Separator(ctx)
+    
+    local info_data = {
+      "$project;The filename of the current project",
+      "$author;The author of the current project",
+      "$track;The name of the selected track",
+      "$item;The name of the selected item",
+      "$marker;The name of the selected marker",
+      "$region;The name of the selected region",
+      "$idx;Places as incrementing index",
+      "$self;the name of the target to be renamed"
+    }
+    
+    if reaper.ImGui_BeginTable(ctx, "Wildcard Table", 2) then
+      reaper.ImGui_TableNextRow(ctx)
+      for _, v in ipairs(info_data) do
+        reaper.ImGui_TableNextRow(ctx)
+        local wc, desc = string.match(v, "(.*);(.*)")
+        reaper.ImGui_TableSetColumnIndex(ctx, 0)
+        reaper.ImGui_Text(ctx, wc)
+        reaper.ImGui_TableSetColumnIndex(ctx, 1)
+        reaper.ImGui_Text(ctx, desc)
+          
+      end
+      reaper.ImGui_EndTable(ctx)
+    end
+    
+    if reaper.ImGui_Button(ctx, "Close") then
+      reaper.ImGui_CloseCurrentPopup(ctx)
     end
     
     reaper.ImGui_EndPopup(ctx)
@@ -377,7 +482,7 @@ function Licensing()
   local width, height = reaper.ImGui_GetWindowSize(ctx)
   
   if reaper.GetExtState("tdspk_ucs", "license") ~= "1" then
-    if reaper.ImGui_Button(ctx, "SUPPORT THIS TOOL", width, 30) then
+    if BigButton(ctx, "SUPPORT THIS TOOL", nil, nil, color.green) then
       reaper.ImGui_OpenPopup(ctx, "Licensing")
     end
     
@@ -399,13 +504,13 @@ function Licensing()
           if (success == "true") then end
       end
       
-      reaper.ImGui_SameLine(ctx, 0, 10)
+      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
       
       if reaper.ImGui_Button(ctx, "Buy License") then
         reaper.CF_ShellExecute("https://www.tdspkaudio.com")
       end
       
-      reaper.ImGui_SameLine(ctx, 0, 10)
+      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
       
       if reaper.ImGui_Button(ctx, "Close") then
         reaper.ImGui_CloseCurrentPopup(ctx)
@@ -413,7 +518,7 @@ function Licensing()
       reaper.ImGui_EndPopup(ctx)
     end
   else
-    reaper.ImGui_PushFont(ctx, font_info)
+    reaper.ImGui_PushFont(ctx, style.font_info)
   
     local email = reaper.GetExtState("tdspk_ucs", "email")
     reaper.ImGui_Text(ctx, "Supported by: " .. email)
@@ -422,8 +527,13 @@ function Licensing()
   end
 end
 
-local function IsWindowOpen(name)
-  local title = reaper.JS_Localize("Media Explorer", "common")
+function IsWindowOpen(name)
+  -- TODO implement mx support for other than windows (for now)
+  if not string.find(data.os, "Win") then
+    return false
+  end
+  
+  local title = reaper.JS_Localize(name, "common")
   local hWnd = reaper.JS_Window_Find(title, true)
   
   if hWnd then
@@ -433,15 +543,27 @@ local function IsWindowOpen(name)
   end
 end
 
-local function OperationMode() 
-  if mx_open then
+function ToggleTarget()
+  if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_1(), false) then
+    data.target = 0
+  elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_2(), false) then
+    data.target = 1
+  elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_3(), false) then
+    data.target = 2
+  end
+end
+
+function OperationMode() 
+  if data.mx_open then
     reaper.ImGui_Text(ctx, "Operating on ")
     reaper.ImGui_SameLine(ctx)
     reaper.ImGui_TextColored(ctx, color.red, "Media Explorer Files")
+    Tooltip(ctx, "Close the Media Explorer to rename tracks, items, markers and regions.")
   else
     reaper.ImGui_Text(ctx, "Operating in ")
     reaper.ImGui_SameLine(ctx)
     reaper.ImGui_TextColored(ctx, color.blue, "Arrange View")
+    Tooltip(ctx, "Open the Media Explorer to rename local files")
     
     reaper.ImGui_Text(ctx, "Renaming: ")
     reaper.ImGui_SameLine(ctx)
@@ -449,12 +571,16 @@ local function OperationMode()
     local has_changed = false
     rv, data.target = reaper.ImGui_RadioButtonEx(ctx, "Tracks", data.target, 0)
     has_changed = has_changed or rv
-    reaper.ImGui_SameLine(ctx)
+    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
     rv, data.target = reaper.ImGui_RadioButtonEx(ctx, "Media Items", data.target, 1)
     has_changed = has_changed or rv
-    reaper.ImGui_SameLine(ctx)
+    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
     rv, data.target = reaper.ImGui_RadioButtonEx(ctx, "Markers/Regions", data.target, 2)
     has_changed = has_changed or rv
+    
+    Tooltip(ctx, "You can toggle the renaming target with numbers 1-3")
+    
+    ToggleTarget()
     
     if has_changed then
       reaper.SetExtState(ext_section, "target", tostring(data.target), false)
@@ -462,7 +588,7 @@ local function OperationMode()
   end
 end
 
-local function CategoryFields()
+function CategoryFields()
   local cat_changed, sub_changed, id_changed
   cat_changed, form.cur_cat = reaper.ImGui_Combo(ctx, "Category", form.cur_cat, combo.cat_items)
   
@@ -530,7 +656,7 @@ local function CategoryFields()
   end
 end
 
-local function CategorySearch()
+function CategorySearch()
   local rv
   
   if form.applied then 
@@ -608,14 +734,14 @@ local function CategorySearch()
   end
 end
 
-local function Apply()
+function Apply()
   local rv = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl()) 
     and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter(), false)
   form.applied = rv
   return rv
 end
 
-local function SubstituteIdx(index)
+function SubstituteIdx(index)
   -- check if $idx exists
   local idx = string.find(ucs_filename, "$idx")
   
@@ -626,7 +752,7 @@ local function SubstituteIdx(index)
   return ucs_filename .. " " .. tostring(index)
 end
 
-local function SubstituteSelf(name)
+function SubstituteSelf(name)
   local self = string.find(ucs_filename, "$self")
   
   if self then
@@ -636,8 +762,30 @@ local function SubstituteSelf(name)
   return ucs_filename
 end
 
-local function RenameTracks() 
-  if reaper.ImGui_Button(ctx, "Rename " .. data.track_count ..  " Track(s)", 0, 40) or Apply() then
+function BigButton(ctx, label, divider, padding, color)
+  divider = divider or 1
+  padding = padding or 40
+  
+  if color then
+    reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color)
+  end
+  
+  local width = reaper.ImGui_GetWindowSize(ctx)
+  
+  local btn = reaper.ImGui_Button(ctx, label, (width/divider) - padding, style.big_btn_height)
+  
+  if color then
+    reaper.ImGui_PopStyleColor(ctx)
+  end
+  
+  return btn
+end
+
+function RenameTracks()
+  local label = " Track"
+  if data.track_count > 1 then label = " Tracks" end
+  
+  if BigButton(ctx,  "Rename " .. data.track_count .. label, nil, nil, color.green) or Apply() then
     for i = 0, data.track_count - 1 do
       local track = reaper.GetSelectedTrack(0, i)
       local rv, track_name = reaper.GetTrackName(track)
@@ -651,8 +799,11 @@ local function RenameTracks()
   end
 end
 
-local function RenameMediaItems()
-  if reaper.ImGui_Button(ctx, "Rename " .. data.item_count ..  " Item(s)", 0, 40) or Apply() then
+function RenameMediaItems()
+  local label = " Item"
+  if data.item_count > 1 then label = " Items" end
+
+  if BigButton(ctx, "Rename " .. data.item_count ..  label, nil, nil, color.yellow) or Apply() then
     for i = 0, data.item_count - 1 do
       local item = reaper.GetSelectedMediaItem(0, i)
       local take = reaper.GetActiveTake(item)
@@ -667,8 +818,11 @@ local function RenameMediaItems()
   end
 end
 
-local function RenameMarkers(marker_count)
-  if reaper.ImGui_Button(ctx, "Rename " .. marker_count .. " Markers(s)", 0, 40) or Apply() then
+function RenameMarkers()
+  local label = " Marker"
+  if #data.selected_markers > 1 then label = " Markers" end
+
+  if BigButton(ctx, "Rename " .. #data.selected_markers .. label, 2, 20) or Apply() then
     for i, v in ipairs(data.selected_markers) do
       local idx = v[1]
       local pos = v[2]
@@ -681,8 +835,11 @@ local function RenameMarkers(marker_count)
   end
 end
 
-local function RenameRegions(region_count)
-  if reaper.ImGui_Button(ctx, "Rename " .. region_count .. " Regions(s)", 0, 40) or Apply() then
+function RenameRegions()
+  local label = " Region"
+  if #data.selected_regions > 1 then label = " Regions" end
+  
+  if BigButton(ctx,  "Rename " .. #data.selected_regions .. label, 2, 20) or Apply() then
     for i, v in ipairs(data.selected_regions) do
       local idx = v[1]
       local pos = v[2]
@@ -696,8 +853,9 @@ local function RenameRegions(region_count)
   end
 end
 
-local function RenameFiles()
-  autoplay = reaper.GetToggleCommandStateEx(32063, 1011) --Autoplay: Toggle on/off
+function RenameFiles()
+  local autoplay = reaper.GetToggleCommandStateEx(32063, 1011) --Autoplay: Toggle on/off
+  
   if autoplay == 1 then
     reaper.ImGui_TextColored(ctx, color.red, "Autoplay is enabled! Please ")
     reaper.ImGui_SameLine(ctx)
@@ -708,18 +866,19 @@ local function RenameFiles()
     reaper.ImGui_TextColored(ctx, color.red, " it to avoid weird behaviour.")
   end
   
-  if files then
-    if reaper.ImGui_Button(ctx, "Rename " .. #files .. " File(s)", 0, 40) then
-      local dir = files[0]
+  if data.files then
+    if reaper.ImGui_Button(ctx, "Rename " .. #data.files .. " File(s)", 0, 40) then
+      local dir = data.files[0]
       
       reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
       reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
       
-      for i, v in ipairs(files) do
+      for i, v in ipairs(data.files) do
         local old_file = dir .. "/" .. v
         local _, _, ext = string.match(v, "(.-)([^\\/]-%.?([^%.\\/]*))$")
         
-        local filename = string.gsub(ucs_filename, "$idx", tostring(i))
+        local filename = ucs_filename
+        if #data.files > 1 then filename = SubstituteIdx(i) end
         local new_file = dir .. "/" .. filename .. "." .. ext
         rv, osbuf = os.rename(old_file, new_file)
       end
@@ -727,98 +886,101 @@ local function RenameFiles()
   end
 end
 
-local function CountTargets()
-  if data.target == 0 then
-    data.track_count = reaper.CountSelectedTracks(0)
-    return data.track_count
-  elseif data.target == 1 then
-    data.item_count = reaper.CountSelectedMediaItems(0)
-    return data.item_count
-  elseif data.target == 2 then
-    data.selected_markers = {}
-    data.selected_regions = {}
-  
-    local title = reaper.JS_Localize("Region/Marker Manager", "common")
-    local hWnd = reaper.JS_Window_Find(title, true)
-    
-    if hWnd then -- if Region/Marker Manager is open, count there
-      local manager = reaper.JS_Window_FindChildByID(hWnd, 0x42F)
-      local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
+function CountTargets()
+  if data.mx_open then
+    data.file_count, data.files = GetMediaExplorerFiles(hWnd)
+    return data.file_count
+  else
+    if data.target == 0 then
+      data.track_count = reaper.CountSelectedTracks(0)
+      return data.track_count
+    elseif data.target == 1 then
+      data.item_count = reaper.CountSelectedMediaItems(0)
+      return data.item_count
+    elseif data.target == 2 then
+      data.selected_markers = {}
+      data.selected_regions = {}
       
-      if sel_count > 0 then
-        local selection = string.split(sel_indexes, ",")
+      data.rm_open, data.rm_handle = IsWindowOpen("Region/Marker Manager", "common")
+      if data.rm_handle then -- if Region/Marker Manager is open, count there
+        local manager = reaper.JS_Window_FindChildByID(data.rm_handle, 0x42F)
+        local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
         
-        local marker_ids = {}
-        local region_ids = {}
-        
-        for i, v in ipairs(selection) do
-          local id = reaper.JS_ListView_GetItemText(manager, tonumber(v), 1)
-          if string.find(id, "R") then
-            id = string.gsub(id, "R", "")
-            table.insert(region_ids, tonumber(id))
-          else
-            id = string.gsub(id, "M", "")
-            table.insert(marker_ids, tonumber(id))
-          end
-        end
-        
-        local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
-        
-        for i=0, marker_count + region_count do
-          local rv, isrgn, pos, rgn_end, name, idx = reaper.EnumProjectMarkers(i)
-          if isrgn then
-            if table.contains(region_ids, idx) then
-              local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
-              table.insert(data.selected_regions, rgn)
-            end
-          else
-            if table.contains(marker_ids, idx) then
-              local mrk = { [1] = idx, [2] = pos, [3] = name }
-              table.insert(data.selected_markers, mrk)
-            end
-          end
-        end
-      end
-      
-      return sel_count
-    else -- otherwise, count time selected items or current cursor position
-      local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
-      if loop_start < loop_end then
-        local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
-        
-        for i=0, marker_count + region_count - 1 do
-          local rv, isrgn, pos, rgn_end, name, idx = reaper.EnumProjectMarkers(i)
-          if isrgn then
-            if pos >= loop_start and rgn_end <= loop_end then
-              local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
-              table.insert(data.selected_regions, rgn)
-            end
-          else
-            if pos >= loop_start and pos <= loop_end then
-              local mrk = { [1] = idx, [2] = pos, [3] = name }
-              table.insert(data.selected_markers, mrk)
-            end 
-          end
-        end
-        
-        return #data.selected_markers + #data.selected_regions
-      else
-        local marker_count, region_count = reaper.CountProjectMarkers(0)
-        
-        for i=0, marker_count + region_count - 1 do
-          local rv, isrgn, pos, rgnend, name, idx  = reaper.EnumProjectMarkers(i)
+        if sel_count > 0 then
+          local selection = string.split(sel_indexes, ",")
           
-          local cursor_pos = reaper.GetCursorPosition()
+          local marker_ids = {}
+          local region_ids = {}
           
-          if cursor_pos == pos then
-            if isrgn then
-              local rgn = { [1] = idx, [2] = pos, [3] = rgnend, [4] = name  }
-              table.insert(data.selected_regions, rgn)
-              return 1 -- return 1 counted, 0 markers, 1 region
+          for i, v in ipairs(selection) do
+            local id = reaper.JS_ListView_GetItemText(manager, tonumber(v), 1)
+            if string.find(id, "R") then
+              id = string.gsub(id, "R", "")
+              table.insert(region_ids, tonumber(id))
             else
-              local mrk = { [1] = idx, [2] = pos, [3] = name }
-              table.insert(data.selected_markers, mrk)
-              return 1 -- return 1 counter, 1 marker, 0 regions
+              id = string.gsub(id, "M", "")
+              table.insert(marker_ids, tonumber(id))
+            end
+          end
+          
+          local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
+          
+          for i=0, marker_count + region_count do
+            local rv, isrgn, pos, rgn_end, name, idx = reaper.EnumProjectMarkers(i)
+            if isrgn then
+              if table.contains(region_ids, idx) then
+                local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
+                table.insert(data.selected_regions, rgn)
+              end
+            else
+              if table.contains(marker_ids, idx) then
+                local mrk = { [1] = idx, [2] = pos, [3] = name }
+                table.insert(data.selected_markers, mrk)
+              end
+            end
+          end
+        end
+        
+        return sel_count
+      else -- otherwise, count time selected items or current cursor position
+        local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
+        if loop_start < loop_end then
+          local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
+          
+          for i=0, marker_count + region_count - 1 do
+            local rv, isrgn, pos, rgn_end, name, idx = reaper.EnumProjectMarkers(i)
+            if isrgn then
+              if pos >= loop_start and rgn_end <= loop_end then
+                local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
+                table.insert(data.selected_regions, rgn)
+              end
+            else
+              if pos >= loop_start and pos <= loop_end then
+                local mrk = { [1] = idx, [2] = pos, [3] = name }
+                table.insert(data.selected_markers, mrk)
+              end 
+            end
+          end
+          
+          return #data.selected_markers + #data.selected_regions
+        else
+          local marker_count, region_count = reaper.CountProjectMarkers(0)
+          
+          for i=0, marker_count + region_count - 1 do
+            local rv, isrgn, pos, rgnend, name, idx  = reaper.EnumProjectMarkers(i)
+            
+            local cursor_pos = reaper.GetCursorPosition()
+            
+            if cursor_pos == pos then
+              if isrgn then
+                local rgn = { [1] = idx, [2] = pos, [3] = rgnend, [4] = name  }
+                table.insert(data.selected_regions, rgn)
+                return 1 -- return 1 counted, 0 markers, 1 region
+              else
+                local mrk = { [1] = idx, [2] = pos, [3] = name }
+                table.insert(data.selected_markers, mrk)
+                return 1 -- return 1 counter, 1 marker, 0 regions
+              end
             end
           end
         end
@@ -829,7 +991,7 @@ local function CountTargets()
   return 0
 end
 
-local function Navigate(next)
+function Navigate(next)
   if data.target == 0 then
     if next then
       reaper.Main_OnCommand(40285, 0) -- Track: Go to next track
@@ -851,9 +1013,8 @@ local function Navigate(next)
   end
 end
 
-local function MainFields()
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), 
-  reaper.ImGui_ColorConvertDouble4ToU32(0.2, 0.2, 0.2, 1))
+function MainFields()
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), color.mainfields)
   
   rv, form.fx_name = reaper.ImGui_InputText(ctx, "FXName", form.fx_name)
   Tooltip(ctx, "Brief Description or Title (under 25 characters preferably)")
@@ -896,28 +1057,37 @@ local function MainFields()
   
   --reaper.ImGui_SameLine(ctx, 0, 10)
   
-  reaper.ImGui_Button(ctx, "Wildcard Info...")
-  
-  Tooltip(ctx, "Future Wildcard Dropdown")
-  
-  reaper.ImGui_SameLine(ctx, 0, 10)
-  
-  if reaper.ImGui_Button(ctx, "Save Data") then
-    local data = form.fx_name .. ";" .. form.creator_id .. ";" .. form.source_id
-    reaper.SetExtState("tdspk_ucs", "data", data, false)
-  end
-  
-  reaper.ImGui_SameLine(ctx, 0, 10)
-  
-  if reaper.ImGui_Button(ctx, "Load Data") then
-    local data = reaper.GetExtState("tdspk_ucs", "data")
-    form.fx_name, form.creator_id, form.source_id = string.match(data, "(.*);(.*);(.*)")
-  end
-  
-  Tooltip(ctx, "Save and load FXName, CreatorID and SourceID from local memory")
+  WildcardInfo()
 end
 
-local function Main()
+function OptionalFields()
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Header(), color.transparent)
+  if reaper.ImGui_CollapsingHeader(ctx, "Optional Fields", nil) then
+    
+    rv, form.user_cat = reaper.ImGui_InputText(ctx, "UserCategory", form.user_cat)
+    Tooltip(ctx, "An optional tail extension of the CatID block that can be used\nas a user defined category, microphone, perspective, etc.")
+    
+    rv, form.vendor_cat = reaper.ImGui_InputText(ctx, "VendorCategory", form.vendor_cat)
+    Tooltip(ctx, "An option head extension to the FXName Block usable by vendors to\ndefine a library specific category. For example, the specific name\nof a gun, vehicle, location, etc.")
+    
+    rv, form.user_data = reaper.ImGui_InputText(ctx, "UserData", form.user_data)
+    Tooltip(ctx, "A user defined space, ofter used for an ID or Number for guaranteeing that the Filename is 100% unique...")
+    
+    
+  end
+  reaper.ImGui_PopStyleColor(ctx)
+end
+
+function PushMainStyle()
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, style.item_spacing_y)
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_SeparatorTextPadding(), 0, 0)
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameRounding(), style.frame_rounding)
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), style.frame_border)
+  
+  return 4
+end
+
+function Main()
   -- check if data can update
   data.update = false
   data.ticks = data.ticks + 1
@@ -927,12 +1097,10 @@ local function Main()
     data.ticks = 0
   end
 
-  reaper.ImGui_PushFont(ctx, font)
-  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, 10)
+  reaper.ImGui_PushFont(ctx, style.font)
+  local style_pushes = PushMainStyle()
   
   --Licensing()
-  
-  reaper.ImGui_SeparatorText(ctx, "Mandatory Fields")
   
   CategorySearch()
   CategoryFields()
@@ -941,23 +1109,15 @@ local function Main()
   
   MainFields()
   
-  reaper.ImGui_SeparatorText(ctx, "Optional")
-  
-  rv, form.user_cat = reaper.ImGui_InputText(ctx, "UserCategory", form.user_cat)
-  Tooltip(ctx, "An optional tail extension of the CatID block that can be used\nas a user defined category, microphone, perspective, etc.")
-  
-  rv, form.vendor_cat = reaper.ImGui_InputText(ctx, "VendorCategory", form.vendor_cat)
-  Tooltip(ctx, "An option head extension to the FXName Block usable by vendors to\ndefine a library specific category. For example, the specific name\nof a gun, vehicle, location, etc.")
-  
-  rv, form.user_data = reaper.ImGui_InputText(ctx, "UserData", form.user_data)
-  Tooltip(ctx, "A user defined space, ofter used for an ID or Number for guaranteeing that the Filename is 100% unique...")
+  OptionalFields()
   
   reaper.ImGui_SeparatorText(ctx, "Results")
   
-  if mx_open then
-    files = GetMediaExplorerFiles(hWnd)
-    if files then
-      reaper.ImGui_LabelText(ctx, "Directory", files[0])
+  data.mx_open, data.mx_handle = IsWindowOpen("Media Explorer")
+  
+  if data.mx_open then
+    if data.files then
+      reaper.ImGui_LabelText(ctx, "Directory", data.files[0])
     end
   end
   
@@ -991,58 +1151,161 @@ local function Main()
 
   reaper.ImGui_Separator(ctx)
   
-  mx_open, hWnd = IsWindowOpen("Media Explorer")
   OperationMode()
   
-  if mx_open then
+  if data.mx_open then
     RenameFiles()
-  else
+  else 
     -- Render Buttons for Marker/Region Manager and Navigation <>, Arrows
     if reaper.ImGui_ArrowButton(ctx, "Previous", reaper.ImGui_Dir_Left())
       or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false) then
       Navigate(false)
     end
     
-    reaper.ImGui_SameLine(ctx, 0, 10)
+    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
     
     if reaper.ImGui_ArrowButton(ctx, "Next", reaper.ImGui_Dir_Right())
       or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false) then
       Navigate(true)
     end
+    
+    Tooltip(ctx, "You can also navigate next/previous targets with the left and right arrow keys")
+    
+    if data.target == 2 then
+      local btn_text
+      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+      if data.rm_open then
+        reaper.ImGui_Text(ctx, "Renaming selections from ")
+        reaper.ImGui_SameLine(ctx)
+        reaper.ImGui_TextColored(ctx, color.blue, "Marker/Region Manager")
+      else
+        reaper.ImGui_Text(ctx, "Renaming selections from ")
+        reaper.ImGui_SameLine(ctx)
+        reaper.ImGui_TextColored(ctx, color.blue, "Arrange View")
+      end
+      Tooltip(ctx, "Toggle the Marker/Region Manager to change the mode")
+    end
   
     if data.target == 0 then
-      RenameTracks(rename_count)
+      RenameTracks()
     elseif data.target == 1 then
-      RenameMediaItems(rename_count)
+      RenameMediaItems()
     elseif data.target == 2 then
-      RenameMarkers(#data.selected_markers)
-      reaper.ImGui_SameLine(ctx, 0, 10)
-      RenameRegions(#data.selected_regions)
+      RenameMarkers()
+      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+      RenameRegions()
     end
+    
+    Tooltip(ctx, "Quick Rename targets with Ctrl+Enter")
     
     if form.applied then
       Navigate(true)
     end
   end
-    
-  if reaper.ImGui_Button(ctx, "Clear all data", 0, 40) then
-    form.fx_name, form.creator_id, form.source_id, form.user_cat, form.vendor_cat, form.user_data = ""
+  
+  WebsiteLink()
+  
+  for i=1, style_pushes do
+    reaper.ImGui_PopStyleVar(ctx)
   end
-  
-  reaper.ImGui_SameLine(ctx, 0, 10)
-  Settings()
-  
-  reaper.ImGui_PushFont(ctx, font_info)
-  reaper.ImGui_Text(ctx, "tdspkaudio.com")
-  reaper.ImGui_PopFont(ctx)
-  
-  reaper.ImGui_PopStyleVar(ctx)
   reaper.ImGui_PopFont(ctx)
 end
 
-local function Loop()
-  local visible, open = reaper.ImGui_Begin(ctx, 'tdspk - UCS Toolkit', true)
+function WebsiteLink()
+  reaper.ImGui_PushFont(ctx, style.font_info)
+  
+  reaper.ImGui_Text(ctx, "tdspkaudio.com")
+  
+  if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
+    reaper.CF_ShellExecute("https://www.tdspkaudio.com")
+  end
+  
+  reaper.ImGui_PopFont(ctx)
+end
+
+function Menu()
+  reaper.ImGui_PushFont(ctx, style.font_menu)
+  if reaper.ImGui_BeginMenuBar(ctx) then
+    if reaper.ImGui_BeginMenu(ctx, "File", true) then
+      if reaper.ImGui_MenuItem(ctx, "Save Data") then
+        local data = form.fx_name .. ";" .. form.creator_id .. ";" .. form.source_id
+        reaper.SetExtState(ext_section, "data", data, false)
+      end
+      
+      Tooltip(ctx, "Save data to local memory")
+      
+      if reaper.ImGui_MenuItem(ctx, "Load Data") then
+        local data = reaper.GetExtState(ext_section, "data")
+        form.fx_name, form.creator_id, form.source_id = string.match(data, "(.*);(.*);(.*)")
+      end
+      
+      Tooltip(ctx, "Load data from local memory")
+      
+      if reaper.ImGui_MenuItem(ctx, "Clear all data") then
+        form.fx_name, form.creator_id, form.source_id, form.user_cat, form.vendor_cat, form.user_data = ""
+      end
+      
+      reaper.ImGui_EndMenu(ctx)
+    end
+    
+    if reaper.ImGui_BeginMenu(ctx, "Info", true) then
+      local info = {
+        "UCS Toolkit",
+        "UCS Version " .. ucs.version,
+        "A tool by tdspk"
+      }
+      
+      for _, v in ipairs(info) do
+        reaper.ImGui_MenuItem(ctx, v, "", false, false)
+      end
+      
+      reaper.ImGui_Separator(ctx)
+      
+      if reaper.ImGui_BeginMenu(ctx, "Special Thanks to...") then
+        local thanks = {
+          "Cockos Inc.",
+          "cfillion for ReaImGui and the great support",
+          "The REAPER Community",
+          "hans from the REAPER Forum for the great FR",
+          "Airwiggles"
+        }
+        
+        for _, v in ipairs(thanks) do
+          reaper.ImGui_MenuItem(ctx, v, "", false, false)
+        end
+        
+        reaper.ImGui_EndMenu(ctx)
+      end
+      
+      if reaper.ImGui_MenuItem(ctx, "Website") then
+        reaper.CF_ShellExecute("https://www.tdspkaudio.com")
+      end
+      
+      if reaper.ImGui_MenuItem(ctx, "GitHub Repository") then
+        reaper.CF_ShellExecute("https://github.com/tdspk/ReaScripts")
+      end
+      
+      reaper.ImGui_EndMenu(ctx)
+    end
+    
+    Settings()
+    
+    reaper.ImGui_Dummy(ctx, style.item_spacing_x * 2, 0)
+    
+    if reaper.ImGui_BeginMenu(ctx, "Development Build", false) then
+      
+    end
+    
+    reaper.ImGui_EndMenuBar(ctx)
+    reaper.ImGui_PopFont(ctx)
+  end
+end
+
+function Loop()
+  local visible, open = reaper.ImGui_Begin(ctx, "tdspk - UCS Toolkit - UCS Version " .. ucs.version, true, reaper.ImGui_WindowFlags_MenuBar())
+  
   if visible then
+    Menu()
     Main()
     reaper.ImGui_End(ctx)
   end
@@ -1051,6 +1314,20 @@ local function Loop()
   end
 end
 
-ctx = reaper.ImGui_CreateContext("tdspk UCS Tookit")
-Init()
-Loop()
+-- check if the UCS file exists. If not, don't bother executing
+local f_exists = false
+local f = io.open(ucs_file, "r")
+if f then 
+  io.close(f)
+  f_exists = true
+end
+
+if f_exists then
+  ctx = reaper.ImGui_CreateContext("tdspk UCS Tookit")
+  Init()
+  Loop()
+else
+  reaper.ShowMessageBox("Could not load 'UCS.csv'.\nPlease check the data folder in the script root for any missing files.", "File loading failed", 0)
+end
+
+::eof::
