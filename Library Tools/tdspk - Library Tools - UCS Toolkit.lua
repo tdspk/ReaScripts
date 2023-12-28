@@ -28,7 +28,7 @@ if not imgui_exists or not sws_exists or not js_exists then
     msg = msg .. "SWS Extension - please visit https://www.sws-extension.org\n"
   end
   if not js_exists then
-    mgs = msg .. "js_ReaScriptAPI: API functions for ReaScripts - please install via ReaPack\n"
+    msg = msg .. "js_ReaScriptAPI: API functions for ReaScripts - please install via ReaPack\n"
   end
   if not imgui_exists then
     msg = msg .. "ReaImGui: ReaScript binding for Dear ImGui - please install via ReaPack\n"
