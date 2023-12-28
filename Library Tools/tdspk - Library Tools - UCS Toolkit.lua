@@ -503,47 +503,39 @@ function WildcardInfo()
   end
 end
 
-function Licensing()
-  if reaper.GetExtState("tdspk_ucs", "license") ~= "1" then
-    if BigButton(ctx, "SUPPORT THIS TOOL", nil, nil, color.green) then
-      reaper.ImGui_OpenPopup(ctx, "Licensing")
-    end
-    
-    local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetWindowViewport(ctx))
-    reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
-    
-    if reaper.ImGui_BeginPopupModal(ctx, "Licensing", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
-      reaper.ImGui_Text(ctx, "This tool is free and open source. And it will always be.")
-      reaper.ImGui_Text(ctx, "I am against restrictive licensing.\nHowever, I appreciate your support.")
-      reaper.ImGui_Text(ctx, "Purchasing a license will enable you to\nremove the 'SUPPORT THIS TOOL' button.")
-      
-      rv, buf = reaper.ImGui_InputText(ctx, "License Key", buf)
-      
-      if reaper.ImGui_Button(ctx, "Activate") then
-        
-      end
-      
-      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-      
-      if reaper.ImGui_Button(ctx, "Buy License") then
-        reaper.CF_ShellExecute("https://www.tdspkaudio.com")
-      end
-      
-      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-      
-      if reaper.ImGui_Button(ctx, "Close") then
-        reaper.ImGui_CloseCurrentPopup(ctx)
-      end
-      reaper.ImGui_EndPopup(ctx)
-    end
-  else
-    reaper.ImGui_PushFont(ctx, style.font_info)
-  
-    local email = reaper.GetExtState("tdspk_ucs", "email")
-    reaper.ImGui_Text(ctx, "Supported by: " .. email)
-    
-    reaper.ImGui_PopFont(ctx)
+function Support()
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color.red)
+
+  if reaper.ImGui_Button(ctx, "Support this Tool") then
+    reaper.ImGui_OpenPopup(ctx, "Support")
   end
+  
+  reaper.ImGui_PopStyleColor(ctx)
+  
+  local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetWindowViewport(ctx))
+  reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
+  
+  reaper.ImGui_PushFont(ctx, style.font)
+  
+  if reaper.ImGui_BeginPopupModal(ctx, "Support", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
+    reaper.ImGui_Text(ctx, "This tool is free and open source. And it will always be.")
+    reaper.ImGui_Text(ctx, "However, I do appreciate your support via donation.")
+    
+    if BigButton(ctx, "Donate on Ko-fi", nil, nil, color.green) then
+      reaper.CF_ShellExecute("https://ko-fi.com/tdspkaudio")
+    end
+    
+    if BigButton(ctx, "Donate with PayPal and Co.", nil, nil, color.yellow) then
+      reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
+    end
+    
+    if reaper.ImGui_Button(ctx, "Close") then
+      reaper.ImGui_CloseCurrentPopup(ctx)
+    end
+    reaper.ImGui_EndPopup(ctx)
+  end
+  
+  reaper.ImGui_PopFont(ctx)
 end
 
 function IsWindowOpen(name)
@@ -1120,8 +1112,6 @@ function Main()
   reaper.ImGui_PushFont(ctx, style.font)
   local style_pushes = PushMainStyle()
   
-  --Licensing()
-  
   CategorySearch()
   CategoryFields()
   
@@ -1246,7 +1236,7 @@ end
 function Menu()
   reaper.ImGui_PushFont(ctx, style.font_menu)
   if reaper.ImGui_BeginMenuBar(ctx) then
-    if reaper.ImGui_BeginMenu(ctx, "File", true) then
+    if reaper.ImGui_BeginMenu(ctx, "File", false) then
       if reaper.ImGui_MenuItem(ctx, "Save Data") then
         local data = form.fx_name .. ";" .. form.creator_id .. ";" .. form.source_id
         reaper.SetExtState(ext_section, "data", data, false)
@@ -1283,10 +1273,10 @@ function Menu()
       
       if reaper.ImGui_BeginMenu(ctx, "Special Thanks to...") then
         local thanks = {
-          "Cockos Inc.",
-          "cfillion for ReaImGui and the great support",
-          "The REAPER Community",
           "Hans Ekevi",
+          "Cockos Inc.",
+          "cfillion for ReaImGui",
+          "The REAPER Community",
           "The Airwiggles Community"
         }
         
@@ -1301,6 +1291,10 @@ function Menu()
         reaper.CF_ShellExecute("https://www.tdspkaudio.com")
       end
       
+      if reaper.ImGui_MenuItem(ctx, "Donate") then
+        reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
+      end
+      
       if reaper.ImGui_MenuItem(ctx, "GitHub Repository") then
         reaper.CF_ShellExecute("https://github.com/tdspk/ReaScripts")
       end
@@ -1309,6 +1303,8 @@ function Menu()
     end
     
     Settings()
+    
+    Support()
     
     reaper.ImGui_Dummy(ctx, style.item_spacing_x * 2, 0)
     
