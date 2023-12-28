@@ -22,6 +22,7 @@ dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')(
 
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
+
 ucs_file = script_path .. "../data/UCS.csv"
 
 color = {
@@ -89,7 +90,7 @@ data = {
   update = false
 }
 
-local ext_section = "tdspk_ucs"
+local ext_section = "tdspk_ucstoolkit"
 
 default_settings = {
   font_size = 15,
@@ -233,6 +234,9 @@ function Init()
   style.window_padding = reaper.ImGui_GetStyleVar(ctx, reaper.ImGui_StyleVar_WindowPadding())
   
   reaper.ImGui_SetNextWindowSize(ctx, style.window_width, style.window_height)
+  
+  form.syn_filter = reaper.ImGui_CreateTextFilter()
+  reaper.ImGui_Attach(ctx, form.syn_filter)
   
   ReadUcsData()
 
@@ -479,8 +483,6 @@ function WildcardInfo()
 end
 
 function Licensing()
-  local width, height = reaper.ImGui_GetWindowSize(ctx)
-  
   if reaper.GetExtState("tdspk_ucs", "license") ~= "1" then
     if BigButton(ctx, "SUPPORT THIS TOOL", nil, nil, color.green) then
       reaper.ImGui_OpenPopup(ctx, "Licensing")
@@ -497,11 +499,7 @@ function Licensing()
       rv, buf = reaper.ImGui_InputText(ctx, "License Key", buf)
       
       if reaper.ImGui_Button(ctx, "Activate") then
-          abc = reaper.ExecProcess(
-                    "curl -s https://api.gumroad.com/v2/licenses/verify -d \"product_id=xj9IrqQHNS06kNyKPGMvBQ==\" -d \"license_key=" ..
-                        buf .. "\"  -X POST", 0)
-          success = string.match(abc, "\"success\":(.*),")
-          if (success == "true") then end
+        
       end
       
       reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
@@ -676,13 +674,14 @@ function CategorySearch()
   end
   
   if is_list_open then
-    local syn_filter = reaper.ImGui_CreateTextFilter(form.search)
+    --local syn_filter = reaper.ImGui_CreateTextFilter(form.search)
+    reaper.ImGui_TextFilter_Set(form.syn_filter, form.search)
     
     -- Filter Synonys manually
     local syns = {}
     for i=1, #ucs.synonyms do
       local entry = ucs.synonyms[i]
-      if reaper.ImGui_TextFilter_PassFilter(syn_filter, entry) then
+      if reaper.ImGui_TextFilter_PassFilter(form.syn_filter, entry) then
         table.insert(syns, entry)
       end
     end
