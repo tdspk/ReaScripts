@@ -1,7 +1,8 @@
 -- @description ReaStretch
--- @version 1.0.0
+-- @version 1.0.1
 -- @author Tadej Supukovic (tdspk)
 -- @changelog
+--   Changed font to sans serif
 --   First version
 
 dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8')
@@ -491,6 +492,9 @@ reastretch = {
 local can_space = true
 ctx = reaper.ImGui_CreateContext(reastretch.window_title)
 
+local font = reaper.ImGui_CreateFont("sans-serif", 16)
+reaper.ImGui_Attach(ctx, font)
+
 function MainWindow()
   item_count = reaper.CountSelectedMediaItems(0)
   
@@ -568,8 +572,6 @@ function RenderRrreeeaaa()
   reastretch.fft = parms & bitmask.fft
   reastretch.anw = parms & bitmask.anw
   reastretch.syw = parms & bitmask.syw
-  
-  reaper.ImGui_Text(ctx, "")
   
   syn_slider = syn_to_slider[reastretch.syn]
   rv, syn_slider = reaper.ImGui_SliderInt(ctx, "Synthesis", syn_slider, 3, 10, "%dx")
@@ -661,9 +663,11 @@ function Loop()
     reaper.ImGui_SetNextWindowSize(ctx, 400, 400, reaper.ImGui_Cond_FirstUseEver())
     local visible, open = reaper.ImGui_Begin(ctx, reastretch.window_title, true)
     if visible then
-        reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 5, 5)
+        reaper.ImGui_PushFont(ctx, font)
+        reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 10, 10)
         MainWindow()
         reaper.ImGui_PopStyleVar(ctx)
+        reaper.ImGui_PopFont(ctx)
         reaper.ImGui_End(ctx)
     end
 

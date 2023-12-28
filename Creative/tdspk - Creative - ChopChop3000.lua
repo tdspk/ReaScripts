@@ -45,8 +45,13 @@ end
 -- Precise vs Sloppy (nudge)
 
 local ctx = reaper.ImGui_CreateContext('ChopChop3000')
+local font = reaper.ImGui_CreateFont("sans-serif", 16)
+reaper.ImGui_Attach(ctx, font)
 
 function RenderWindow()
+  reaper.ImGui_PushFont(ctx, font)
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 10, 10)
+  
   item_count = reaper.CountSelectedMediaItems(0)
 
   if item_count > 0 then
@@ -56,7 +61,7 @@ function RenderWindow()
       reaper.ImGui_Text(ctx, item_count .. " Media Items selected??? Don't be silly.")
     end
   
-    rv, data.algo = reaper.ImGui_SliderInt(ctx, "Mode", data.algo, 0, 1, algo_names[data.algo])
+    --rv, data.algo = reaper.ImGui_SliderInt(ctx, "Mode", data.algo, 0, 1, algo_names[data.algo])
     rv, data.chop_amt = reaper.ImGui_SliderInt(ctx, "Chop Amount", data.chop_amt, 1, 50)
     rv, data.rnd_length = reaper.ImGui_SliderDouble(ctx, "Random Length", data.rnd_length, 0, 1)
     rv, data.rnd_offset = reaper.ImGui_SliderDouble(ctx, "Random Offset", data.rnd_offset, 0, 1)
@@ -70,9 +75,9 @@ function RenderWindow()
         --item = reaper.GetSelectedMediaItem(0, 0)
         reaper.SetMediaItemSelected(item, true)
         
-        if data.algo == 0 then
+        --if data.algo == 0 then
           PreciseChop(item, interval)
-        end
+        --end
         
         -- unselect media item to avoid cursor transient confusion
         --reaper.SetMediaItemSelected(item, false)
@@ -84,6 +89,8 @@ function RenderWindow()
     reaper.ImGui_Text(ctx, "Select a Media Item to chop")
   end
   
+  reaper.ImGui_PopStyleVar(ctx)
+  reaper.ImGui_PopFont(ctx)
   reaper.ImGui_End(ctx)
 end
 
