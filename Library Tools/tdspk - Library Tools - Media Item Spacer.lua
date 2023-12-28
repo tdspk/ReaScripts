@@ -3,7 +3,7 @@
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Media Item Spacer
---  Tool for creating space between Media Items in seconds. Useful for Sound Library creation.rovided links.
+--  Tool for creating space between Media Items in seconds. Useful for Sound Library creation
 --  # Requirements
 --  JS_ReaScriptAPI, SWS Extension, ReaImGui
 --@links
