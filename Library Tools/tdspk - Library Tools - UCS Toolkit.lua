@@ -13,7 +13,7 @@
 --  https://ko-fi.com/tdspkaudio
 --  https://coindrop.to/tdspkaudio
 --@provides
---  ./data/ucs.csv
+--  data/ucs.csv
 --  [main] .
 -- @changelog
 --  First beta
