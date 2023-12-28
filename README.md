@@ -43,7 +43,9 @@ These scripts are designed to be as modular as possible, so feel free to make sh
 - Link last touched FX parameter to link parent
 - Unlink last touched parameter
 
-* Container support for Parameter Link is not supported at the moment!*
+# Library Tools
+
+
 
 # Donations
 
