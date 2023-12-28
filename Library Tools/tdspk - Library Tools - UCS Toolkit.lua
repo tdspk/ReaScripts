@@ -1,11 +1,22 @@
--- @description UCS Toolkit
--- @version 0.1
--- @author Tadej Supukovic (tdspk)
--- @provides
---   data/ucs.csv
---   [main] .
+--@description UCS Toolkit
+--@version 0.1
+--@author Tadej Supukovic (tdspk)
+--@about
+--  # UCS Tookit
+--  Tool for (re)naming tracks, items, markers, regions and Media Explorer files inside REAPER using the Universal Category System (UCS).
+--  This is a development build. Tested on Windows only. Please report bugs and FR at the provided links.
+--  # Requirements
+--  JS_ReaScriptAPI, SWS Extension, ReaImGui
+--@links
+--  Forum Thread https://forum.cockos.com/showthread.php?t=286234
+--@donation
+--  https://ko-fi.com/tdspkaudio
+--  https://coindrop.to/tdspkaudio
+--@provides
+--  data/ucs.csv
+--  [main] .
 -- @changelog
---   First beta
+--  First beta
 
 local imgui_exists = reaper.APIExists("ImGui_GetVersion")
 local sws_exists = reaper.APIExists("CF_GetSWSVersion")
