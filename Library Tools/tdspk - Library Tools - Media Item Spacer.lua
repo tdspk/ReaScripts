@@ -1,7 +1,17 @@
--- @description Media Item Spacer
--- @version 1.0.0
--- @author Tadej Supukovic (tdspk)
--- @changelog
+--@description Media Item Spacer
+--@version 1.0.0
+--@author Tadej Supukovic (tdspk)
+--@about
+--  # Media Item Spacer
+--  Tool for creating space between Media Items in seconds. Useful for Sound Library creation.rovided links.
+--  # Requirements
+--  JS_ReaScriptAPI, SWS Extension, ReaImGui
+--@links
+--  Website https://www.tdspkaudio.com
+--@donation
+--  https://ko-fi.com/tdspkaudio
+--  https://coindrop.to/tdspkaudio
+--@changelog
 --   First version
 
 dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8')

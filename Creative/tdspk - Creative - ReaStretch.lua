@@ -1,9 +1,17 @@
--- @description ReaStretch
--- @version 1.0.1
--- @author Tadej Supukovic (tdspk)
--- @changelog
---   Changed font to sans serif
---   First version
+--@description ReaStretch
+--@version 1.0.1
+--@author Tadej Supukovic (tdspk)
+--@about
+--  # ReaStretch
+--  Comprehensive GUI for Rrreeeaaa and ReaReaRea. Works for Media Items.
+--@links
+--  Website https://www.tdspkaudio.com
+--@donation
+--  https://ko-fi.com/tdspkaudio
+--  https://coindrop.to/tdspkaudio
+--@changelog
+--  Changed font to sans serif
+--  First version
 
 dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8')
 

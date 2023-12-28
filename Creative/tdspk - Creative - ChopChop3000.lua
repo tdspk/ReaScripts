@@ -1,8 +1,18 @@
--- @description ChopChop3000
--- @version 1.0.0
--- @author Tadej Supukovic (tdspk)
--- @changelog
---   First version
+--@description ChopChop3000
+--@version 1.0.0
+--@author Tadej Supukovic (tdspk)
+--@about
+--  # ChopChop3000
+--  Chop your items and randomize the leftovers
+--  # Requirements
+--  JS_ReaScriptAPI, SWS Extension, ReaImGui
+--@links
+--  Website https://www.tdspkaudio.com
+--@donation
+--  https://ko-fi.com/tdspkaudio
+--  https://coindrop.to/tdspkaudio
+--@changelog
+--  First version
 
 dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8')
 

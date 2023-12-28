@@ -11,7 +11,7 @@ https://raw.githubusercontent.com/tdspk/ReaScripts/main/index.xml
 
 You can find some tools für improving the creative workflow in REAPER.
 
-- tdspk - Creative - ChopChop3000: Chip your items and randomize the leftovers
+- tdspk - Creative - ChopChop3000: Chop your items and randomize the leftovers
 - tdspk - Creative - ReaStretch: comprehensive GUI for Rrreeeaaa and ReaReaRea
 
 These require the package: *ReaImGui: ReaScript binding for Dear ImGui*
@@ -45,7 +45,10 @@ These scripts are designed to be as modular as possible, so feel free to make sh
 
 # Library Tools
 
+These are tools and helpers for Sound Library creation.
 
+- tdspk - Library Tools - UCS Toolkit: Tool for (re)naming tracks, items, markers, regions and Media Explorer files inside REAPER using the Universal Category System (UCS)
+- tdspk - Library Tools - Media Item Spacer: Tool for creating space between Media Items in seconds. Useful for Sound Library creation
 
 # Donations
 

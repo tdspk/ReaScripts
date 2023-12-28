@@ -8,6 +8,7 @@
 --  # Requirements
 --  JS_ReaScriptAPI, SWS Extension, ReaImGui
 --@links
+--  Website https://www.tdspkaudio.com
 --  Forum Thread https://forum.cockos.com/showthread.php?t=286234
 --@donation
 --  https://ko-fi.com/tdspkaudio
