@@ -4,6 +4,8 @@
 --@about
 --  # ReaStretch
 --  Comprehensive GUI for Rrreeeaaa and ReaReaRea. Works for Media Items.
+--  # Requirements
+--  JS_ReaScriptAPI, SWS Extension, ReaImGui
 --@links
 --  Website https://www.tdspkaudio.com
 --@donation
