@@ -1,3 +1,12 @@
+-- @description UCS Toolkit
+-- @version 0.1
+-- @author Tadej Supukovic (tdspk)
+-- @provides
+--   data/ucs.csv
+--   [main] .
+-- @changelog
+--   First beta
+
 local imgui_exists = reaper.APIExists("ImGui_GetVersion")
 local sws_exists = reaper.APIExists("CF_GetSWSVersion")
 local js_exists = reaper.APIExists("JS_ReaScriptAPI_Version")
