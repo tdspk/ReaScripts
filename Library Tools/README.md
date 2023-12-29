@@ -8,3 +8,6 @@
 - [ ] Table of categories and their explanation
 - [ ] Category History
 - [ ] Load/Save presets
+
+# Bugs
+- [ ] Script becomes unresponsive when opening sessions with many media items
