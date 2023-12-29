@@ -1,6 +1,7 @@
 # Feature Requests
 
 - [ ] Navigate Regions/Markers smoothly wihout navigating Regions twice
+- [ ] Rename regions when inside region, not only at start
 - [ ] Split up region and marker as renaming targets
 - [ ] Auto-Fill form based on currentl selection
 - [ ] Iterate and rename/update regions based on existing UCS data
@@ -8,6 +9,7 @@
 - [ ] Table of categories and their explanation
 - [ ] Category History
 - [ ] Load/Save presets
+- [ ] Navigate modes with Ctrl+1,2,3 - Ctrl+F jumps to auto-search
 
 # Bugs
-- [ ] Script becomes unresponsive when opening sessions with many media items
+- [ ] Script freezes due to JS_Window_Find - use built in actions instead.
