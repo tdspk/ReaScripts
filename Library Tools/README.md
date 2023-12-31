@@ -12,4 +12,4 @@
 - [ ] Navigate modes with Ctrl+1,2,3 - Ctrl+F jumps to auto-search
 
 # Bugs
-- [ ] Script freezes due to JS_Window_Find - use built in actions instead.
+- [x] Script freezes due to JS_Window_Find - use built in actions instead.
