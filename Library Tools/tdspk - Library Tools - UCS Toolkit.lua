@@ -368,7 +368,7 @@ function GetMediaExplorerFiles()
 
   local index = 0
   -- get path from combobox
-  local combo = reaper.JS_Window_FindChildByID(hWnd, 1002)
+  local combo = reaper.JS_Window_FindChildByID(data.mx_handle, 1002)
   local edit = reaper.JS_Window_FindChildByID(combo, 1001)
   local path = reaper.JS_Window_GetTitle(edit, "", 1024)
 
@@ -539,18 +539,25 @@ function Support()
 end
 
 function IsWindowOpen(name)
-  -- TODO implement mx support for other than windows (for now)
-  if not string.find(data.os, "Win") then
-    return false
+  local is_open
+  local handle
+  
+  if name == "Media Explorer" then
+    is_open = reaper.GetToggleCommandState(50124) -- Media explorer: Show/hide media explorer
+    handle = data.mx_handle
+  elseif name == "Region/Marker Manager" then
+    is_open = reaper.GetToggleCommandState(40326) -- View: Show region/marker manager window
+    handle = data.rm_handle
   end
   
-  local title = reaper.JS_Localize(name, "common")
-  local hWnd = reaper.JS_Window_Find(title, true)
-  
-  if hWnd then
-    return true, hWnd
-  else
+  if is_open == 0 then
     return false
+  else
+    local title = reaper.JS_Localize(name, "common")
+    if not handle then
+      handle = reaper.JS_Window_Find(title, true)
+    end
+    return true, handle
   end
 end
 
@@ -900,7 +907,7 @@ end
 
 function CountTargets()
   if data.mx_open then
-    data.file_count, data.files = GetMediaExplorerFiles(hWnd)
+    data.file_count, data.files = GetMediaExplorerFiles(data.mx_handle)
     return data.file_count
   else
     if data.target == 0 then
@@ -913,7 +920,7 @@ function CountTargets()
       data.selected_markers = {}
       data.selected_regions = {}
       
-      data.rm_open, data.rm_handle = IsWindowOpen("Region/Marker Manager", "common")
+      data.rm_open, data.rm_handle = IsWindowOpen("Region/Marker Manager")
       if data.rm_handle then -- if Region/Marker Manager is open, count there
         local manager = reaper.JS_Window_FindChildByID(data.rm_handle, 0x42F)
         local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
