@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.1.3
+--@version 0.1.4
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -95,7 +95,8 @@ local form = {
   user_cat = "",
   vendor_cat = "",
   user_data = "",
-  applied = false
+  applied = false,
+  search_sc = false
 }
 
 data = {
@@ -677,9 +678,10 @@ end
 function CategorySearch()
   local rv
   
-  if form.applied then 
+  if form.applied or form.search_sc then 
     reaper.ImGui_SetKeyboardFocusHere(ctx)
     form.applied = false
+    form.search_sc = false
   end
   
   rv, form.search = reaper.ImGui_InputText(ctx, "Search category...", form.search)
@@ -1010,6 +1012,21 @@ function CountTargets()
   return 0
 end
 
+function SearchShortcut()
+  return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl()) 
+    and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_F(), false)
+end
+
+function NavigateNext()
+  return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl()) 
+    and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false)
+end
+
+function NavigatePreviouis()
+  return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl()) 
+    and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false)
+end
+
 function Navigate(next)
   if data.target == 0 then
     if next then
@@ -1175,18 +1192,18 @@ function Main()
   else 
     -- Render Buttons for Marker/Region Manager and Navigation <>, Arrows
     if reaper.ImGui_ArrowButton(ctx, "Previous", reaper.ImGui_Dir_Left())
-      or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false) then
+      or NavigatePreviouis() then
       Navigate(false)
     end
     
     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
     
     if reaper.ImGui_ArrowButton(ctx, "Next", reaper.ImGui_Dir_Right())
-      or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false) then
+      or NavigateNext() then
       Navigate(true)
     end
     
-    Tooltip(ctx, "You can also navigate next/previous targets with the left and right arrow keys")
+    Tooltip(ctx, "You can also navigate next/previous targets with Ctrl+Left/Right arrow keys")
     
     if data.target == 2 then
       local btn_text
@@ -1214,6 +1231,8 @@ function Main()
     end
     
     Tooltip(ctx, "Quick Rename targets with Ctrl+Enter")
+    
+    form.search_sc = SearchShortcut()
     
     if form.applied then
       Navigate(true)

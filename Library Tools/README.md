@@ -9,7 +9,7 @@
 - [ ] Table of categories and their explanation
 - [ ] Category History
 - [ ] Load/Save presets
-- [ ] Navigate modes with Ctrl+1,2,3 - Ctrl+F jumps to auto-search
+- [x] Navigate modes with Ctrl+1,2,3 - Ctrl+F jumps to auto-search
 
 # Bugs
 - [x] Script freezes due to JS_Window_Find - use built in actions instead.
