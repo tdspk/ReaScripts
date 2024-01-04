@@ -106,6 +106,8 @@ data = {
   track_count = 0,
   item_count = 0,
   file_count = 0,
+  markers = {},
+  regions = {},
   selected_markers = {},
   selected_regions = {},
   ticks = 0,
@@ -563,12 +565,14 @@ function IsWindowOpen(name)
 end
 
 function ToggleTarget()
-  if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_1(), false) then
+  if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_F1(), false) then
     data.target = 0
-  elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_2(), false) then
+  elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_F2(), false) then
     data.target = 1
-  elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_3(), false) then
+  elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_F3(), false) then
     data.target = 2
+  elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_F4(), false) then
+    data.target = 3
   end
 end
 
@@ -594,10 +598,13 @@ function OperationMode()
     rv, data.target = reaper.ImGui_RadioButtonEx(ctx, "Media Items", data.target, 1)
     has_changed = has_changed or rv
     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-    rv, data.target = reaper.ImGui_RadioButtonEx(ctx, "Markers/Regions", data.target, 2)
+    rv, data.target = reaper.ImGui_RadioButtonEx(ctx, "Markers", data.target, 2)
+    has_changed = has_changed or rv
+    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+    rv, data.target = reaper.ImGui_RadioButtonEx(ctx, "Regions", data.target, 3)
     has_changed = has_changed or rv
     
-    Tooltip(ctx, "You can toggle the renaming target with numbers 1-3")
+    Tooltip(ctx, "You can toggle the renaming target with F1-F4")
     
     ToggleTarget()
     
@@ -843,7 +850,7 @@ function RenameMarkers()
   local label = " Marker"
   if #data.selected_markers > 1 then label = " Markers" end
 
-  if BigButton(ctx, "Rename " .. #data.selected_markers .. label, 2, 20) or Apply() then
+  if BigButton(ctx, "Rename " .. #data.selected_markers .. label, 1, 20) or Apply() then
     for i, v in ipairs(data.selected_markers) do
       local idx = v[1]
       local pos = v[2]
@@ -860,7 +867,7 @@ function RenameRegions()
   local label = " Region"
   if #data.selected_regions > 1 then label = " Regions" end
   
-  if BigButton(ctx,  "Rename " .. #data.selected_regions .. label, 2, 20) or Apply() then
+  if BigButton(ctx,  "Rename " .. #data.selected_regions .. label, 1, 20) or Apply() then
     for i, v in ipairs(data.selected_regions) do
       local idx = v[1]
       local pos = v[2]
@@ -907,6 +914,118 @@ function RenameFiles()
   end
 end
 
+function CacheMarkers(cacheregions)
+  data.markers = {}
+  data.regions = {}
+
+  local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
+  
+  for i=0, marker_count + region_count -1 do
+    local rv, isrgn, pos, rgnend, name, idx = reaper.EnumProjectMarkers2(0, i)
+    if isrgn and cacheregions then
+      local rgn = { [1] = idx, [2] = pos, [3] = rgnend, [4] = name }
+      table.insert(data.regions, rgn)
+    else
+      local mrk = { [1] = idx, [2] = pos, [3] = name }
+      table.insert(data.markers, mrk)
+    end
+  end
+end
+
+function GetSelectedMarkers(getregions)
+  local selected_markers = {}
+  local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
+  
+  local t
+  if getregions then t = data.regions else t = data.markers end
+  
+  if loop_start < loop_end then
+    for i,v in ipairs(t) do
+      local mrk
+      if getregions then
+        local pos = v[2]
+        local rgn_end = v[3]
+        if pos >= loop_start and rgn_end <= loop_end then
+          mrk = { [1] = v[1], [2] = v[2], [3] = v[3], [4] = v[4] }
+        end
+      else
+        local pos = v[2]
+        if pos >= loop_start and pos <= loop_end then
+          mrk = { [1] = v[1], [2] = v[2], [3] = v[3] }
+        end
+      end
+      table.insert(selected_markers, mrk)
+    end
+  else -- selected markers and regions for single items
+    local cursor_pos = reaper.GetCursorPosition()
+    
+    for i,v in ipairs(t) do
+      local mrk
+      
+      if getregions then
+        local pos = v[2]
+        local rgn_end = v[3]
+        if cursor_pos >= pos and cursor_pos <= rgn_end then
+          mrk = { [1] = v[1], [2] = v[2], [3] = v[3], [4] = v[4] }
+        end
+      else
+        local pos = v[2]
+        if cursor_pos == pos then
+          mrk = { [1] = v[1], [2] = v[2], [3] = v[3] }
+        end
+      end
+      
+      if mrk then
+        table.insert(selected_markers, mrk)
+        break
+      end
+    end
+  end
+  
+  return selected_markers
+end
+
+function CountManagerMarkers(countregions)
+  local manager = reaper.JS_Window_FindChildByID(data.rm_handle, 0x42F)
+  local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
+  local selected_markers = {}
+  
+  if sel_count > 0 then
+    local selection = string.split(sel_indexes, ",")
+    
+    local ids = {}
+   
+    local id_prefix = ""
+    if countregions then id_prefix = "R" else id_prefix = "M" end
+    
+    for i, v in ipairs(selection) do
+      local id = reaper.JS_ListView_GetItemText(manager, tonumber(v), 1)
+      id = string.gsub(id, id_prefix, "")
+      table.insert(ids, tonumber(id))
+    end
+    
+    local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
+
+    local t
+    if countregions then t = data.regions else t = data.markers end
+    
+    for i,v in ipairs(t) do
+      local idx = v[1]
+      if table.contains(ids, idx) then
+        local mrk
+        if countregions then
+          mrk = { [1] = v[1], [2] = v[2], [3] = v[3], [4] = v[4] }
+        else
+          mrk =  { [1] = v[1], [2] = v[2], [3] = v[3] }
+        end
+        table.insert(selected_markers, mrk)
+      end
+    end
+  end
+  
+  return selected_markers
+end
+
 function CountTargets()
   if data.mx_open then
     data.file_count, data.files = GetMediaExplorerFiles(data.mx_handle)
@@ -920,91 +1039,31 @@ function CountTargets()
       return data.item_count
     elseif data.target == 2 then
       data.selected_markers = {}
-      data.selected_regions = {}
+      
+      CacheMarkers(false)
       
       data.rm_open, data.rm_handle = IsWindowOpen("Region/Marker Manager")
       if data.rm_handle then -- if Region/Marker Manager is open, count there
-        local manager = reaper.JS_Window_FindChildByID(data.rm_handle, 0x42F)
-        local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
-        
-        if sel_count > 0 then
-          local selection = string.split(sel_indexes, ",")
-          
-          local marker_ids = {}
-          local region_ids = {}
-          
-          for i, v in ipairs(selection) do
-            local id = reaper.JS_ListView_GetItemText(manager, tonumber(v), 1)
-            if string.find(id, "R") then
-              id = string.gsub(id, "R", "")
-              table.insert(region_ids, tonumber(id))
-            else
-              id = string.gsub(id, "M", "")
-              table.insert(marker_ids, tonumber(id))
-            end
-          end
-          
-          local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
-          
-          for i=0, marker_count + region_count do
-            local rv, isrgn, pos, rgn_end, name, idx = reaper.EnumProjectMarkers(i)
-            if isrgn then
-              if table.contains(region_ids, idx) then
-                local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
-                table.insert(data.selected_regions, rgn)
-              end
-            else
-              if table.contains(marker_ids, idx) then
-                local mrk = { [1] = idx, [2] = pos, [3] = name }
-                table.insert(data.selected_markers, mrk)
-              end
-            end
-          end
-        end
-        
-        return sel_count
-      else -- otherwise, count time selected items or current cursor position
-        local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
-        if loop_start < loop_end then
-          local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
-          
-          for i=0, marker_count + region_count - 1 do
-            local rv, isrgn, pos, rgn_end, name, idx = reaper.EnumProjectMarkers(i)
-            if isrgn then
-              if pos >= loop_start and rgn_end <= loop_end then
-                local rgn = { [1] = idx, [2] = pos, [3] = rgn_end, [4] = name  }
-                table.insert(data.selected_regions, rgn)
-              end
-            else
-              if pos >= loop_start and pos <= loop_end then
-                local mrk = { [1] = idx, [2] = pos, [3] = name }
-                table.insert(data.selected_markers, mrk)
-              end 
-            end
-          end
-          
-          return #data.selected_markers + #data.selected_regions
-        else
-          local marker_count, region_count = reaper.CountProjectMarkers(0)
-          
-          for i=0, marker_count + region_count - 1 do
-            local rv, isrgn, pos, rgnend, name, idx  = reaper.EnumProjectMarkers(i)
-            
-            local cursor_pos = reaper.GetCursorPosition()
-            
-            if cursor_pos == pos then
-              if isrgn then
-                local rgn = { [1] = idx, [2] = pos, [3] = rgnend, [4] = name  }
-                table.insert(data.selected_regions, rgn)
-                return 1 -- return 1 counted, 0 markers, 1 region
-              else
-                local mrk = { [1] = idx, [2] = pos, [3] = name }
-                table.insert(data.selected_markers, mrk)
-                return 1 -- return 1 counter, 1 marker, 0 regions
-              end
-            end
-          end
-        end
+        data.selected_markers = CountManagerMarkers(false)
+        return #data.selected_markers
+      else
+        -- get selected markers time selection or single items
+        data.selected_markers = GetSelectedMarkers(false)
+        return #data.selected_markers
+      end
+    elseif data.target == 3 then
+      data.selected_regions = {}
+      
+      CacheMarkers(true)
+      
+      data.rm_open, data.rm_handle = IsWindowOpen("Region/Marker Manager")
+      if data.rm_handle then -- if Region/Marker Manager is open, count there
+        data.selected_regions = CountManagerMarkers(true)
+        return #data.selected_markers
+      else
+        -- get selected markers time selection or single items
+        data.selected_regions = GetSelectedMarkers(true)
+        return #data.selected_markers
       end
     end
   end
@@ -1226,7 +1285,7 @@ function Main()
       RenameMediaItems()
     elseif data.target == 2 then
       RenameMarkers()
-      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+    elseif data.target == 3 then
       RenameRegions()
     end
     
