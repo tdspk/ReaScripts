@@ -111,7 +111,9 @@ data = {
   selected_markers = {},
   selected_regions = {},
   ticks = 0,
-  update = false
+  update = false,
+  nav_marker = 0,
+  nav_region = 0
 }
 
 local ext_section = "tdspk_ucstoolkit"
@@ -284,6 +286,12 @@ function table.contains(table, value)
   end
   
   return false
+end
+
+function clamp(v, min, max)
+  if v > max then return max end
+  if v < min then return min end
+  return v
 end
 
 function ParseFilename(filename) 
@@ -920,12 +928,12 @@ function CacheMarkers(cacheregions)
 
   local rv, marker_count, region_count = reaper.CountProjectMarkers(0)
   
-  for i=0, marker_count + region_count -1 do
+  for i=0, marker_count + region_count - 1 do
     local rv, isrgn, pos, rgnend, name, idx = reaper.EnumProjectMarkers2(0, i)
     if isrgn and cacheregions then
       local rgn = { [1] = idx, [2] = pos, [3] = rgnend, [4] = name }
       table.insert(data.regions, rgn)
-    else
+    elseif not isrgn then
       local mrk = { [1] = idx, [2] = pos, [3] = name }
       table.insert(data.markers, mrk)
     end
@@ -1081,9 +1089,60 @@ function NavigateNext()
     and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false)
 end
 
-function NavigatePreviouis()
+function NavigatePrevious()
   return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl()) 
     and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false)
+end
+
+function GetNearestMarker(isrgn)
+  local t = {}
+  if isrgn then t = data.regions else t = data.markers end
+  
+  local cur_pos = reaper.GetCursorPositionEx(0)
+  local min = -1
+  local nearest_marker
+  
+  for i,v in ipairs(t) do
+    local distance = math.abs(v[2] - cur_pos) 
+    if distance < min or min == -1 then
+      min = distance
+      nearest_marker = {i, v[2]}
+    end
+  end
+  
+  if min == 0 then
+    return nil
+  else
+    return nearest_marker
+  end
+end
+
+function NavigateMarker(isrgn, step)
+  local t = {}
+  if isrgn then t = data.regions else t = data.markers end
+  
+  local nav_marker
+  if isrgn then nav_marker = data.nav_region else nav_marker = data.nav_marker end
+  
+  -- markers are cached in their respective order
+  -- if no current marker is set (0), take the first one near cursor (default action)
+  
+  local m = GetNearestMarker(isrgn)
+  if m then
+    reaper.SetEditCurPos2(0, m[2], true, true)
+    nav_marker = m[1]
+  else
+    nav_marker = clamp(nav_marker + step, 1, #t)
+    
+    local mrk = t[nav_marker]
+    
+    if mrk then
+      reaper.SetEditCurPos2(0, mrk[2], true, true)
+      return nav_marker
+    end
+  end
+  
+  return nav_marker
 end
 
 function Navigate(next)
@@ -1101,9 +1160,15 @@ function Navigate(next)
     end
   elseif data.target == 2 then
     if next then
-      reaper.Main_OnCommand(40173, 0) -- Markers: Go to next marker/project end
+      data.nav_marker = NavigateMarker(false, 1)
     else
-      reaper.Main_OnCommand(40172, 0) -- Markers: Go to previous marker/project start
+      data.nav_marker = NavigateMarker(false, -1)
+    end
+  elseif data.target == 3 then
+    if next then
+      data.nav_region = NavigateMarker(true, 1)
+    else
+      data.nav_region = NavigateMarker(true, -1)
     end
   end
 end
@@ -1251,7 +1316,7 @@ function Main()
   else 
     -- Render Buttons for Marker/Region Manager and Navigation <>, Arrows
     if reaper.ImGui_ArrowButton(ctx, "Previous", reaper.ImGui_Dir_Left())
-      or NavigatePreviouis() then
+      or NavigatePrevious() then
       Navigate(false)
     end
     

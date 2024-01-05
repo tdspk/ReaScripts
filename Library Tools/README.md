@@ -1,7 +1,7 @@
 # Feature Requests
 
 - [x] Split up region and marker as renaming targets
-- [ ] Navigate Regions/Markers smoothly wihout navigating Regions twice
+- [x] Navigate Regions/Markers smoothly wihout navigating Regions twice
 - [x] Rename regions when inside region, not only at start
 - [ ] Auto-Fill form based on currentl selection
 - [ ] Iterate and rename/update regions based on existing UCS data
