@@ -114,7 +114,8 @@ data = {
   update = false,
   nav_marker = 0,
   nav_region = 0,
-  state_count = 0
+  state_count = 0,
+  tracks = {}
 }
 
 local ext_section = "tdspk_ucstoolkit"
@@ -744,14 +745,21 @@ function Apply()
 end
 
 function SubstituteIdx(filename, index)
+  local idx
+  if index < 10 then
+    idx = 0 .. tostring(index)
+  else
+    idx = tostring(index)
+  end
+
   -- check if $idx exists
-  local idx = string.find(filename, "$idx")
+  local idx_wc = string.find(filename, "$idx")
   
-  if idx then
-    return string.gsub(filename, "$idx", tostring(index))
+  if idx_wc then
+    return string.gsub(filename, "$idx", idx)
   end
   
-  return filename .. " " .. tostring(index)
+  return filename .. " " .. idx
 end
 
 function SubstituteSelf(filename, name)
@@ -785,20 +793,18 @@ end
 
 function RenameTracks()
   local label = " Track"
-  if data.track_count > 1 then label = " Tracks" end
+  if #data.tracks > 1 then label = " Tracks" end
   
-  if BigButton(ctx,  "Rename " .. data.track_count .. label, nil, nil, color.green) or Apply() then
-    for i = 0, data.track_count - 1 do
-      local track = reaper.GetSelectedTrack(0, i)
-      local rv, track_name = reaper.GetTrackName(track)
-      
-      -- TODO Refactor and move into one function
-      local filename = ucs_filename
-      if data.track_count > 1 then filename = SubstituteIdx(filename, i + 1) end
-      filename = SubstituteSelf(filename, track_name)
+  if BigButton(ctx,  "Rename " .. #data.tracks .. label, nil, nil, color.green) or Apply() then
+    
+    reaper.Undo_BeginBlock()
+    for i = 1, #data.tracks do 
+      local track = data.tracks[i]
+      local filename = data.ucs_names[i]
 
       reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
     end
+    reaper.Undo_EndBlock("UCS Toolkit: Renamed " .. #data.tracks .. " tracks", 0)
   end
 end
 
@@ -911,6 +917,54 @@ function CacheMarkers(cacheregions)
   end
 end
 
+function CacheSelectedTracks()
+  data.tracks = {}
+  for i=0, reaper.CountSelectedTracks(0) do
+    local track = reaper.GetSelectedTrack(0, i)
+    data.tracks[i+1] = track
+  end
+end
+
+function CacheUCSData()
+  data.ucs_names = {}
+  local t
+  if data.target == 0 then
+    t = data.tracks
+  end
+
+  -- extract UCS data per selected track
+  for i=1, #t do
+    local target_name
+    if data.target == 0 then
+      _, target_name = reaper.GetTrackName(t[i])
+    end
+    
+    local _, fx_name, creator_id, source_id = ParseFilename(target_name)
+    
+    if form.fx_name ~= "" then
+      fx_name = form.fx_name
+    end
+    
+    if form.creator_id ~= "" then
+      creator_id = form.creator_id
+    end
+    
+    if form.source_id ~= "" then
+      source_id = form.source_id
+    end
+    
+    local filename = CreateUCSFilename(settings.delimiter, form.cat_id, form.user_cat, form.vendor_cat, 
+      fx_name, creator_id, source_id, form.user_data)
+    
+    if #data.tracks > 1 then
+      filename = SubstituteIdx(filename, i)
+    end
+    filename = SubstituteSelf(filename, target_name)
+    
+    data.ucs_names[i] = filename
+  end
+end
+
 function GetSelectedMarkers(getregions)
   local selected_markers = {}
   local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
@@ -1011,8 +1065,9 @@ function CountTargets()
     return data.file_count
   else
     if data.target == 0 then
-      data.track_count = reaper.CountSelectedTracks(0)
-      return data.track_count
+      CacheSelectedTracks()
+      CacheUCSData()
+      return #data.tracks
     elseif data.target == 1 then
       data.item_count = reaper.CountSelectedMediaItems(0)
       return data.item_count
@@ -1256,7 +1311,7 @@ function Main()
   
   OptionalFields()
   
-  reaper.ImGui_SeparatorText(ctx, "Results")
+  reaper.ImGui_SeparatorText(ctx, "Preview")
   
   data.mx_open, data.mx_handle = IsWindowOpen("Media Explorer")
   
@@ -1279,25 +1334,15 @@ function Main()
   -- cache filenames for later renaming
   
   if data.rename_count <= 1 then
-    local filename = string.gsub(ucs_filename, "$idx", 1)
-    reaper.ImGui_LabelText(ctx, "Filename", filename)
+    reaper.ImGui_LabelText(ctx, "Filename", data.ucs_names[1])
   else
     local filenames = ""
-    local format = ucs_filename .. " $idx" .. "\0"
     
-    -- check if $idx exists
-    local idx = string.find(ucs_filename, "$idx")
-    
-    if idx then
-      format = ucs_filename .. "\0"
+    for i=1, #data.ucs_names do
+      filenames = filenames .. data.ucs_names[i] .. "\0"
     end
     
-    for i=1, data.rename_count do
-      local fname = string.gsub(format, "$idx", tostring(i))
-      filenames = filenames .. fname
-    end
-    
-     reaper.ImGui_Combo(ctx, "Filenames", 0, filenames)
+    reaper.ImGui_Combo(ctx, "Filenames", 0, filenames)
   end
 
   reaper.ImGui_Separator(ctx)
