@@ -4,7 +4,7 @@
 - [x] Navigate Regions/Markers smoothly wihout navigating Regions twice
 - [x] Rename regions when inside region, not only at start
 - [x] Auto-Fill form based on currentl selection
-- [ ] index with 01 instead of 1
+- [x] index with 01 instead of 1
 - [ ] Iterate and rename/update regions based on existing UCS data
     - Scenario: "When selecting items/regions both with UCS details and not, when renaming, could the script add UCS to the ones that miss it, and change and update the UCS on the ones that already have them? "
 - [ ] Edit Mode

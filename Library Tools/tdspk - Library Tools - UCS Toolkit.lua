@@ -103,8 +103,6 @@ data = {
   target = 0,
   target_self = "",
   rename_count = 0,
-  track_count = 0,
-  item_count = 0,
   file_count = 0,
   markers = {},
   regions = {},
@@ -115,7 +113,8 @@ data = {
   nav_marker = 0,
   nav_region = 0,
   state_count = 0,
-  tracks = {}
+  tracks = {},
+  items = {}
 }
 
 local ext_section = "tdspk_ucstoolkit"
@@ -296,7 +295,7 @@ function clamp(v, min, max)
   return v
 end
 
-function ParseFilename(filename) 
+function ParseFilename(filename)
   local cat_id, fx_name, creator_id, source_id = string.match(filename, "(.*)_(.*)_(.*)_(.*)")
   return cat_id, fx_name, creator_id, source_id
 end
@@ -796,7 +795,6 @@ function RenameTracks()
   if #data.tracks > 1 then label = " Tracks" end
   
   if BigButton(ctx,  "Rename " .. #data.tracks .. label, nil, nil, color.green) or Apply() then
-    
     reaper.Undo_BeginBlock()
     for i = 1, #data.tracks do 
       local track = data.tracks[i]
@@ -804,26 +802,24 @@ function RenameTracks()
 
       reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
     end
-    reaper.Undo_EndBlock("UCS Toolkit: Renamed " .. #data.tracks .. " tracks", 0)
+    reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.tracks .. " tracks", 0)
   end
 end
 
 function RenameMediaItems()
   local label = " Item"
-  if data.item_count > 1 then label = " Items" end
+  if #data.items > 1 then label = " Items" end
 
-  if BigButton(ctx, "Rename " .. data.item_count ..  label, nil, nil, color.yellow) or Apply() then
-    for i = 0, data.item_count - 1 do
-      local item = reaper.GetSelectedMediaItem(0, i)
+  if BigButton(ctx, "Rename " .. #data.items ..  label, nil, nil, color.yellow) or Apply() then
+    reaper.Undo_BeginBlock()
+    for i = 1, #data.items do
+      local item = data.items[i]
       local take = reaper.GetActiveTake(item)
-      local take_name = reaper.GetTakeName(take)
-      
-      local filename = ucs_filename
-      if data.item_count > 1 then filename = SubstituteIdx(filename, i + 1) end
-      filename = SubstituteSelf(filename, take_name)
+      local filename = data.ucs_names[i]
       
       reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
     end
+    reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.items .. " tracks", 0)
   end
 end
 
@@ -835,11 +831,7 @@ function RenameMarkers()
     for i, v in ipairs(data.selected_markers) do
       local idx = v[1]
       local pos = v[2]
-      local name = v[3]
-      
-      local filename = ucs_filename
-      if #data.selected_markers > 1 then filename = SubstituteIdx(filename, i + 1) end
-      filename = SubstituteSelf(filename, name)
+      local filename = data.ucs_names[i]
       
       reaper.SetProjectMarker(idx, false, pos, pos, filename)
     end
@@ -855,11 +847,7 @@ function RenameRegions()
       local idx = v[1]
       local pos = v[2]
       local rgnend = v[3]
-      local name = v[4]
-      
-      local filename = ucs_filename
-      if #data.selected_regions > 1 then filename = SubstituteIdx(filename, i + 1) end
-      filename = SubstituteSelf(filename, name)
+      local filename = data.ucs_names[i]
       
       reaper.SetProjectMarker(idx, true, pos, rgnend, filename)
     end
@@ -925,18 +913,39 @@ function CacheSelectedTracks()
   end
 end
 
+function CacheSelectedItems()
+  data.items = {}
+  for i=0, reaper.CountSelectedMediaItems(0) do
+    local item = reaper.GetSelectedMediaItem(0, i)
+    data.items[i+1] = item
+  end
+end
+
 function CacheUCSData()
   data.ucs_names = {}
+  
   local t
   if data.target == 0 then
     t = data.tracks
+  elseif data.target == 1 then
+    t = data.items
+  elseif data.target == 2 then
+    t = data.selected_markers
+  elseif data.target == 3 then
+    t = data.selected_regions
   end
-
-  -- extract UCS data per selected track
+  
   for i=1, #t do
     local target_name
     if data.target == 0 then
       _, target_name = reaper.GetTrackName(t[i])
+    elseif data.target == 1 then
+      local take = reaper.GetMediaItemTake(t[i], 0)
+      target_name = reaper.GetTakeName(take)
+    elseif data.target == 2 then
+      target_name = t[i][3]
+    elseif data.target == 3 then
+      target_name = t[i][4]
     end
     
     local _, fx_name, creator_id, source_id = ParseFilename(target_name)
@@ -956,7 +965,7 @@ function CacheUCSData()
     local filename = CreateUCSFilename(settings.delimiter, form.cat_id, form.user_cat, form.vendor_cat, 
       fx_name, creator_id, source_id, form.user_data)
     
-    if #data.tracks > 1 then
+    if #t > 1 or string.find(filename, "$idx") then
       filename = SubstituteIdx(filename, i)
     end
     filename = SubstituteSelf(filename, target_name)
@@ -1060,17 +1069,17 @@ function CountManagerMarkers(countregions)
 end
 
 function CountTargets()
+  local filecount = 0
   if data.mx_open then
     data.file_count, data.files = GetMediaExplorerFiles(data.mx_handle)
     return data.file_count
   else
     if data.target == 0 then
       CacheSelectedTracks()
-      CacheUCSData()
-      return #data.tracks
+      filecount = #data.tracks
     elseif data.target == 1 then
-      data.item_count = reaper.CountSelectedMediaItems(0)
-      return data.item_count
+      CacheSelectedItems()
+      filecount = #data.items
     elseif data.target == 2 then
       data.selected_markers = {}
       
@@ -1079,11 +1088,11 @@ function CountTargets()
       data.rm_open, data.rm_handle = IsWindowOpen("Region/Marker Manager")
       if data.rm_handle then -- if Region/Marker Manager is open, count there
         data.selected_markers = CountManagerMarkers(false)
-        return #data.selected_markers
+        filecount = #data.selected_markers
       else
         -- get selected markers time selection or single items
         data.selected_markers = GetSelectedMarkers(false)
-        return #data.selected_markers
+        filecount = #data.selected_markers
       end
     elseif data.target == 3 then
       data.selected_regions = {}
@@ -1093,16 +1102,18 @@ function CountTargets()
       data.rm_open, data.rm_handle = IsWindowOpen("Region/Marker Manager")
       if data.rm_handle then -- if Region/Marker Manager is open, count there
         data.selected_regions = CountManagerMarkers(true)
-        return #data.selected_markers
+        filecount = #data.selected_regions
       else
         -- get selected markers time selection or single items
         data.selected_regions = GetSelectedMarkers(true)
-        return #data.selected_markers
+        filecount = #data.selected_regions
       end
     end
   end
   
-  return 0
+  CacheUCSData()
+  
+  return filecount
 end
 
 function SearchShortcut()
@@ -1326,12 +1337,6 @@ function Main()
   if data.update then
     data.rename_count = CountTargets()
   end
-  
-  -- check if target has UCS data with match
-  -- create UCS name per target
-  -- check if target has UCS data with match
-  -- override if form data is filled
-  -- cache filenames for later renaming
   
   if data.rename_count <= 1 then
     reaper.ImGui_LabelText(ctx, "Filename", data.ucs_names[1])
