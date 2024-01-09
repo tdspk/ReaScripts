@@ -113,7 +113,8 @@ data = {
   ticks = 0,
   update = false,
   nav_marker = 0,
-  nav_region = 0
+  nav_region = 0,
+  state_count = 0
 }
 
 local ext_section = "tdspk_ucstoolkit"
@@ -625,23 +626,6 @@ end
 function CategoryFields()
   local cat_changed, sub_changed, id_changed
   cat_changed, form.cur_cat = reaper.ImGui_Combo(ctx, "Category", form.cur_cat, combo.cat_items)
-  
-  --[[
-  if reaper.ImGui_BeginCombo(ctx, "Category", combo.idx_cat[form.cur_cat]) then
-    reaper.ImGui_TextFilter_Draw(filter_cat, ctx, "Filter")
-    
-    for i, v in ipairs(combo.idx_cat) do
-      if reaper.ImGui_TextFilter_PassFilter(filter_cat, v) then
-        if reaper.ImGui_Selectable(ctx, v) then 
-          cat_changed = true
-          form.cur_cat = i
-        end
-      end
-    end
-    
-    reaper.ImGui_EndCombo(ctx)
-  end
-  ]]--
 
   if cat_changed or combo.sub_items == "" then
     -- populate subcategories based on selected category
@@ -650,24 +634,6 @@ function CategoryFields()
   end
   
   sub_changed, form.cur_sub = reaper.ImGui_Combo(ctx, "Subcategory", form.cur_sub, combo.sub_items)
-  
-  --[[
-  if reaper.ImGui_BeginCombo(ctx, "Subcategory", combo.idx_sub[form.cur_sub]) then
-    --reaper.ImGui_SetKeyboardFocusHere(ctx)
-    reaper.ImGui_TextFilter_Draw(filter_sub, ctx, "Filter")
-    
-    for i, v in ipairs(combo.idx_sub) do
-      if reaper.ImGui_TextFilter_PassFilter(filter_sub, v) then
-        if reaper.ImGui_Selectable(ctx, v) then
-          sub_changed = true
-          form.cur_sub = i
-        end
-      end
-    end
-    
-    reaper.ImGui_EndCombo(ctx)
-  end
-  ]]--
   
   if cat_changed or sub_changed or form.cat_id == "" then
     form.sub_name = combo.idx_sub[form.cur_sub]
@@ -777,25 +743,25 @@ function Apply()
   return rv
 end
 
-function SubstituteIdx(index)
+function SubstituteIdx(filename, index)
   -- check if $idx exists
-  local idx = string.find(ucs_filename, "$idx")
+  local idx = string.find(filename, "$idx")
   
   if idx then
-    return string.gsub(ucs_filename, "$idx", tostring(index))
+    return string.gsub(filename, "$idx", tostring(index))
   end
   
-  return ucs_filename .. " " .. tostring(index)
+  return filename .. " " .. tostring(index)
 end
 
-function SubstituteSelf(name)
-  local self = string.find(ucs_filename, "$self")
+function SubstituteSelf(filename, name)
+  local self = string.find(filename, "$self")
   
   if self then
-    return string.gsub(ucs_filename, "$self", name)
+    return string.gsub(filename, "$self", name)
   end
   
-  return ucs_filename
+  return filename
 end
 
 function BigButton(ctx, label, divider, padding, color)
@@ -826,10 +792,11 @@ function RenameTracks()
       local track = reaper.GetSelectedTrack(0, i)
       local rv, track_name = reaper.GetTrackName(track)
       
+      -- TODO Refactor and move into one function
       local filename = ucs_filename
-      if data.track_count > 1 then filename = SubstituteIdx(i + 1) end
-      filename = SubstituteSelf(track_name)
-      
+      if data.track_count > 1 then filename = SubstituteIdx(filename, i + 1) end
+      filename = SubstituteSelf(filename, track_name)
+
       reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
     end
   end
@@ -846,8 +813,8 @@ function RenameMediaItems()
       local take_name = reaper.GetTakeName(take)
       
       local filename = ucs_filename
-      if data.item_count > 1 then filename = SubstituteIdx(i + 1) end
-      filename = SubstituteSelf(take_name)
+      if data.item_count > 1 then filename = SubstituteIdx(filename, i + 1) end
+      filename = SubstituteSelf(filename, take_name)
       
       reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
     end
@@ -862,9 +829,11 @@ function RenameMarkers()
     for i, v in ipairs(data.selected_markers) do
       local idx = v[1]
       local pos = v[2]
+      local name = v[3]
       
       local filename = ucs_filename
-      if #data.selected_markers > 1 then filename = SubstituteIdx(i + 1) end
+      if #data.selected_markers > 1 then filename = SubstituteIdx(filename, i + 1) end
+      filename = SubstituteSelf(filename, name)
       
       reaper.SetProjectMarker(idx, false, pos, pos, filename)
     end
@@ -880,9 +849,11 @@ function RenameRegions()
       local idx = v[1]
       local pos = v[2]
       local rgnend = v[3]
+      local name = v[4]
       
       local filename = ucs_filename
-      if #data.selected_regions > 1 then filename = SubstituteIdx(i + 1) end
+      if #data.selected_regions > 1 then filename = SubstituteIdx(filename, i + 1) end
+      filename = SubstituteSelf(filename, name)
       
       reaper.SetProjectMarker(idx, true, pos, rgnend, filename)
     end
@@ -1110,11 +1081,13 @@ function GetNearestMarker(isrgn)
     end
   end
   
-  if min == 0 then
+  return nearest_marker
+  
+  --[[if min == 0 then
     return nil
   else
     return nearest_marker
-  end
+  end]]--
 end
 
 function NavigateMarker(isrgn, step)
@@ -1128,7 +1101,8 @@ function NavigateMarker(isrgn, step)
   -- if no current marker is set (0), take the first one near cursor (default action)
   
   local m = GetNearestMarker(isrgn)
-  if m then
+  
+  if m[2] ~= reaper.GetCursorPositionEx(0) then 
     reaper.SetEditCurPos2(0, m[2], true, true)
     nav_marker = m[1]
   else
@@ -1141,7 +1115,7 @@ function NavigateMarker(isrgn, step)
       return nav_marker
     end
   end
-  
+
   return nav_marker
 end
 
@@ -1187,37 +1161,9 @@ function MainFields()
   
   reaper.ImGui_PopStyleColor(ctx)
   
-  -- Fill from Track feature
-    --[[
-  track = reaper.GetSelectedTrack(0, 0)
-  
-  if track then
-    reaper.ImGui_BeginDisabled(ctx, false)
-  else
-    reaper.ImGui_BeginDisabled(ctx, true)
-  end
-  
-  if reaper.ImGui_Button(ctx, "Fill from Track") then
-    local rv, track_name = reaper.GetTrackName(track)
-    form.cat_id, form.fx_name, form.creator_id, form.source_id = ParseFilename(track_name)
-    
-    -- update categories if Category ID changed manually
-    local rv, cname, sname = ReverseLookup(form.cat_id)
-    
-    if rv then
-      form.cat_name = cname
-      form.sub_name = sname
-      combo.sub_items = PopulateSubCategories(form.cat_name)
-      form.cur_cat = combo.cat_idx[form.cat_name]
-      form.cur_sub = combo.sub_idx[form.sub_name]
-    end
-  end
-  reaper.ImGui_EndDisabled(ctx)
-  ]]--
-  
-  --reaper.ImGui_SameLine(ctx, 0, 10)
-  
   WildcardInfo()
+  
+  --reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 end
 
 function OptionalFields()
@@ -1236,6 +1182,47 @@ function OptionalFields()
     
   end
   reaper.ImGui_PopStyleColor(ctx)
+end
+
+function AutoFill()
+  local state_count= reaper.GetProjectStateChangeCount(0)
+  if state_count ~= data.state_count then
+    -- Update based on selected target
+    local target_name = ""
+    
+    if data.target == 0 then
+      local track = reaper.GetSelectedTrack(0, 0)
+      if track then
+        _, target_name = reaper.GetTrackName(track)
+      end
+    elseif data.target == 1 then
+      local item = reaper.GetSelectedMediaItem(0, 0)
+      if item then
+        local take = reaper.GetTake(item, 0)
+        target_name = reaper.GetTakeName(take)
+      end
+    elseif data.target == 2 then
+      --target_name = data.selected_markers[1][3]
+    elseif data.target == 3 then
+      --target_name = data.selected_regions[1][4]
+    end
+    
+    if target_name ~= "" then
+      form.cat_id, form.fx_name, form.creator_id, form.source_id = ParseFilename(target_name)
+      
+      local rv, cname, sname = ReverseLookup(form.cat_id)
+      
+      if rv then
+        form.cat_name = cname
+        form.sub_name = sname
+        combo.sub_items = PopulateSubCategories(form.cat_name)
+        form.cur_cat = combo.cat_idx[form.cat_name]
+        form.cur_sub = combo.sub_idx[form.sub_name]
+      end
+    end
+    
+    data.state_count = state_count
+  end
 end
 
 function PushMainStyle()
@@ -1285,6 +1272,12 @@ function Main()
     data.rename_count = CountTargets()
   end
   
+  -- check if target has UCS data with match
+  -- create UCS name per target
+  -- check if target has UCS data with match
+  -- override if form data is filled
+  -- cache filenames for later renaming
+  
   if data.rename_count <= 1 then
     local filename = string.gsub(ucs_filename, "$idx", 1)
     reaper.ImGui_LabelText(ctx, "Filename", filename)
@@ -1313,8 +1306,10 @@ function Main()
   
   if data.mx_open then
     RenameFiles()
-  else 
-    -- Render Buttons for Marker/Region Manager and Navigation <>, Arrows
+  else
+    reaper.ImGui_Text(ctx, "Navigation")
+    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+    
     if reaper.ImGui_ArrowButton(ctx, "Previous", reaper.ImGui_Dir_Left())
       or NavigatePrevious() then
       Navigate(false)
