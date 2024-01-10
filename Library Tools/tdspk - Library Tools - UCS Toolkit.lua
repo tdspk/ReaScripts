@@ -96,7 +96,10 @@ local form = {
   vendor_cat = "",
   user_data = "",
   applied = false,
-  search_sc = false
+  search_sc = false,
+  search_apply = false,
+  autoplay = false,
+  clear_fx = false
 }
 
 data = {
@@ -717,6 +720,7 @@ function CategorySearch()
           form.search = ""
           is_list_open = false
           form.search_cat = 1
+          form.search_apply = true
         end
       end
       
@@ -803,6 +807,7 @@ function RenameTracks()
       reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
     end
     reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.tracks .. " tracks", 0)
+    form.applied = true
   end
 end
 
@@ -820,6 +825,7 @@ function RenameMediaItems()
       reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
     end
     reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.items .. " tracks", 0)
+    form.applied = true
   end
 end
 
@@ -835,6 +841,7 @@ function RenameMarkers()
       
       reaper.SetProjectMarker(idx, false, pos, pos, filename)
     end
+    form.applied = true
   end
 end
 
@@ -851,6 +858,7 @@ function RenameRegions()
       
       reaper.SetProjectMarker(idx, true, pos, rgnend, filename)
     end
+    form.applied = true
   end
 end
 
@@ -883,6 +891,7 @@ function RenameFiles()
         local new_file = dir .. "/" .. filename .. "." .. ext
         rv, osbuf = os.rename(old_file, new_file)
       end
+      form.applied = true
     end
   end
 end
@@ -1122,12 +1131,12 @@ function SearchShortcut()
 end
 
 function NavigateNext()
-  return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl()) 
+  return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Alt()) 
     and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false)
 end
 
 function NavigatePrevious()
-  return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl()) 
+  return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Alt()) 
     and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false)
 end
 
@@ -1211,10 +1220,20 @@ function Navigate(next)
       data.nav_region = NavigateMarker(true, -1)
     end
   end
+  
+  if form.autoplay then
+    reaper.Main_OnCommand(1016, 0) -- Transport: Stop
+    reaper.Main_OnCommand(40044, 0) -- Transport: Play/stop
+  end
 end
 
 function MainFields()
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), color.mainfields)
+  
+  if form.search_apply then
+    reaper.ImGui_SetKeyboardFocusHere(ctx)
+    form.search_apply = false
+  end
   
   rv, form.fx_name = reaper.ImGui_InputText(ctx, "FXName", form.fx_name)
   Tooltip(ctx, "Brief Description or Title (under 25 characters preferably)")
@@ -1229,7 +1248,9 @@ function MainFields()
   
   WildcardInfo()
   
-  --reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  
+  rv, form.clear_fx = reaper.ImGui_Checkbox(ctx, "Clear FXName on rename", form.clear_fx)
 end
 
 function OptionalFields()
@@ -1244,7 +1265,6 @@ function OptionalFields()
     
     rv, form.user_data = reaper.ImGui_InputText(ctx, "UserData", form.user_data)
     Tooltip(ctx, "A user defined space, ofter used for an ID or Number for guaranteeing that the Filename is 100% unique...")
-    
     
   end
   reaper.ImGui_PopStyleColor(ctx)
@@ -1372,7 +1392,7 @@ function Main()
       Navigate(true)
     end
     
-    Tooltip(ctx, "You can also navigate next/previous targets with Ctrl+Left/Right arrow keys")
+    Tooltip(ctx, "You can also navigate next/previous targets with Alt+Left/Right arrow keys")
     
     if data.target == 2 then
       local btn_text
@@ -1388,6 +1408,8 @@ function Main()
       end
       Tooltip(ctx, "Toggle the Marker/Region Manager to change the mode")
     end
+    
+    rv, form.autoplay = reaper.ImGui_Checkbox(ctx, "Autoplay when navigating", form.autoplay)
   
     if data.target == 0 then
       RenameTracks()
@@ -1404,6 +1426,7 @@ function Main()
     form.search_sc = SearchShortcut()
     
     if form.applied then
+      if form.clear_fx then form.fx_name = "" end
       Navigate(true)
     end
   end
