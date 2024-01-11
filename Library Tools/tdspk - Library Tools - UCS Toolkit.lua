@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.1.5pre2
+--@version 0.1.5pre3
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -99,7 +99,8 @@ local form = {
   search_sc = false,
   search_apply = false,
   autoplay = false,
-  clear_fx = false
+  clear_fx = false,
+  name_sc = false
 }
 
 data = {
@@ -298,9 +299,14 @@ function clamp(v, min, max)
   return v
 end
 
-function ParseFilename(filename)
-  local cat_id, fx_name, creator_id, source_id = string.match(filename, "(.*)_(.*)_(.*)_(.*)")
-  return cat_id, fx_name, creator_id, source_id
+function ParseFilename(filename) 
+  local words = {}
+  
+  for word in string.gmatch(filename, "([^_]+)") do
+    table.insert(words, word)
+  end
+  
+  return words
 end
 
 function ReverseLookup(cat_id)
@@ -769,6 +775,11 @@ function SubstituteSelf(filename, name)
   local self = string.find(filename, "$self")
   
   if self then
+    -- extract UCS category from name
+    local no_cat_name = string.match(name, "_([^_]+)$")
+    if no_cat_name then
+      name = no_cat_name
+    end
     return string.gsub(filename, "$self", name)
   end
   
@@ -957,7 +968,10 @@ function CacheUCSData()
       target_name = t[i][4]
     end
     
-    local _, fx_name, creator_id, source_id = ParseFilename(target_name)
+    local parts = ParseFilename(target_name)
+    local fx_name = parts[2]
+    local creator_id = parts[3]
+    local source_id = parts[4]
     
     if form.fx_name ~= "" then
       fx_name = form.fx_name
@@ -974,7 +988,7 @@ function CacheUCSData()
     local filename = CreateUCSFilename(settings.delimiter, form.cat_id, form.user_cat, form.vendor_cat, 
       fx_name, creator_id, source_id, form.user_data)
     
-    if #t > 1 or string.find(filename, "$idx") then
+    if string.find(filename, "$idx") then
       filename = SubstituteIdx(filename, i)
     end
     filename = SubstituteSelf(filename, target_name)
@@ -1125,6 +1139,11 @@ function CountTargets()
   return filecount
 end
 
+function NameShortcut()
+  return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl()) 
+    and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_N(), false)
+end
+
 function SearchShortcut()
   return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl()) 
     and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_F(), false)
@@ -1230,7 +1249,7 @@ end
 function MainFields()
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), color.mainfields)
   
-  if form.search_apply then
+  if form.search_apply or form.name_sc then
     reaper.ImGui_SetKeyboardFocusHere(ctx)
     form.search_apply = false
   end
@@ -1424,6 +1443,7 @@ function Main()
     Tooltip(ctx, "Quick Rename targets with Ctrl+Enter")
     
     form.search_sc = SearchShortcut()
+    form.name_sc = NameShortcut()
     
     if form.applied then
       if form.clear_fx then form.fx_name = "" end
