@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.1.5pre3
+--@version 0.1.5pre4
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -69,7 +69,10 @@ local style = {
 local ucs = {
   version = 0.0,
   categories = {},
-  synonyms = {}
+  synonyms = {},
+  explanations = {},
+  search_data = {},
+  raw_data = {}
 }
 
 local combo = {
@@ -81,7 +84,7 @@ local combo = {
   sub_items = ""
 }
 
-local form = {
+form = {
   search = "",
   search_cat = 1,
   cat_id = "",
@@ -100,7 +103,8 @@ local form = {
   search_apply = false,
   autoplay = false,
   clear_fx = false,
-  name_sc = false
+  name_sc = false,
+  name_focused = false
 }
 
 data = {
@@ -206,10 +210,11 @@ function ReadUcsData()
   -- read UCS values from CSV to categories table
   for line in io.lines(ucs_file) do
     if not got_version then
-      ucs.version =  string.match(line, "(.*);;;")
+      ucs.version =  string.match(line, "(.*);;;;")
       got_version = true
     else
-      local cat, subcat, id, syn = string.match(line, "(.*);(.*);(.*);(.*)")
+      table.insert(ucs.raw_data, line)
+      local cat, subcat, id, expl, syn = string.match(line, "(.*);(.*);(.*);(.*);(.*)")
       
       if cat ~= prev_cat then
         combo.cat_items = combo.cat_items .. cat .. "\0"
@@ -225,6 +230,8 @@ function ReadUcsData()
       
       ucs.categories[cat][subcat] = id
       table.insert(ucs.synonyms, id .. ";" .. syn)
+      table.insert(ucs.explanations, id .. ";" .. expl)
+      table.insert(ucs.search_data, id .. ";" .. cat .. ", " .. subcat .. ", " .. syn)
     end
   end
 end
@@ -651,6 +658,8 @@ function CategoryFields()
   
   id_changed, form.cat_id = reaper.ImGui_InputText(ctx, "CatID", form.cat_id)
   
+  --CategoryBrowser()
+  
   if id_changed and form.cat_id ~= "" then
     -- update categories if Category ID changed manually
     local rv, cname, sname = ReverseLookup(form.cat_id)
@@ -668,13 +677,17 @@ end
 function CategorySearch()
   local rv
   
-  if form.applied or form.search_sc then 
+  if (form.applied and not form.name_focused) or form.search_sc then 
     reaper.ImGui_SetKeyboardFocusHere(ctx)
     form.applied = false
     form.search_sc = false
   end
   
   rv, form.search = reaper.ImGui_InputText(ctx, "Search category...", form.search)
+  
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  
+  Tooltip(ctx, "Search for multiple results by using comma (,) to separate")
   
   if rv then
     form.search_cat = 1
@@ -691,8 +704,8 @@ function CategorySearch()
     
     -- Filter Synonys manually
     local syns = {}
-    for i=1, #ucs.synonyms do
-      local entry = ucs.synonyms[i]
+    for i=1, #ucs.search_data do
+      local entry = ucs.search_data[i]
       if reaper.ImGui_TextFilter_PassFilter(form.syn_filter, entry) then
         table.insert(syns, entry)
       end
@@ -743,6 +756,43 @@ function CategorySearch()
       form.cur_cat = combo.cat_idx[form.cat_name]
       form.cur_sub = combo.sub_idx[form.sub_name]
     end
+  end
+end
+
+function CategoryBrowser()
+  if reaper.ImGui_Button(ctx, "Category Browser...") then
+    reaper.ImGui_OpenPopup(ctx, "Category Browser")
+  end
+  local viewport = reaper.ImGui_GetMainViewport(ctx)
+  local width, height = reaper.ImGui_Viewport_GetSize(viewport)
+  local x, y = reaper.ImGui_Viewport_GetCenter(viewport)
+  reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
+  
+  reaper.ImGui_SetNextWindowSize(ctx, width/2, height/2)
+  
+  if reaper.ImGui_BeginPopupModal(ctx, "Category Browser", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
+    if reaper.ImGui_BeginTable(ctx, "Category Tsable", 5) then
+      reaper.ImGui_TableSetupColumn(ctx, "Category")
+      reaper.ImGui_TableSetupColumn(ctx, "Subcategory")
+      reaper.ImGui_TableSetupColumn(ctx, "CatID")
+      reaper.ImGui_TableSetupColumn(ctx, "Explanations")
+      reaper.ImGui_TableSetupColumn(ctx, "Synonyms")
+      reaper.ImGui_TableHeadersRow(ctx)
+      
+      for i,v in ipairs(ucs.raw_data) do
+        local line = { string.match(v, "(.*);(.*);(.*);(.*);(.*)") }
+        reaper.ImGui_TableNextRow(ctx)
+        for column=0, 4 do
+          reaper.ImGui_TableSetColumnIndex(ctx, column)
+          reaper.ImGui_Text(ctx, line[column+1])
+        end
+      end
+      reaper.ImGui_EndTable(ctx)
+    end
+    if reaper.ImGui_Button(ctx, "Close") then
+      reaper.ImGui_CloseCurrentPopup(ctx)
+    end
+    reaper.ImGui_EndPopup(ctx)
   end
 end
 
@@ -845,6 +895,7 @@ function RenameMarkers()
   if #data.selected_markers > 1 then label = " Markers" end
 
   if BigButton(ctx, "Rename " .. #data.selected_markers .. label, 1, 20) or Apply() then
+    reaper.Undo_BeginBlock()
     for i, v in ipairs(data.selected_markers) do
       local idx = v[1]
       local pos = v[2]
@@ -852,6 +903,7 @@ function RenameMarkers()
       
       reaper.SetProjectMarker(idx, false, pos, pos, filename)
     end
+    reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.selected_markers .. " markers", 0)
     form.applied = true
   end
 end
@@ -861,6 +913,7 @@ function RenameRegions()
   if #data.selected_regions > 1 then label = " Regions" end
   
   if BigButton(ctx,  "Rename " .. #data.selected_regions .. label, 1, 20) or Apply() then
+    reaper.Undo_BeginBlock()
     for i, v in ipairs(data.selected_regions) do
       local idx = v[1]
       local pos = v[2]
@@ -869,6 +922,7 @@ function RenameRegions()
       
       reaper.SetProjectMarker(idx, true, pos, rgnend, filename)
     end
+    reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.selected_regions .. " regions", 0)
     form.applied = true
   end
 end
@@ -1249,12 +1303,14 @@ end
 function MainFields()
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), color.mainfields)
   
-  if form.search_apply or form.name_sc then
+  if (form.applied and form.name_focused) or form.search_apply or form.name_sc then
     reaper.ImGui_SetKeyboardFocusHere(ctx)
     form.search_apply = false
+    form.applied = false
   end
   
   rv, form.fx_name = reaper.ImGui_InputText(ctx, "FXName", form.fx_name)
+  form.name_focused = reaper.ImGui_IsItemFocused(ctx)
   Tooltip(ctx, "Brief Description or Title (under 25 characters preferably)")
   
   rv, form.creator_id = reaper.ImGui_InputText(ctx, "CreatorID", form.creator_id)
@@ -1474,7 +1530,7 @@ end
 function Menu()
   reaper.ImGui_PushFont(ctx, style.font_menu)
   if reaper.ImGui_BeginMenuBar(ctx) then
-    if reaper.ImGui_BeginMenu(ctx, "File", false) then
+    --[[if reaper.ImGui_BeginMenu(ctx, "File", false) then
       if reaper.ImGui_MenuItem(ctx, "Save Data") then
         local data = form.fx_name .. ";" .. form.creator_id .. ";" .. form.source_id
         reaper.SetExtState(ext_section, "data", data, false)
@@ -1495,6 +1551,7 @@ function Menu()
       
       reaper.ImGui_EndMenu(ctx)
     end
+    ]]--
     
     if reaper.ImGui_BeginMenu(ctx, "Info", true) then
       local info = {

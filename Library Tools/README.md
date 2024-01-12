@@ -8,10 +8,15 @@
 - [x] Iterate and rename/update regions based on existing UCS data
     - Scenario: "When selecting items/regions both with UCS details and not, when renaming, could the script add UCS to the ones that miss it, and change and update the UCS on the ones that already have them? "
 - [x] Playback when navigating
-- [ ] Table of categories and their explanation
+- [x] Include UCS explanations as search criteria for autosearch
+- [x] Support Undo Points
+- [x] Focus on FXName after Renaming, if the current focus is on this
+
+# Post V1 Features
+
 - [ ] Category History
 - [ ] Load/Save presets
-- [x] Navigate modes with Ctrl+1,2,3 - Ctrl+F jumps to auto-search
+- [ ] Table of categories and their explanation
 
 # Bugs
 - [x] Script freezes due to JS_Window_Find - use built in actions instead.
