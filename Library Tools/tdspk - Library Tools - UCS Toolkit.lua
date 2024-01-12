@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.1.5pre4
+--@version 0.1.5pre5
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -104,7 +104,8 @@ form = {
   autoplay = false,
   clear_fx = false,
   name_sc = false,
-  name_focused = false
+  name_focused = false,
+  autorename = false
 }
 
 data = {
@@ -855,28 +856,19 @@ function BigButton(ctx, label, divider, padding, color)
   return btn
 end
 
-function RenameTracks()
-  local label = " Track"
-  if #data.tracks > 1 then label = " Tracks" end
-  
-  if BigButton(ctx,  "Rename " .. #data.tracks .. label, nil, nil, color.green) or Apply() then
+function Rename()
+  --TODO refactor renaming function
+  if data.target == 0 then
     reaper.Undo_BeginBlock()
     for i = 1, #data.tracks do 
       local track = data.tracks[i]
       local filename = data.ucs_names[i]
-
+    
       reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
     end
     reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.tracks .. " tracks", 0)
     form.applied = true
-  end
-end
-
-function RenameMediaItems()
-  local label = " Item"
-  if #data.items > 1 then label = " Items" end
-
-  if BigButton(ctx, "Rename " .. #data.items ..  label, nil, nil, color.yellow) or Apply() then
+  elseif data.target == 1 then
     reaper.Undo_BeginBlock()
     for i = 1, #data.items do
       local item = data.items[i]
@@ -887,14 +879,7 @@ function RenameMediaItems()
     end
     reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.items .. " tracks", 0)
     form.applied = true
-  end
-end
-
-function RenameMarkers()
-  local label = " Marker"
-  if #data.selected_markers > 1 then label = " Markers" end
-
-  if BigButton(ctx, "Rename " .. #data.selected_markers .. label, 1, 20) or Apply() then
+  elseif data.target == 2 then
     reaper.Undo_BeginBlock()
     for i, v in ipairs(data.selected_markers) do
       local idx = v[1]
@@ -905,14 +890,7 @@ function RenameMarkers()
     end
     reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.selected_markers .. " markers", 0)
     form.applied = true
-  end
-end
-
-function RenameRegions()
-  local label = " Region"
-  if #data.selected_regions > 1 then label = " Regions" end
-  
-  if BigButton(ctx,  "Rename " .. #data.selected_regions .. label, 1, 20) or Apply() then
+  elseif data.target == 3 then
     reaper.Undo_BeginBlock()
     for i, v in ipairs(data.selected_regions) do
       local idx = v[1]
@@ -924,6 +902,44 @@ function RenameRegions()
     end
     reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.selected_regions .. " regions", 0)
     form.applied = true
+  end
+end
+
+-- Only use one button for all targets
+
+function RenameTracks()
+  local label = " Track"
+  if #data.tracks > 1 then label = " Tracks" end
+  
+  if BigButton(ctx,  "Rename " .. #data.tracks .. label, nil, nil, color.green) or Apply() then
+    Rename()
+  end
+end
+
+function RenameMediaItems()
+  local label = " Item"
+  if #data.items > 1 then label = " Items" end
+
+  if BigButton(ctx, "Rename " .. #data.items ..  label, nil, nil, color.yellow) or Apply() then
+    Rename()
+  end
+end
+
+function RenameMarkers()
+  local label = " Marker"
+  if #data.selected_markers > 1 then label = " Markers" end
+
+  if BigButton(ctx, "Rename " .. #data.selected_markers .. label, 1, 20) or Apply() then
+    Rename()
+  end
+end
+
+function RenameRegions()
+  local label = " Region"
+  if #data.selected_regions > 1 then label = " Regions" end
+  
+  if BigButton(ctx,  "Rename " .. #data.selected_regions .. label, 1, 20) or Apply() then
+    Rename()
   end
 end
 
@@ -1294,6 +1310,8 @@ function Navigate(next)
     end
   end
   
+  if form.autorename then Rename() end
+  
   if form.autoplay then
     reaper.Main_OnCommand(1016, 0) -- Transport: Stop
     reaper.Main_OnCommand(40044, 0) -- Transport: Play/stop
@@ -1485,6 +1503,7 @@ function Main()
     end
     
     rv, form.autoplay = reaper.ImGui_Checkbox(ctx, "Autoplay when navigating", form.autoplay)
+    rv, form.autorename = reaper.ImGui_Checkbox(ctx, "Auto-Rename when navigating", form.autorename)
   
     if data.target == 0 then
       RenameTracks()
