@@ -602,20 +602,16 @@ function ToggleTarget()
   end
 end
 
-function OperationMode() 
+function OperationMode()
+  reaper.ImGui_SeparatorText(ctx, "Renaming")
   if data.mx_open then
     reaper.ImGui_Text(ctx, "Operating on ")
     reaper.ImGui_SameLine(ctx)
     reaper.ImGui_TextColored(ctx, color.red, "Media Explorer Files")
     Tooltip(ctx, "Close the Media Explorer to rename tracks, items, markers and regions.")
-  else
-    reaper.ImGui_Text(ctx, "Operating in ")
-    reaper.ImGui_SameLine(ctx)
-    reaper.ImGui_TextColored(ctx, color.blue, "Arrange View")
-    Tooltip(ctx, "Open the Media Explorer to rename local files")
-    
-    reaper.ImGui_Text(ctx, "Renaming: ")
-    reaper.ImGui_SameLine(ctx)
+  else 
+    --reaper.ImGui_Text(ctx, "Renaming: ")
+    --reaper.ImGui_SameLine(ctx)
     
     local has_changed = false
     rv, data.target = reaper.ImGui_RadioButtonEx(ctx, "Tracks", data.target, 0)
@@ -634,10 +630,16 @@ function OperationMode()
     
     ToggleTarget()
     
+    reaper.ImGui_Text(ctx, "Operating in ")
+    reaper.ImGui_SameLine(ctx)
+    reaper.ImGui_TextColored(ctx, color.blue, "Arrange View")
+    Tooltip(ctx, "Open the Media Explorer to rename local files")
+    
     if has_changed then
       reaper.SetExtState(ext_section, "target", tostring(data.target), false)
     end
   end
+  --reaper.ImGui_Separator(ctx)
 end
 
 function CategoryFields()
@@ -857,9 +859,9 @@ function BigButton(ctx, label, divider, padding, color)
 end
 
 function Rename()
-  --TODO refactor renaming function
+  reaper.Undo_BeginBlock()
+  
   if data.target == 0 then
-    reaper.Undo_BeginBlock()
     for i = 1, #data.tracks do 
       local track = data.tracks[i]
       local filename = data.ucs_names[i]
@@ -869,7 +871,6 @@ function Rename()
     reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.tracks .. " tracks", 0)
     form.applied = true
   elseif data.target == 1 then
-    reaper.Undo_BeginBlock()
     for i = 1, #data.items do
       local item = data.items[i]
       local take = reaper.GetActiveTake(item)
@@ -880,7 +881,6 @@ function Rename()
     reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.items .. " tracks", 0)
     form.applied = true
   elseif data.target == 2 then
-    reaper.Undo_BeginBlock()
     for i, v in ipairs(data.selected_markers) do
       local idx = v[1]
       local pos = v[2]
@@ -891,7 +891,6 @@ function Rename()
     reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.selected_markers .. " markers", 0)
     form.applied = true
   elseif data.target == 3 then
-    reaper.Undo_BeginBlock()
     for i, v in ipairs(data.selected_regions) do
       local idx = v[1]
       local pos = v[2]
@@ -907,38 +906,31 @@ end
 
 -- Only use one button for all targets
 
-function RenameTracks()
-  local label = " Track"
-  if #data.tracks > 1 then label = " Tracks" end
+function RenameButton()
+  local t
+  local label
+  local col
+  if data.target == 0 then
+    t = data.tracks
+    label = " Track"
+    col = color.green
+  elseif data.target == 1 then
+    t = data.items
+    label = " Item"
+    col = color.yellow
+  elseif data.target == 2 then
+    t = data.selected_markers
+    label = " Marker"
+  elseif data.target == 3 then
+    t = data.selected_regions
+    label = " Region"
+  end
   
-  if BigButton(ctx,  "Rename " .. #data.tracks .. label, nil, nil, color.green) or Apply() then
-    Rename()
-  end
-end
-
-function RenameMediaItems()
-  local label = " Item"
-  if #data.items > 1 then label = " Items" end
-
-  if BigButton(ctx, "Rename " .. #data.items ..  label, nil, nil, color.yellow) or Apply() then
-    Rename()
-  end
-end
-
-function RenameMarkers()
-  local label = " Marker"
-  if #data.selected_markers > 1 then label = " Markers" end
-
-  if BigButton(ctx, "Rename " .. #data.selected_markers .. label, 1, 20) or Apply() then
-    Rename()
-  end
-end
-
-function RenameRegions()
-  local label = " Region"
-  if #data.selected_regions > 1 then label = " Regions" end
+  --TODO colors for markers/region buttons
   
-  if BigButton(ctx,  "Rename " .. #data.selected_regions .. label, 1, 20) or Apply() then
+  if #t > 1 then label = label .. "s" end -- Append "s" if there are more than one element in table
+  
+  if BigButton(ctx, "Rename " .. #t .. label, nil, nil, col) or Apply() then
     Rename()
   end
 end
@@ -1435,8 +1427,6 @@ function Main()
   
   OptionalFields()
   
-  reaper.ImGui_SeparatorText(ctx, "Preview")
-  
   data.mx_open, data.mx_handle = IsWindowOpen("Media Explorer")
   
   if data.mx_open then
@@ -1447,31 +1437,18 @@ function Main()
   
   ucs_filename = CreateUCSFilename(settings.delimiter, form.cat_id, form.user_cat, form.vendor_cat, form.fx_name, form.creator_id, form.source_id, form.user_data)
   
+  --TODO optimize cache behaviour - ticks vs changed state
   if data.update then
     data.rename_count = CountTargets()
-  end
-  
-  if data.rename_count <= 1 then
-    reaper.ImGui_LabelText(ctx, "Filename", data.ucs_names[1])
-  else
-    local filenames = ""
-    
-    for i=1, #data.ucs_names do
-      filenames = filenames .. data.ucs_names[i] .. "\0"
-    end
-    
-    reaper.ImGui_Combo(ctx, "Filenames", 0, filenames)
   end
 
   reaper.ImGui_Separator(ctx)
   
-  OperationMode()
-  
   if data.mx_open then
+    OperationMode()
     RenameFiles()
   else
-    reaper.ImGui_Text(ctx, "Navigation")
-    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+    reaper.ImGui_SeparatorText(ctx, "Navigation")
     
     if reaper.ImGui_ArrowButton(ctx, "Previous", reaper.ImGui_Dir_Left())
       or NavigatePrevious() then
@@ -1503,17 +1480,28 @@ function Main()
     end
     
     rv, form.autoplay = reaper.ImGui_Checkbox(ctx, "Autoplay when navigating", form.autoplay)
+    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
     rv, form.autorename = reaper.ImGui_Checkbox(ctx, "Auto-Rename when navigating", form.autorename)
+    
+    reaper.ImGui_Separator(ctx)
+    
+    OperationMode()
+    
+    reaper.ImGui_SeparatorText(ctx, "Preview")
   
-    if data.target == 0 then
-      RenameTracks()
-    elseif data.target == 1 then
-      RenameMediaItems()
-    elseif data.target == 2 then
-      RenameMarkers()
-    elseif data.target == 3 then
-      RenameRegions()
+    if data.rename_count <= 1 then
+      reaper.ImGui_LabelText(ctx, "Filename", data.ucs_names[1])
+    else
+      local filenames = ""
+      
+      for i=1, #data.ucs_names do
+        filenames = filenames .. data.ucs_names[i] .. "\0"
+      end
+      
+      reaper.ImGui_Combo(ctx, "Filenames", 0, filenames)
     end
+  
+    RenameButton()
     
     Tooltip(ctx, "Quick Rename targets with Ctrl+Enter")
     
