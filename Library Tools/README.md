@@ -12,6 +12,9 @@
 - [x] Support Undo Points
 - [x] Focus on FXName after Renaming, if the current focus is on this
 
+# Bugfixes for V1
+- [ ] Fix scrolling bug in category browser
+
 # Post V1 Features
 
 - [ ] Category History
