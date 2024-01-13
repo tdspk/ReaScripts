@@ -1,8 +1,8 @@
---@description ChopChop3000
+--@description ReaChopChop
 --@version 1.0.1
 --@author Tadej Supukovic (tdspk)
 --@about
---  # ChopChop3000
+--  # ReaChopChop
 --  Chop your items and randomize the leftovers
 --  # Requirements
 --  JS_ReaScriptAPI, SWS Extension, ReaImGui
