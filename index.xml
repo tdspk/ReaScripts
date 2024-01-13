@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="0d02bdaa16727a0d66af8d882c9cd76d83723690">
+<index version="1" name="tdspk" commit="9c41b42aef39963bb9192486720d5c93e90e1625">
   <category name="Creative">
-    <reapack name="tdspk - Creative - ChopChop3000.lua" type="script" desc="ChopChop3000">
+    <reapack name="tdspk - Creative - ReaChopChop.lua" type="script" desc="ReaChopChop">
       <metadata>
         <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
 {\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
 \widowctrl\hyphauto
 
-{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel0 \b \fs36 ChopChop3000\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel0 \b \fs36 ReaChopChop\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 Chop your items and randomize the leftovers\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel0 \b \fs36 Requirements\par}
 {\pard \ql \f0 \sa180 \li0 \fi0 JS_ReaScriptAPI, SWS Extension, ReaImGui\par}
@@ -17,9 +17,10 @@
         <link rel="donation">https://ko-fi.com/tdspkaudio</link>
         <link rel="donation">https://coindrop.to/tdspkaudio</link>
       </metadata>
-      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-12-04T18:47:45Z">
-        <changelog><![CDATA[First version]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/1838ff841189c1209ceddfd67d8f134f5286b04e/Creative/tdspk%20-%20Creative%20-%20ChopChop3000.lua</source>
+      <version name="1.0.1" author="Tadej Supukovic (tdspk)" time="2024-01-13T18:10:50Z">
+        <changelog><![CDATA[Added Randomize option
+First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/9c41b42aef39963bb9192486720d5c93e90e1625/Creative/tdspk%20-%20Creative%20-%20ReaChopChop.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Creative - ReaStretch.lua" type="script" desc="ReaStretch">
@@ -46,6 +47,12 @@
         <changelog><![CDATA[Changed font to sans serif
 First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/757044e3ff854e65e05a3c3d3fcddcfb39f62141/Creative/tdspk%20-%20Creative%20-%20ReaStretch.lua</source>
+      </version>
+      <version name="1.0.2" author="Tadej Supukovic (tdspk)" time="2024-01-13T18:07:18Z">
+        <changelog><![CDATA[Removed stretch slider
+Changed font to sans serif
+First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/3ea3286f688a7d3911d0eb6be4571cd947c060a5/Creative/tdspk%20-%20Creative%20-%20ReaStretch.lua</source>
       </version>
     </reapack>
   </category>
