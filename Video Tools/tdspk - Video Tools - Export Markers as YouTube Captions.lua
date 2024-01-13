@@ -1,3 +1,15 @@
+--@description Export Markers as YouTube Captions
+--@version 0.1
+--@author Tadej Supukovic (tdspk)
+--@links
+--  Website https://www.tdspkaudio.com
+--  Forum Thread https://forum.cockos.com/showthread.php?t=286234
+--@donation
+--  https://ko-fi.com/tdspkaudio
+--  https://coindrop.to/tdspkaudio
+-- @changelog
+--  First version
+
 function ToMinutesAndSeconds(seconds)
   seconds = math.floor(seconds)
   local minutes = math.floor(seconds / 60)
