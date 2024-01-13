@@ -11,9 +11,11 @@
 - [x] Include UCS explanations as search criteria for autosearch
 - [x] Support Undo Points
 - [x] Focus on FXName after Renaming, if the current focus is on this
+- [ ] Implement new features to Media Explorer Mode
 
 # Bugfixes for V1
 - [ ] Fix scrolling bug in category browser
+- [ ] 
 
 # Post V1 Features
 

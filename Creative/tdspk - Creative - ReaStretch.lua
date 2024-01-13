@@ -1,5 +1,5 @@
 --@description ReaStretch
---@version 1.0.1
+--@version 1.0.2
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # ReaStretch
@@ -12,6 +12,7 @@
 --  https://ko-fi.com/tdspkaudio
 --  https://coindrop.to/tdspkaudio
 --@changelog
+--  Removed stretch slider
 --  Changed font to sans serif
 --  First version
 
@@ -494,7 +495,7 @@ local slider_to_fds = {
 -- common ReaStretch parameters
 
 reastretch = {
-  window_title = "ReaStretch",
+  window_title = "tdspk - ReaStretch",
   mode = -1,
   enabled = false
 }
@@ -505,7 +506,7 @@ ctx = reaper.ImGui_CreateContext(reastretch.window_title)
 local font = reaper.ImGui_CreateFont("sans-serif", 16)
 reaper.ImGui_Attach(ctx, font)
 
-function MainWindow()
+function Main()
   item_count = reaper.CountSelectedMediaItems(0)
   
   if item_count > 0 then
@@ -536,11 +537,11 @@ function MainWindow()
     rv, reastretch.mode = reaper.ImGui_RadioButtonEx(ctx, "ReaReaRea", reastretch.mode, 15)
     changed = changed or rv
 
+    parms = pitchmode & 0xFFFF
+
     if reastretch.mode == 14 then
-      RenderCommonParameters()
       RenderRrreeeaaa()
     elseif reastretch.mode == 15 then
-      RenderCommonParameters()
       RenderReaReaRea()
     else
       md = -1
@@ -562,17 +563,6 @@ function MainWindow()
   else
     reaper.ImGui_Text(ctx, "Please select a Media Item to stretch!")
   end
-  
-end
-
-function RenderCommonParameters()
-  parms = pitchmode & 0xFFFF
-  -- Read values
-  reastretch.rate = 1 / reaper.GetMediaItemTakeInfo_Value(take, "D_PLAYRATE")
-  rv, reastretch.rate = reaper.ImGui_SliderDouble(ctx, "Playrate", reastretch.rate, 0.5, 100, "%fx")
-  reastretch.rate = 1 / reastretch.rate
-  
-  changed = changed or rv
 end
 
 function RenderRrreeeaaa()
@@ -617,12 +607,6 @@ function RenderRrreeeaaa()
   md = md + reastretch.fft
   md = md + reastretch.anw
   md = md + reastretch.syw
-  
-  if changed then
-    reaper.SetMediaItemTakeInfo_Value(take, "D_PLAYRATE", reastretch.rate)
-    reaper.SetMediaItemLength(item, source_length * (1 / reastretch.rate), false)
-    reaper.UpdateArrange()
-  end
 end
 
 function RenderReaReaRea()
@@ -661,24 +645,52 @@ function RenderReaReaRea()
   md = md + reastretch.shp
   md = md + reastretch.snc
   md = md + reastretch.fdm
+end
 
-  if changed then
-    reaper.SetMediaItemTakeInfo_Value(take, "D_PLAYRATE", reastretch.rate)
-    reaper.SetMediaItemLength(item, source_length * (1 / reastretch.rate), false)
-    reaper.UpdateArrange()
+function Menu()
+  if reaper.ImGui_BeginMenuBar(ctx) then 
+    if reaper.ImGui_BeginMenu(ctx, "Info", true) then
+      local info = {
+        "ReaStretch",
+        "A tool by tdspk"
+      }
+      
+      for _, v in ipairs(info) do
+        reaper.ImGui_MenuItem(ctx, v, "", false, false)
+      end
+      
+      reaper.ImGui_Separator(ctx)
+      
+      if reaper.ImGui_MenuItem(ctx, "Website") then
+        reaper.CF_ShellExecute("https://www.tdspkaudio.com")
+      end
+      
+      if reaper.ImGui_MenuItem(ctx, "Donate") then
+        reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
+      end
+      
+      if reaper.ImGui_MenuItem(ctx, "GitHub Repository") then
+        reaper.CF_ShellExecute("https://github.com/tdspk/ReaScripts")
+      end
+      
+      reaper.ImGui_EndMenu(ctx)
+    end
+    
+    reaper.ImGui_EndMenuBar(ctx)
   end
 end
 
 function Loop()
     reaper.ImGui_SetNextWindowSize(ctx, 400, 400, reaper.ImGui_Cond_FirstUseEver())
-    local visible, open = reaper.ImGui_Begin(ctx, reastretch.window_title, true)
+    local visible, open = reaper.ImGui_Begin(ctx, reastretch.window_title, true, reaper.ImGui_WindowFlags_MenuBar())
     if visible then
-        reaper.ImGui_PushFont(ctx, font)
-        reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 10, 10)
-        MainWindow()
-        reaper.ImGui_PopStyleVar(ctx)
-        reaper.ImGui_PopFont(ctx)
-        reaper.ImGui_End(ctx)
+      Menu()
+      reaper.ImGui_PushFont(ctx, font)
+      reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 10, 10)
+      Main()
+      reaper.ImGui_PopStyleVar(ctx)
+      reaper.ImGui_PopFont(ctx)
+      reaper.ImGui_End(ctx)
     end
 
     if open then reaper.defer(Loop) end

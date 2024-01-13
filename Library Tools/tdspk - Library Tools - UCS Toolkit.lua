@@ -1641,7 +1641,7 @@ if f then
 end
 
 if f_exists then
-  ctx = reaper.ImGui_CreateContext("tdspk UCS Tookit")
+  ctx = reaper.ImGui_CreateContext("tdspk - UCS Tookit")
   Init()
   Loop()
 else
