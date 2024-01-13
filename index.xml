@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="9c41b42aef39963bb9192486720d5c93e90e1625">
+<index version="1" name="tdspk" commit="6d33fd7a3e59884b52daaf255bbaf7553ac49c09">
   <category name="Creative">
     <reapack name="tdspk - Creative - ReaChopChop.lua" type="script" desc="ReaChopChop">
       <metadata>
@@ -304,6 +304,20 @@ First version]]></changelog>
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Toggle%20Global%20Sampler.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Video Tools">
+    <reapack name="tdspk - Video Tools - Export Markers as YouTube Captions.lua" type="script" desc="Export Markers as YouTube Captions">
+      <metadata>
+        <link rel="website" href="https://www.tdspkaudio.com">Website</link>
+        <link rel="website" href="https://forum.cockos.com/showthread.php?t=286234">Forum Thread</link>
+        <link rel="donation">https://ko-fi.com/tdspkaudio</link>
+        <link rel="donation">https://coindrop.to/tdspkaudio</link>
+      </metadata>
+      <version name="0.1" author="Tadej Supukovic (tdspk)" time="2024-01-13T18:14:59Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/6d33fd7a3e59884b52daaf255bbaf7553ac49c09/Video%20Tools/tdspk%20-%20Video%20Tools%20-%20Export%20Markers%20as%20YouTube%20Captions.lua</source>
       </version>
     </reapack>
   </category>
