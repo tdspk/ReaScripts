@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.1.5pre5
+--@version 0.1.5
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -953,40 +953,6 @@ function RenameButton()
   end
 end
 
-function RenameFiles()
-  local autoplay = reaper.GetToggleCommandStateEx(32063, 1011) --Autoplay: Toggle on/off
-  
-  if autoplay == 1 then
-    reaper.ImGui_TextColored(ctx, color.red, "Autoplay is enabled! Please ")
-    reaper.ImGui_SameLine(ctx)
-    if reaper.ImGui_SmallButton(ctx, "DISABLE") then
-      reaper.JS_Window_OnCommand(hWnd, 40036)
-    end
-    reaper.ImGui_SameLine(ctx)
-    reaper.ImGui_TextColored(ctx, color.red, " it to avoid weird behaviour.")
-  end
-  
-  if data.files then
-    if reaper.ImGui_Button(ctx, "Rename " .. #data.files .. " File(s)", 0, 40) then
-      local dir = data.files[0]
-      
-      reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
-      reaper.JS_Window_OnCommand(hWnd, 1009) -- Preview: Stop
-      
-      for i, v in ipairs(data.files) do
-        local old_file = dir .. "/" .. v
-        local _, _, ext = string.match(v, "(.-)([^\\/]-%.?([^%.\\/]*))$")
-        
-        local filename = ucs_filename
-        if #data.files > 1 then filename = SubstituteIdx(i) end
-        local new_file = dir .. "/" .. filename .. "." .. ext
-        rv, osbuf = os.rename(old_file, new_file)
-      end
-      form.applied = true
-    end
-  end
-end
-
 function CacheMarkers(cacheregions)
   data.markers = {}
   data.regions = {}
@@ -1358,7 +1324,7 @@ function Navigate(next)
   
   if form.autorename then Rename() end
   
-  if form.autoplay then
+  if form.autoplay and not data.mx_open then
     reaper.Main_OnCommand(1016, 0) -- Transport: Stop
     reaper.Main_OnCommand(40044, 0) -- Transport: Play/stop
   end
@@ -1476,8 +1442,10 @@ function Navigation()
   
   Tooltip(ctx, "You can also navigate next/previous targets with Alt+Left/Right arrow keys")
   
-  rv, form.autoplay = reaper.ImGui_Checkbox(ctx, "Autoplay when navigating", form.autoplay)
-  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  if not data.mx_open then
+    rv, form.autoplay = reaper.ImGui_Checkbox(ctx, "Autoplay when navigating", form.autoplay)
+    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  end
   rv, form.autorename = reaper.ImGui_Checkbox(ctx, "Auto-Rename when navigating", form.autorename)
 end
 
@@ -1520,7 +1488,7 @@ function Main()
   
   if data.mx_open then
     if data.files then
-      reaper.ImGui_LabelText(ctx, "Directory", data.files[0])
+      reaper.ImGui_LabelText(ctx, "Directory", data.directory)
     end
   end
 

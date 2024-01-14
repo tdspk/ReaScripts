@@ -12,7 +12,7 @@
 - [x] Support Undo Points
 - [x] Focus on FXName after Renaming, if the current focus is on this
 - [x] Highlight window when focused
-- [ ] Implement new features to Media Explorer Mode
+- [x] Implement new features to Media Explorer Mode
 
 # Bugfixes for V1
 - [ ] Fix scrolling bug in category browser
