@@ -1623,8 +1623,11 @@ function Loop()
   local visible, open = reaper.ImGui_Begin(ctx, "tdspk - UCS Toolkit - UCS Version " .. ucs.version, true, reaper.ImGui_WindowFlags_MenuBar())
   
   if visible then
+    local window_focused = reaper.ImGui_IsWindowFocused(ctx)
+    reaper.ImGui_BeginDisabled(ctx, not window_focused)
     Menu()
     Main()
+    reaper.ImGui_EndDisabled(ctx)
     reaper.ImGui_End(ctx)
   end
   if open then
