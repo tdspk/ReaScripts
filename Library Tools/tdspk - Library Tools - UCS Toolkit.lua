@@ -84,7 +84,7 @@ local combo = {
   sub_items = ""
 }
 
-form = {
+local form = {
   search = "",
   search_cat = 1,
   cat_id = "",
@@ -112,7 +112,8 @@ data = {
   target = 0,
   target_self = "",
   rename_count = 0,
-  file_count = 0,
+  directory = "",
+  files = {},
   markers = {},
   regions = {},
   selected_markers = {},
@@ -387,31 +388,6 @@ function CreateUCSFilename(d, cat_id, ...)
   return fname
 end
 
--- Code from Edgemeal - adapted! Thank you!
-function GetMediaExplorerFiles()
-  local files = {}
-  
-  local file_LV = reaper.JS_Window_FindChildByID(data.mx_handle, 0x3E9) 
-  local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(file_LV)
-  if sel_count == 0 then return 0, files end
-
-  local index = 0
-  -- get path from combobox
-  local combo = reaper.JS_Window_FindChildByID(data.mx_handle, 1002)
-  local edit = reaper.JS_Window_FindChildByID(combo, 1001)
-  local path = reaper.JS_Window_GetTitle(edit, "", 1024)
-
-  files[index] = path
-  -- get selected items in 1st column of ListView.
-  for ndx in string.gmatch(sel_indexes, '[^,]+') do
-    name = reaper.JS_ListView_GetItemText(file_LV, tonumber(ndx), 0)
-    index = index + 1
-    files[index] = name
-  end
-  
-  return sel_count, files
-end
-
 function Tooltip(ctx, text)
   if settings.tooltips then
     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x / 2)
@@ -609,10 +585,7 @@ function OperationMode()
     reaper.ImGui_SameLine(ctx)
     reaper.ImGui_TextColored(ctx, color.red, "Media Explorer Files")
     Tooltip(ctx, "Close the Media Explorer to rename tracks, items, markers and regions.")
-  else 
-    --reaper.ImGui_Text(ctx, "Renaming: ")
-    --reaper.ImGui_SameLine(ctx)
-    
+  else  
     local has_changed = false
     rv, data.target = reaper.ImGui_RadioButtonEx(ctx, "Tracks", data.target, 0)
     has_changed = has_changed or rv
@@ -634,6 +607,21 @@ function OperationMode()
     reaper.ImGui_SameLine(ctx)
     reaper.ImGui_TextColored(ctx, color.blue, "Arrange View")
     Tooltip(ctx, "Open the Media Explorer to rename local files")
+    
+    if data.target == 2 or data.target == 3 then
+      local btn_text
+      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+      if data.rm_open then
+        reaper.ImGui_Text(ctx, "Renaming selections from ")
+        reaper.ImGui_SameLine(ctx)
+        reaper.ImGui_TextColored(ctx, color.blue, "Marker/Region Manager")
+      else
+        reaper.ImGui_Text(ctx, "Renaming selections from ")
+        reaper.ImGui_SameLine(ctx)
+        reaper.ImGui_TextColored(ctx, color.blue, "Arrange View")
+      end
+      Tooltip(ctx, "Toggle the Marker/Region Manager to change the mode")
+    end
     
     if has_changed then
       reaper.SetExtState(ext_section, "target", tostring(data.target), false)
@@ -861,46 +849,71 @@ end
 function Rename()
   reaper.Undo_BeginBlock()
   
-  if data.target == 0 then
-    for i = 1, #data.tracks do 
-      local track = data.tracks[i]
-      local filename = data.ucs_names[i]
+  if data.mx_open then
+    local autoplay = reaper.GetToggleCommandStateEx(32063, 1011) --Autoplay: Toggle on/off
     
-      reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
-    end
-    reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.tracks .. " tracks", 0)
-    form.applied = true
-  elseif data.target == 1 then
-    for i = 1, #data.items do
-      local item = data.items[i]
-      local take = reaper.GetActiveTake(item)
-      local filename = data.ucs_names[i]
+    -- disable autoplay, stop playback
+    reaper.JS_Window_OnCommand(data.mx_handle, 40036) -- Autoplay: Off
+    reaper.JS_Window_OnCommand(data.mx_handle, 1009) -- Preview: Stop
+    reaper.JS_Window_OnCommand(data.mx_handle, 1009) -- Preview: Stop
+    
+    for i,v in ipairs(data.files) do 
+      local old_file = data.directory .. "/" .. v
+      local _, _, ext = string.match(v, "(.-)([^\\/]-%.?([^%.\\/]*))$")
       
-      reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
-    end
-    reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.items .. " tracks", 0)
-    form.applied = true
-  elseif data.target == 2 then
-    for i, v in ipairs(data.selected_markers) do
-      local idx = v[1]
-      local pos = v[2]
       local filename = data.ucs_names[i]
+      local new_file = data.directory .. "/" .. filename .. "." .. ext
       
-      reaper.SetProjectMarker(idx, false, pos, pos, filename)
+      rv, osbuf = os.rename(old_file, new_file)
     end
-    reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.selected_markers .. " markers", 0)
+    
+    if autoplay == 1 then -- Enable autoplay if it was toggled on
+      reaper.JS_Window_OnCommand(hWnd, 40035) -- Autoplay: On
+    end
+    
     form.applied = true
-  elseif data.target == 3 then
-    for i, v in ipairs(data.selected_regions) do
-      local idx = v[1]
-      local pos = v[2]
-      local rgnend = v[3]
-      local filename = data.ucs_names[i]
+  else
+    if data.target == 0 then
+      for i = 1, #data.tracks do 
+        local track = data.tracks[i]
+        local filename = data.ucs_names[i]
       
-      reaper.SetProjectMarker(idx, true, pos, rgnend, filename)
+        reaper.GetSetMediaTrackInfo_String(track, "P_NAME", filename, true)
+      end
+      reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.tracks .. " tracks", 0)
+      form.applied = true
+    elseif data.target == 1 then
+      for i = 1, #data.items do
+        local item = data.items[i]
+        local take = reaper.GetActiveTake(item)
+        local filename = data.ucs_names[i]
+        
+        reaper.GetSetMediaItemTakeInfo_String(take, "P_NAME", filename, true)
+      end
+      reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.items .. " tracks", 0)
+      form.applied = true
+    elseif data.target == 2 then
+      for i, v in ipairs(data.selected_markers) do
+        local idx = v[1]
+        local pos = v[2]
+        local filename = data.ucs_names[i]
+        
+        reaper.SetProjectMarker(idx, false, pos, pos, filename)
+      end
+      reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.selected_markers .. " markers", 0)
+      form.applied = true
+    elseif data.target == 3 then
+      for i, v in ipairs(data.selected_regions) do
+        local idx = v[1]
+        local pos = v[2]
+        local rgnend = v[3]
+        local filename = data.ucs_names[i]
+        
+        reaper.SetProjectMarker(idx, true, pos, rgnend, filename)
+      end
+      reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.selected_regions .. " regions", 0)
+      form.applied = true
     end
-    reaper.Undo_EndBlock2(0, "UCS Toolkit: Renamed " .. #data.selected_regions .. " regions", 0)
-    form.applied = true
   end
 end
 
@@ -924,6 +937,11 @@ function RenameButton()
   elseif data.target == 3 then
     t = data.selected_regions
     label = " Region"
+  end
+  
+  if data.mx_open then
+    t = data.files
+    label = " File"
   end
   
   --TODO colors for markers/region buttons
@@ -1003,10 +1021,32 @@ function CacheSelectedItems()
   end
 end
 
+function CacheFiles()
+  data.files = {}
+  
+  local file_LV = reaper.JS_Window_FindChildByID(data.mx_handle, 0x3E9)
+  local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(file_LV)
+  if sel_count == 0 then return data.files end
+  
+  -- get path from combobox
+  local combo = reaper.JS_Window_FindChildByID(data.mx_handle, 1002)
+  local edit = reaper.JS_Window_FindChildByID(combo, 1001)
+  local path = reaper.JS_Window_GetTitle(edit, "", 1024)
+
+  data.directory = path
+  
+  -- get selected items in 1st column of ListView.
+  for ndx in string.gmatch(sel_indexes, '[^,]+') do
+    name = reaper.JS_ListView_GetItemText(file_LV, tonumber(ndx), 0)
+    table.insert(data.files, name)
+  end
+end
+
 function CacheUCSData()
   data.ucs_names = {}
   
   local t
+  
   if data.target == 0 then
     t = data.tracks
   elseif data.target == 1 then
@@ -1017,17 +1057,28 @@ function CacheUCSData()
     t = data.selected_regions
   end
   
+  if data.mx_open then
+    t = data.files
+  end
+  
   for i=1, #t do
     local target_name
-    if data.target == 0 then
-      _, target_name = reaper.GetTrackName(t[i])
-    elseif data.target == 1 then
-      local take = reaper.GetMediaItemTake(t[i], 0)
-      target_name = reaper.GetTakeName(take)
-    elseif data.target == 2 then
-      target_name = t[i][3]
-    elseif data.target == 3 then
-      target_name = t[i][4]
+    
+    if data.mx_open then
+      target_name = t[i]
+    else 
+      if data.target == 0 then
+        _, target_name = reaper.GetTrackName(t[i])
+      elseif data.target == 1 then
+        local take = reaper.GetMediaItemTake(t[i], 0)
+        target_name = reaper.GetTakeName(take)
+      elseif data.target == 2 then
+        target_name = t[i][3]
+      elseif data.target == 3 then
+        target_name = t[i][4]
+      elseif data.target == 4 then
+        target_name = t[i]
+      end
     end
     
     local parts = ParseFilename(target_name)
@@ -1155,9 +1206,10 @@ end
 
 function CountTargets()
   local filecount = 0
+  
   if data.mx_open then
-    data.file_count, data.files = GetMediaExplorerFiles(data.mx_handle)
-    return data.file_count
+    CacheFiles(data.mx_handle)
+    filecount = #data.files
   else
     if data.target == 0 then
       CacheSelectedTracks()
@@ -1238,12 +1290,6 @@ function GetNearestMarker(isrgn)
   end
   
   return nearest_marker
-  
-  --[[if min == 0 then
-    return nil
-  else
-    return nearest_marker
-  end]]--
 end
 
 function NavigateMarker(isrgn, step)
@@ -1276,29 +1322,37 @@ function NavigateMarker(isrgn, step)
 end
 
 function Navigate(next)
-  if data.target == 0 then
+  if data.mx_open then
     if next then
-      reaper.Main_OnCommand(40285, 0) -- Track: Go to next track
+      reaper.JS_Window_OnCommand(data.mx_handle, 40030) -- Browser: Select next file in directory
     else
-      reaper.Main_OnCommand(40286, 0) -- Track: Go to previous track
+      reaper.JS_Window_OnCommand(data.mx_handle, 40029) -- Browser: Select previous file in directory
     end
-  elseif data.target == 1 then
-    if next then
-      reaper.Main_OnCommand(40417, 0) -- Item navigation: Select and move to next item
-    else
-      reaper.Main_OnCommand(40416, 0) -- Item navigation: Select and move to previous item
-    end
-  elseif data.target == 2 then
-    if next then
-      data.nav_marker = NavigateMarker(false, 1)
-    else
-      data.nav_marker = NavigateMarker(false, -1)
-    end
-  elseif data.target == 3 then
-    if next then
-      data.nav_region = NavigateMarker(true, 1)
-    else
-      data.nav_region = NavigateMarker(true, -1)
+  else
+    if data.target == 0 then
+      if next then
+        reaper.Main_OnCommand(40285, 0) -- Track: Go to next track
+      else
+        reaper.Main_OnCommand(40286, 0) -- Track: Go to previous track
+      end
+    elseif data.target == 1 then
+      if next then
+        reaper.Main_OnCommand(40417, 0) -- Item navigation: Select and move to next item
+      else
+        reaper.Main_OnCommand(40416, 0) -- Item navigation: Select and move to previous item
+      end
+    elseif data.target == 2 then
+      if next then
+        data.nav_marker = NavigateMarker(false, 1)
+      else
+        data.nav_marker = NavigateMarker(false, -1)
+      end
+    elseif data.target == 3 then
+      if next then
+        data.nav_region = NavigateMarker(true, 1)
+      else
+        data.nav_region = NavigateMarker(true, -1)
+      end
     end
   end
   
@@ -1405,6 +1459,28 @@ function PushMainStyle()
   return 4
 end
 
+function Navigation()
+  reaper.ImGui_SeparatorText(ctx, "Navigation")
+  
+  if reaper.ImGui_ArrowButton(ctx, "Previous", reaper.ImGui_Dir_Left())
+    or NavigatePrevious() then
+    Navigate(false)
+  end
+  
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  
+  if reaper.ImGui_ArrowButton(ctx, "Next", reaper.ImGui_Dir_Right())
+    or NavigateNext() then
+    Navigate(true)
+  end
+  
+  Tooltip(ctx, "You can also navigate next/previous targets with Alt+Left/Right arrow keys")
+  
+  rv, form.autoplay = reaper.ImGui_Checkbox(ctx, "Autoplay when navigating", form.autoplay)
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  rv, form.autorename = reaper.ImGui_Checkbox(ctx, "Auto-Rename when navigating", form.autorename)
+end
+
 function Main()
   -- check if data can update
   data.update = false
@@ -1429,14 +1505,6 @@ function Main()
   
   data.mx_open, data.mx_handle = IsWindowOpen("Media Explorer")
   
-  if data.mx_open then
-    if data.files then
-      reaper.ImGui_LabelText(ctx, "Directory", data.files[0])
-    end
-  end
-  
-  ucs_filename = CreateUCSFilename(settings.delimiter, form.cat_id, form.user_cat, form.vendor_cat, form.fx_name, form.creator_id, form.source_id, form.user_data)
-  
   --TODO optimize cache behaviour - ticks vs changed state
   if data.update then
     data.rename_count = CountTargets()
@@ -1444,74 +1512,40 @@ function Main()
 
   reaper.ImGui_Separator(ctx)
   
+  Navigation()
+  
+  OperationMode()
+  
+  reaper.ImGui_SeparatorText(ctx, "Preview")
+  
   if data.mx_open then
-    OperationMode()
-    RenameFiles()
+    if data.files then
+      reaper.ImGui_LabelText(ctx, "Directory", data.files[0])
+    end
+  end
+
+  if data.rename_count <= 1 then
+    reaper.ImGui_LabelText(ctx, "Filename", data.ucs_names[1])
   else
-    reaper.ImGui_SeparatorText(ctx, "Navigation")
+    local filenames = ""
     
-    if reaper.ImGui_ArrowButton(ctx, "Previous", reaper.ImGui_Dir_Left())
-      or NavigatePrevious() then
-      Navigate(false)
+    for i=1, #data.ucs_names do
+      filenames = filenames .. data.ucs_names[i] .. "\0"
     end
     
-    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-    
-    if reaper.ImGui_ArrowButton(ctx, "Next", reaper.ImGui_Dir_Right())
-      or NavigateNext() then
-      Navigate(true)
-    end
-    
-    Tooltip(ctx, "You can also navigate next/previous targets with Alt+Left/Right arrow keys")
-    
-    if data.target == 2 then
-      local btn_text
-      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-      if data.rm_open then
-        reaper.ImGui_Text(ctx, "Renaming selections from ")
-        reaper.ImGui_SameLine(ctx)
-        reaper.ImGui_TextColored(ctx, color.blue, "Marker/Region Manager")
-      else
-        reaper.ImGui_Text(ctx, "Renaming selections from ")
-        reaper.ImGui_SameLine(ctx)
-        reaper.ImGui_TextColored(ctx, color.blue, "Arrange View")
-      end
-      Tooltip(ctx, "Toggle the Marker/Region Manager to change the mode")
-    end
-    
-    rv, form.autoplay = reaper.ImGui_Checkbox(ctx, "Autoplay when navigating", form.autoplay)
-    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-    rv, form.autorename = reaper.ImGui_Checkbox(ctx, "Auto-Rename when navigating", form.autorename)
-    
-    reaper.ImGui_Separator(ctx)
-    
-    OperationMode()
-    
-    reaper.ImGui_SeparatorText(ctx, "Preview")
+    reaper.ImGui_Combo(ctx, "Filenames", 0, filenames)
+  end
+
+  RenameButton()
   
-    if data.rename_count <= 1 then
-      reaper.ImGui_LabelText(ctx, "Filename", data.ucs_names[1])
-    else
-      local filenames = ""
-      
-      for i=1, #data.ucs_names do
-        filenames = filenames .. data.ucs_names[i] .. "\0"
-      end
-      
-      reaper.ImGui_Combo(ctx, "Filenames", 0, filenames)
-    end
+  Tooltip(ctx, "Quick Rename targets with Ctrl+Enter")
   
-    RenameButton()
-    
-    Tooltip(ctx, "Quick Rename targets with Ctrl+Enter")
-    
-    form.search_sc = SearchShortcut()
-    form.name_sc = NameShortcut()
-    
-    if form.applied then
-      if form.clear_fx then form.fx_name = "" end
-      Navigate(true)
-    end
+  form.search_sc = SearchShortcut()
+  form.name_sc = NameShortcut()
+  
+  if form.applied then
+    if form.clear_fx then form.fx_name = "" end
+    Navigate(true)
   end
   
   WebsiteLink()
@@ -1623,11 +1657,8 @@ function Loop()
   local visible, open = reaper.ImGui_Begin(ctx, "tdspk - UCS Toolkit - UCS Version " .. ucs.version, true, reaper.ImGui_WindowFlags_MenuBar())
   
   if visible then
-    local window_focused = reaper.ImGui_IsWindowFocused(ctx)
-    reaper.ImGui_BeginDisabled(ctx, not window_focused)
     Menu()
     Main()
-    reaper.ImGui_EndDisabled(ctx)
     reaper.ImGui_End(ctx)
   end
   if open then
