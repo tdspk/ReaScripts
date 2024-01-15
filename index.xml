@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="fb81cdf51436a8f4a3b8622bfd5027ee43a633f8">
+<index version="1" name="tdspk" commit="a454468775a9f93bf9680433fd2a55c360759578">
   <category name="Creative">
     <reapack name="tdspk - Creative - ReaChopChop.lua" type="script" desc="ReaChopChop">
       <metadata>
@@ -109,6 +109,10 @@ First version]]></changelog>
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-31T15:07:40Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/19279645d41defef525309aae35002c82fcfea4a/Editing/tdspk%20-%20Editing%20-%20Split%20Item%20under%20cursor%20and%20trim%20shorter%20side.lua</source>
+      </version>
+      <version name="1.0.1" author="Tadej Supukovic (tdspk)" time="2024-01-15T11:40:08Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/a454468775a9f93bf9680433fd2a55c360759578/Editing/tdspk%20-%20Editing%20-%20Split%20Item%20under%20cursor%20and%20trim%20shorter%20side.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Editing - Split selected items under cursor.lua" type="script" desc="Split selected items under cursor">
