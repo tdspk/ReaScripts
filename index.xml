@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="e8f793c5aab6a2e28397e513d808b41df3dea1d9">
+<index version="1" name="tdspk" commit="230fb62db2deceddbaafd223c7636571ed539db1">
   <category name="Creative">
     <reapack name="tdspk - Creative - ReaChopChop.lua" type="script" desc="ReaChopChop">
       <metadata>
@@ -220,6 +220,11 @@ First version]]></changelog>
         <changelog><![CDATA[First beta]]></changelog>
         <source file="data/ucs.csv">https://github.com/tdspk/ReaScripts/raw/e8f793c5aab6a2e28397e513d808b41df3dea1d9/Library%20Tools/data/ucs.csv</source>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/e8f793c5aab6a2e28397e513d808b41df3dea1d9/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20UCS%20Toolkit.lua</source>
+      </version>
+      <version name="0.2pre2" author="Tadej Supukovic (tdspk)" time="2024-01-15T21:13:17Z">
+        <changelog><![CDATA[First beta]]></changelog>
+        <source file="data/ucs.csv">https://github.com/tdspk/ReaScripts/raw/230fb62db2deceddbaafd223c7636571ed539db1/Library%20Tools/data/ucs.csv</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/230fb62db2deceddbaafd223c7636571ed539db1/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20UCS%20Toolkit.lua</source>
       </version>
     </reapack>
   </category>
