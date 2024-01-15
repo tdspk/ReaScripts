@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.1.5
+--@version 0.2pre1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -233,7 +233,7 @@ function ReadUcsData()
       ucs.categories[cat][subcat] = id
       table.insert(ucs.synonyms, id .. ";" .. syn)
       table.insert(ucs.explanations, id .. ";" .. expl)
-      table.insert(ucs.search_data, id .. ";" .. cat .. ", " .. subcat .. ", " .. syn)
+      table.insert(ucs.search_data, string.format("%s;%s, %s, %s, %s", id, cat, subcat, expl, syn))
     end
   end
 end
@@ -274,9 +274,6 @@ function Init()
   style.window_padding = reaper.ImGui_GetStyleVar(ctx, reaper.ImGui_StyleVar_WindowPadding())
   
   reaper.ImGui_SetNextWindowSize(ctx, style.window_width, style.window_height)
-  
-  form.syn_filter = reaper.ImGui_CreateTextFilter()
-  reaper.ImGui_Attach(ctx, form.syn_filter)
   
   ReadUcsData()
 
@@ -630,6 +627,16 @@ function OperationMode()
   --reaper.ImGui_Separator(ctx)
 end
 
+function SplitString(input)
+  local words = {}
+  
+  for word in input:gmatch("%S+") do
+    table.insert(words, word)
+  end
+  
+  return words
+end
+
 function CategoryFields()
   local cat_changed, sub_changed, id_changed
   cat_changed, form.cur_cat = reaper.ImGui_Combo(ctx, "Category", form.cur_cat, combo.cat_items)
@@ -676,9 +683,12 @@ function CategorySearch()
   
   rv, form.search = reaper.ImGui_InputText(ctx, "Search category...", form.search)
   
-  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  if not reaper.ImGui_IsItemFocused(ctx) then
+    is_list_open = false
+    return
+  end
   
-  Tooltip(ctx, "Search for multiple results by using comma (,) to separate")
+  Tooltip(ctx, "Search for multiple results by ...")
   
   if rv then
     form.search_cat = 1
@@ -690,14 +700,21 @@ function CategorySearch()
   end
   
   if is_list_open then
-    --local syn_filter = reaper.ImGui_CreateTextFilter(form.search)
-    reaper.ImGui_TextFilter_Set(form.syn_filter, form.search)
-    
-    -- Filter Synonys manually
+    local words = SplitString(form.search)
+  
     local syns = {}
+    
     for i=1, #ucs.search_data do
       local entry = ucs.search_data[i]
-      if reaper.ImGui_TextFilter_PassFilter(form.syn_filter, entry) then
+      local count = 0
+      
+      for _,v in ipairs(words) do
+        if string.find(entry, v) then
+          count = count + 1
+        end
+      end
+      
+      if count == #words then
         table.insert(syns, entry)
       end
     end
@@ -710,7 +727,7 @@ function CategorySearch()
     elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_UpArrow(), false) then
       form.search_cat = form.search_cat - 1
       if form.search_cat < 1 then form.search_cat = #syns end
-    elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter(), false) then
+    elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter(), false) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Tab(), false) then
       select_next = form.search_cat
     end
     
