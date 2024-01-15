@@ -16,6 +16,19 @@ You can find some tools für improving the creative workflow in REAPER.
 
 These require the package: *ReaImGui: ReaScript binding for Dear ImGui*
 
+# Editing
+
+- tdspk - Editing - Align item positions to first selected item.lua
+- tdspk - Editing - Align item positions to project markers.lua
+- tdspk - Editing - Enclose Track Items with Razor Edit Area.lua
+- tdspk - Editing - Move next take marker to snap offset.lua
+- tdspk - Editing - Reset snap offset for selected items.lua
+- tdspk - Editing - Set item length of all selected item to first item length.lua
+- tdspk - Editing - Set snap offset at first transient per selected item.lua
+- tdspk - Editing - Set take marker per transient.lua
+- tdspk - Editing - Split Item under cursor and trim shorter side.lua
+- tdspk - Editing - Split selected items under cursor.lua
+
 # Memes
 
 Just meme scripts.
