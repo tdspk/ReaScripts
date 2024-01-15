@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.2pre1
+--@version 0.2pre2
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -86,6 +86,7 @@ local combo = {
 
 local form = {
   search = "",
+  search_mouse = false,
   search_cat = 1,
   cat_id = "",
   cur_cat = 0,
@@ -683,11 +684,6 @@ function CategorySearch()
   
   rv, form.search = reaper.ImGui_InputText(ctx, "Search category...", form.search)
   
-  if not reaper.ImGui_IsItemFocused(ctx) then
-    is_list_open = false
-    return
-  end
-  
   Tooltip(ctx, "Search for multiple results by ...")
   
   if rv then
@@ -697,11 +693,11 @@ function CategorySearch()
     is_list_open = true
   elseif form.search == "" then
     is_list_open = false
+    form.search_mouse = false
   end
   
   if is_list_open then
     local words = SplitString(form.search)
-  
     local syns = {}
     
     for i=1, #ucs.search_data do
@@ -721,33 +717,55 @@ function CategorySearch()
     
     select_next = -1
     
-    if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_DownArrow(), false) then
-      form.search_cat = form.search_cat + 1
-      if form.search_cat > #syns then form.search_cat = 1 end
-    elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_UpArrow(), false) then
-      form.search_cat = form.search_cat - 1
-      if form.search_cat < 1 then form.search_cat = #syns end
-    elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter(), false) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Tab(), false) then
-      select_next = form.search_cat
+    if reaper.ImGui_GetMouseWheel(ctx) ~= 0 and not form.search_mouse then
+      form.search_mouse = true
+    end
+    
+    if not form.search_mouse then
+      if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_DownArrow(), false) then
+        form.search_cat = form.search_cat + 1
+        if form.search_cat > #syns then form.search_cat = 1 end
+      elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_UpArrow(), false) then
+        form.search_cat = form.search_cat - 1
+        if form.search_cat < 1 then form.search_cat = #syns end
+      elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter(), false) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Tab(), false) then
+        select_next = form.search_cat
+      end
+    else
+      local key_pressed = reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_DownArrow(), false) or
+       reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_UpArrow(), false)
+      if key_pressed then
+        form.search_mouse = false
+      end
     end
     
     if reaper.ImGui_BeginListBox(ctx, "Autosearch Categories") then 
       for i=1, #syns do
+        local is_selected = form.search_cat == i and not form.search_mouse
         local entry = syns[i]
         local id, syn = string.match(entry, "(.*);(.*)")
         
-        local selectable = reaper.ImGui_Selectable(ctx, id .. "\n" .. syn, form.search_cat == i);reaper.ImGui_Separator(ctx)
-        a_max = reaper.ImGui_GetScrollMaxY(ctx)
-        if form.search_cat == i then
+        local selectable = reaper.ImGui_Selectable(ctx, id .. "\n" .. syn, is_selected);reaper.ImGui_Separator(ctx)
+      
+        if form.search_mouse and reaper.ImGui_IsItemHovered(ctx) then
+          form.search_cat = i
+        end
+        
+        if is_selected and not form.search_mouse then
           reaper.ImGui_SetScrollHereY(ctx, 1)
         end
         
-        if selectable or select_next == i then
+        if selectable then
+          select_next = i
+        end
+        
+        if select_next == i then
           form.cat_id = id
           form.search = ""
           is_list_open = false
           form.search_cat = 1
           form.search_apply = true
+          form.search_mouse = false
         end
       end
       
