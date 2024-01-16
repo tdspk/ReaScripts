@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.2pre2
+--@version 0.2pre3
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -46,12 +46,14 @@ script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 
 ucs_file = script_path .. "/data/ucs.csv"
 
-color = {
+local color = {
   red = reaper.ImGui_ColorConvertDouble4ToU32(1, 0, 0, 1),
   blue = reaper.ImGui_ColorConvertDouble4ToU32(0, 0.91, 1, 1),
   gray = reaper.ImGui_ColorConvertDouble4ToU32(0.75, 0.75, 0.75, 1),
   green = reaper.ImGui_ColorConvertDouble4ToU32(0, 1, 0, 0.5),
   yellow = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 0, 0.5),
+  purple = reaper.ImGui_ColorConvertDouble4ToU32(0.667, 0, 1, 0.5),
+  turquois = reaper.ImGui_ColorConvertDouble4ToU32(0, 1, 0.957, 0.5),
   mainfields = reaper.ImGui_ColorConvertDouble4ToU32(0.2, 0.2, 0.2, 1),
   transparent = reaper.ImGui_ColorConvertDouble4ToU32(0, 0, 0, 0)
 }
@@ -63,7 +65,8 @@ local style = {
   item_spacing_y = 10,
   big_btn_height = 50,
   frame_rounding = 2,
-  frame_border = 1
+  frame_border = 1,
+  window_rounding = 12
 }
 
 local ucs = {
@@ -86,8 +89,9 @@ local combo = {
 
 local form = {
   search = "",
+  is_search_open = false,
   search_mouse = false,
-  search_cat = 1,
+  search_idx = 1,
   cat_id = "",
   cur_cat = 0,
   cur_sub = 0,
@@ -125,12 +129,14 @@ data = {
   nav_region = 0,
   state_count = 0,
   tracks = {},
-  items = {}
+  items = {},
+  ready = false
 }
 
 local ext_section = "tdspk_ucstoolkit"
+local version = "0.2pre3"
 
-default_settings = {
+local default_settings = {
   font_size = 15,
   save_state = false,
   delimiter = "_",
@@ -138,7 +144,7 @@ default_settings = {
   tooltips = true
 }
 
-settings = {
+local settings = {
   changed = false,
 }
 
@@ -271,8 +277,6 @@ function Init()
   
   style.font_menu = reaper.ImGui_CreateFont("sans-serif", 12)
   reaper.ImGui_Attach(ctx, style.font_menu)
-  
-  style.window_padding = reaper.ImGui_GetStyleVar(ctx, reaper.ImGui_StyleVar_WindowPadding())
   
   reaper.ImGui_SetNextWindowSize(ctx, style.window_width, style.window_height)
   
@@ -507,7 +511,7 @@ function WildcardInfo()
 end
 
 function Support()
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color.red)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color.purple)
 
   if reaper.ImGui_Button(ctx, "Support this Tool") then
     reaper.ImGui_OpenPopup(ctx, "Support")
@@ -608,7 +612,7 @@ function OperationMode()
     
     if data.target == 2 or data.target == 3 then
       local btn_text
-      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+      --reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
       if data.rm_open then
         reaper.ImGui_Text(ctx, "Renaming selections from ")
         reaper.ImGui_SameLine(ctx)
@@ -619,6 +623,8 @@ function OperationMode()
         reaper.ImGui_TextColored(ctx, color.blue, "Arrange View")
       end
       Tooltip(ctx, "Toggle the Marker/Region Manager to change the mode")
+    else
+      reaper.ImGui_Text(ctx, "")
     end
     
     if has_changed then
@@ -626,16 +632,6 @@ function OperationMode()
     end
   end
   --reaper.ImGui_Separator(ctx)
-end
-
-function SplitString(input)
-  local words = {}
-  
-  for word in input:gmatch("%S+") do
-    table.insert(words, word)
-  end
-  
-  return words
 end
 
 function CategoryFields()
@@ -687,17 +683,17 @@ function CategorySearch()
   Tooltip(ctx, "Search for multiple results by ...")
   
   if rv then
-    form.search_cat = 1
+    form.search_idx = 1
   end
-  if rv and not is_list_open then
-    is_list_open = true
+  if rv and not form.is_search_open then
+    form.is_search_open = true
   elseif form.search == "" then
-    is_list_open = false
+    form.is_search_open = false
     form.search_mouse = false
   end
   
-  if is_list_open then
-    local words = SplitString(form.search)
+  if form.is_search_open then
+    local words = string.split(form.search, " ")
     local syns = {}
     
     for i=1, #ucs.search_data do
@@ -723,13 +719,13 @@ function CategorySearch()
     
     if not form.search_mouse then
       if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_DownArrow(), false) then
-        form.search_cat = form.search_cat + 1
-        if form.search_cat > #syns then form.search_cat = 1 end
+        form.search_idx = form.search_idx + 1
+        if form.search_idx > #syns then form.search_idx = 1 end
       elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_UpArrow(), false) then
-        form.search_cat = form.search_cat - 1
-        if form.search_cat < 1 then form.search_cat = #syns end
+        form.search_idx = form.search_idx - 1
+        if form.search_idx < 1 then form.search_idx = #syns end
       elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter(), false) or reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Tab(), false) then
-        select_next = form.search_cat
+        select_next = form.search_idx
       end
     else
       local key_pressed = reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_DownArrow(), false) or
@@ -741,14 +737,14 @@ function CategorySearch()
     
     if reaper.ImGui_BeginListBox(ctx, "Autosearch Categories") then 
       for i=1, #syns do
-        local is_selected = form.search_cat == i and not form.search_mouse
+        local is_selected = form.search_idx == i and not form.search_mouse
         local entry = syns[i]
         local id, syn = string.match(entry, "(.*);(.*)")
         
         local selectable = reaper.ImGui_Selectable(ctx, id .. "\n" .. syn, is_selected);reaper.ImGui_Separator(ctx)
       
         if form.search_mouse and reaper.ImGui_IsItemHovered(ctx) then
-          form.search_cat = i
+          form.search_idx = i
         end
         
         if is_selected and not form.search_mouse then
@@ -762,8 +758,8 @@ function CategorySearch()
         if select_next == i then
           form.cat_id = id
           form.search = ""
-          is_list_open = false
-          form.search_cat = 1
+          form.is_search_open = false
+          form.search_idx = 1
           form.search_apply = true
           form.search_mouse = false
         end
@@ -969,6 +965,7 @@ function RenameButton()
   elseif data.target == 2 then
     t = data.selected_markers
     label = " Marker"
+    col = color.purple
   elseif data.target == 3 then
     t = data.selected_regions
     label = " Region"
@@ -977,9 +974,8 @@ function RenameButton()
   if data.mx_open then
     t = data.files
     label = " File"
+    col = color.turquois
   end
-  
-  --TODO colors for markers/region buttons
   
   if #t > 1 then label = label .. "s" end -- Append "s" if there are more than one element in table
   
@@ -1451,7 +1447,7 @@ function AutoFill()
   end
 end
 
-function PushMainStyle()
+function PushMainStyleVars()
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, style.item_spacing_y)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_SeparatorTextPadding(), 0, 0)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameRounding(), style.frame_rounding)
@@ -1485,7 +1481,7 @@ function Navigation()
 end
 
 function Main()
-  -- check if data can update
+ -- check if data can update
   data.update = false
   data.ticks = data.ticks + 1
   
@@ -1495,7 +1491,7 @@ function Main()
   end
 
   reaper.ImGui_PushFont(ctx, style.font)
-  local style_pushes = PushMainStyle()
+  local style_pushes = PushMainStyleVars()
   
   CategorySearch()
   CategoryFields()
@@ -1553,9 +1549,7 @@ function Main()
   
   WebsiteLink()
   
-  for i=1, style_pushes do
-    reaper.ImGui_PopStyleVar(ctx)
-  end
+  reaper.ImGui_PopStyleVar(ctx, style_pushes)
   reaper.ImGui_PopFont(ctx)
 end
 
@@ -1574,32 +1568,9 @@ end
 function Menu()
   reaper.ImGui_PushFont(ctx, style.font_menu)
   if reaper.ImGui_BeginMenuBar(ctx) then
-    --[[if reaper.ImGui_BeginMenu(ctx, "File", false) then
-      if reaper.ImGui_MenuItem(ctx, "Save Data") then
-        local data = form.fx_name .. ";" .. form.creator_id .. ";" .. form.source_id
-        reaper.SetExtState(ext_section, "data", data, false)
-      end
-      
-      Tooltip(ctx, "Save data to local memory")
-      
-      if reaper.ImGui_MenuItem(ctx, "Load Data") then
-        local data = reaper.GetExtState(ext_section, "data")
-        form.fx_name, form.creator_id, form.source_id = string.match(data, "(.*);(.*);(.*)")
-      end
-      
-      Tooltip(ctx, "Load data from local memory")
-      
-      if reaper.ImGui_MenuItem(ctx, "Clear all data") then
-        form.fx_name, form.creator_id, form.source_id, form.user_cat, form.vendor_cat, form.user_data = ""
-      end
-      
-      reaper.ImGui_EndMenu(ctx)
-    end
-    ]]--
-    
     if reaper.ImGui_BeginMenu(ctx, "Info", true) then
       local info = {
-        "UCS Toolkit",
+        "UCS Toolkit " .. version,
         "UCS Version " .. ucs.version,
         "A tool by tdspk"
       }
@@ -1642,14 +1613,7 @@ function Menu()
     end
     
     Settings()
-    
     Support()
-    
-    reaper.ImGui_Dummy(ctx, style.item_spacing_x * 2, 0)
-    
-    if reaper.ImGui_BeginMenu(ctx, "Development Build", false) then
-      
-    end
     
     reaper.ImGui_EndMenuBar(ctx)
     reaper.ImGui_PopFont(ctx)
@@ -1657,13 +1621,17 @@ function Menu()
 end
 
 function Loop()
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_WindowRounding(), 10)
   local visible, open = reaper.ImGui_Begin(ctx, "tdspk - UCS Toolkit - UCS Version " .. ucs.version, true, reaper.ImGui_WindowFlags_MenuBar())
   
   if visible then
     Menu()
     Main()
+    
     reaper.ImGui_End(ctx)
   end
+  
+  reaper.ImGui_PopStyleVar(ctx)
   if open then
     reaper.defer(Loop)
   end
