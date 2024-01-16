@@ -15,7 +15,7 @@
 - [x] Implement new features to Media Explorer Mode
 
 # Bugfixes for V1
-- [ ] Fix scrolling bug in category browser
+- [ x Fix scrolling bug in category browser
 
 # Post V1 Features
 
