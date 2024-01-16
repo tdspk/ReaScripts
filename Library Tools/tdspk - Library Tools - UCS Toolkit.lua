@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.2pre3
+--@version 0.2pre4
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -46,6 +46,13 @@ script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 
 ucs_file = script_path .. "/data/ucs.csv"
 
+local app = {
+  dock_id = 0,
+  docked = false,
+  window_width = 450,
+  window_height = 760,
+}
+
 local color = {
   red = reaper.ImGui_ColorConvertDouble4ToU32(1, 0, 0, 1),
   blue = reaper.ImGui_ColorConvertDouble4ToU32(0, 0.91, 1, 1),
@@ -59,14 +66,12 @@ local color = {
 }
 
 local style = {
-  window_width = 450,
-  window_height = 760,
   item_spacing_x = 10,
   item_spacing_y = 10,
   big_btn_height = 50,
   frame_rounding = 2,
   frame_border = 1,
-  window_rounding = 12
+  window_rounding = 12,
 }
 
 local ucs = {
@@ -130,14 +135,15 @@ data = {
   state_count = 0,
   tracks = {},
   items = {},
-  ready = false
+  ready = false,
+  ucs_names = {}
 }
 
 local ext_section = "tdspk_ucstoolkit"
 local version = "0.2pre3"
 
 local default_settings = {
-  font_size = 15,
+  font_size = 16,
   save_state = false,
   delimiter = "_",
   update_interval = 1,
@@ -268,17 +274,20 @@ function Init()
   LoadSettings()
   
   data.os = reaper.GetOS()
+  
+  -- init fonts
+  local font_res = script_path .. "/data/OpenSans-Medium.ttf"
 
-  style.font = reaper.ImGui_CreateFont("sans-serif", settings.font_size)
+  style.font = reaper.ImGui_CreateFont(font_res, settings.font_size)
   reaper.ImGui_Attach(ctx, style.font)
   
-  style.font_info = reaper.ImGui_CreateFont("sans-serif", math.floor(settings.font_size * 0.8))
+  style.font_info = reaper.ImGui_CreateFont(font_res, math.floor(settings.font_size * 0.8))
   reaper.ImGui_Attach(ctx, style.font_info)
   
-  style.font_menu = reaper.ImGui_CreateFont("sans-serif", 12)
+  style.font_menu = reaper.ImGui_CreateFont(font_res, math.floor(settings.font_size * 1.5))
   reaper.ImGui_Attach(ctx, style.font_menu)
   
-  reaper.ImGui_SetNextWindowSize(ctx, style.window_width, style.window_height)
+  reaper.ImGui_SetNextWindowSize(ctx, app.window_width, app.window_height)
   
   ReadUcsData()
 
@@ -413,19 +422,18 @@ function SaveSettings()
 end
 
 function Settings()
-  if reaper.ImGui_Button(ctx, "Settings") then
+  if SmallButton(ctx, "Settings") then
     reaper.ImGui_OpenPopup(ctx, "Settings")
   end
+
+  --if IconButton("Settings", style.icon_settings) then
+  --  reaper.ImGui_OpenPopup(ctx, "Settings")
+  --end
   
   local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetWindowViewport(ctx))
   reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
   
-  reaper.ImGui_PushFont(ctx, style.font)
-  
-  if reaper.ImGui_BeginPopupModal(ctx, "Settings", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
-    reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, style.item_spacing_x)
-    reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), style.frame_border)
-  
+  if reaper.ImGui_BeginPopupModal(ctx, "Settings", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then 
     rv, settings.font_size = reaper.ImGui_SliderInt(ctx, "Font Size", settings.font_size, 10, 18)
     settings.changed = rv or settings.changed
     
@@ -454,13 +462,8 @@ function Settings()
       SaveSettings()
     end
     
-    reaper.ImGui_PopStyleVar(ctx)
-    reaper.ImGui_PopStyleVar(ctx)
-    
     reaper.ImGui_EndPopup(ctx)
   end
-
-  reaper.ImGui_PopFont(ctx)
 end
 
 function WildcardInfo()
@@ -511,18 +514,16 @@ function WildcardInfo()
 end
 
 function Support()
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color.purple)
-
-  if reaper.ImGui_Button(ctx, "Support this Tool") then
+  if SmallButton(ctx, "Support") then
     reaper.ImGui_OpenPopup(ctx, "Support")
   end
   
-  reaper.ImGui_PopStyleColor(ctx)
+  --if IconButton("Support", style.icon_support) then
+  --  reaper.ImGui_OpenPopup(ctx, "Support")
+  --end
   
   local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetWindowViewport(ctx))
   reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
-  
-  reaper.ImGui_PushFont(ctx, style.font)
   
   if reaper.ImGui_BeginPopupModal(ctx, "Support", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
     reaper.ImGui_Text(ctx, "This tool is free and open source. And it will always be.")
@@ -541,8 +542,6 @@ function Support()
     end
     reaper.ImGui_EndPopup(ctx)
   end
-  
-  reaper.ImGui_PopFont(ctx)
 end
 
 function IsWindowOpen(name)
@@ -846,6 +845,8 @@ end
 function SubstituteSelf(filename, name)
   local self = string.find(filename, "$self")
   
+  --TODO Test self for Files
+  
   if self then
     -- extract UCS category from name
     local no_cat_name = string.match(name, "_([^_]+)$")
@@ -874,6 +875,19 @@ function BigButton(ctx, label, divider, padding, color)
     reaper.ImGui_PopStyleColor(ctx)
   end
   
+  return btn
+end
+
+function SmallButton(ctx, label)
+  reaper.ImGui_PushFont(ctx, style.font_info)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color.transparent)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color.transparent)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color.transparent)
+  
+  local btn = reaper.ImGui_Button(ctx, label)
+  
+  reaper.ImGui_PopStyleColor(ctx, 3)
+  reaper.ImGui_PopFont(ctx)
   return btn
 end
 
@@ -1481,7 +1495,8 @@ function Navigation()
 end
 
 function Main()
- -- check if data can update
+  -- check if data can update
+ 
   data.update = false
   data.ticks = data.ticks + 1
   
@@ -1489,8 +1504,38 @@ function Main()
     data.update = true
     data.ticks = 0
   end
-
+  
+  reaper.ImGui_PushFont(ctx, style.font_menu)
+  reaper.ImGui_Text(ctx, "USC Toolkit")
+  reaper.ImGui_PopFont(ctx)
+  
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  
+  reaper.ImGui_PushFont(ctx, style.font_info)
+  reaper.ImGui_Text(ctx, "UCS Version " .. ucs.version)
+  
+  reaper.ImGui_PopFont(ctx)
+  
+  reaper.ImGui_SameLine(ctx)
+  reaper.ImGui_Dummy(ctx, 70, 0)
+  reaper.ImGui_SameLine(ctx)
+  
   reaper.ImGui_PushFont(ctx, style.font)
+  
+  Info()
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  
+  Dock()
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  
+  Support()
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  
+  Settings()
+  
+  reaper.ImGui_Separator(ctx)
+  reaper.ImGui_Dummy(ctx, 0, style.item_spacing_y)
+  
   local style_pushes = PushMainStyleVars()
   
   CategorySearch()
@@ -1565,6 +1610,61 @@ function WebsiteLink()
   reaper.ImGui_PopFont(ctx)
 end
 
+function Info()
+  if SmallButton(ctx, "Info") then
+    reaper.ImGui_OpenPopup(ctx, "Info")
+  end
+  
+  local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetWindowViewport(ctx))
+  reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
+  reaper.ImGui_SetNextWindowSize(ctx, 300, 0)
+  
+  if reaper.ImGui_BeginPopupModal(ctx, "Info", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then 
+    local info = {
+      "UCS Toolkit " .. version,
+      "UCS Version " .. ucs.version,
+      "A tool by tdspk"
+    }
+    
+    for _, v in ipairs(info) do
+      reaper.ImGui_Text(ctx, v)
+    end
+    
+    reaper.ImGui_SeparatorText(ctx, "Special Thanks to:")
+    
+    local thanks = {
+      "Hans Ekevi",
+      "Cockos Inc.",
+      "cfillion for ReaImGui",
+      "The REAPER Community",
+      "The Airwiggles Community"
+    }
+    
+    for _, v in ipairs(thanks) do
+      reaper.ImGui_Text(ctx, v)
+    end
+      
+    if reaper.ImGui_Button(ctx, "Close") then
+      reaper.ImGui_CloseCurrentPopup(ctx)
+    end
+    
+    reaper.ImGui_EndPopup(ctx)
+  end
+end
+
+function Dock()
+  if app.dock_id ~= 0 then
+    if SmallButton(ctx, "Undock") then
+      app.dock_id = 0
+      app.has_undocked = true
+    end
+  else
+    if SmallButton(ctx, "Dock") then
+      app.dock_id = -1
+    end
+  end
+end
+
 function Menu()
   reaper.ImGui_PushFont(ctx, style.font_menu)
   if reaper.ImGui_BeginMenuBar(ctx) then
@@ -1611,8 +1711,7 @@ function Menu()
       
       reaper.ImGui_EndMenu(ctx)
     end
-    
-    Settings()
+
     Support()
     
     reaper.ImGui_EndMenuBar(ctx)
@@ -1621,11 +1720,16 @@ function Menu()
 end
 
 function Loop()
+  reaper.ImGui_SetNextWindowDockID(ctx, app.dock_id)
+  
+  if app.has_undocked then
+    reaper.ImGui_SetNextWindowSize(ctx, app.window_width, app.window_height)
+  end
+
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_WindowRounding(), 10)
-  local visible, open = reaper.ImGui_Begin(ctx, "tdspk - UCS Toolkit - UCS Version " .. ucs.version, true, reaper.ImGui_WindowFlags_MenuBar())
+  local visible, open = reaper.ImGui_Begin(ctx, "tdspk - UCS Toolkit", true)
   
   if visible then
-    Menu()
     Main()
     
     reaper.ImGui_End(ctx)
