@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.2pre4
+--@version 0.2pre5
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -15,6 +15,7 @@
 --  https://coindrop.to/tdspkaudio
 --@provides
 --  data/ucs.csv
+--  data/OpenSans-Medium.ttf
 --  [main] .
 -- @changelog
 --  First beta
