@@ -13,9 +13,12 @@
 - [x] Focus on FXName after Renaming, if the current focus is on this
 - [x] Highlight window when focused
 - [x] Implement new features to Media Explorer Mode
+- [ ] Wandering Loop region with items/regions when renaming
+- [ ] Autofill form when navigating
 
 # Bugfixes for V1
-- [ x Fix scrolling bug in category browser
+- [x] Fix scrolling bug in category browser
+- [ ] Improve search results
 
 # Post V1 Features
 
