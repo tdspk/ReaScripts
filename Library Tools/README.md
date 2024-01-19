@@ -15,10 +15,7 @@
 - [x] Implement new features to Media Explorer Mode
 - [ ] Wandering Loop region with items/regions when renaming
 - [ ] Autofill form when navigating
-
-# Bugfixes for V1
-- [x] Fix scrolling bug in category browser
-- [ ] Improve search results
+- [ ] Toggle navigation when renaming
 
 # Post V1 Features
 
@@ -28,3 +25,6 @@
 
 # Bugs
 - [x] Script freezes due to JS_Window_Find - use built in actions instead.
+- [x] Fix scrolling bug in category browser
+- [ ] Improve search results
+- [ ] Improve Marker/Region Navigation
