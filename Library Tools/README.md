@@ -13,9 +13,9 @@
 - [x] Focus on FXName after Renaming, if the current focus is on this
 - [x] Highlight window when focused
 - [x] Implement new features to Media Explorer Mode
-- [ ] Wandering Loop region with items/regions when renaming
+- [x] Wandering Loop region with items/regions when renaming
 - [ ] Autofill form when navigating
-- [ ] Toggle navigation when renaming
+- [x] Toggle navigation when renaming
 
 # Post V1 Features
 
@@ -26,5 +26,6 @@
 # Bugs
 - [x] Script freezes due to JS_Window_Find - use built in actions instead.
 - [x] Fix scrolling bug in category browser
-- [ ] Improve search results
-- [ ] Improve Marker/Region Navigation
+- [x] Improve search results
+- [x] Improve Marker/Region Navigation
+- [ ] Replace catId only if it's a valid catId

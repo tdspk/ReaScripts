@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.2pre5
+--@version 0.2pre6
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -116,7 +116,9 @@ local form = {
   clear_fx = false,
   name_sc = false,
   name_focused = false,
-  autorename = false
+  autorename = false,
+  navigate_rename = true,
+  navigate_loop = false
 }
 
 data = {
@@ -631,7 +633,6 @@ function OperationMode()
       reaper.SetExtState(ext_section, "target", tostring(data.target), false)
     end
   end
-  --reaper.ImGui_Separator(ctx)
 end
 
 function CategoryFields()
@@ -693,6 +694,7 @@ function CategorySearch()
   end
   
   if form.is_search_open then
+    -- TODO Update only when text filter changed
     local words = string.split(form.search, " ")
     local syns = {}
     
@@ -701,7 +703,7 @@ function CategorySearch()
       local count = 0
       
       for _,v in ipairs(words) do
-        if string.find(entry, v) then
+        if string.find(string.lower(entry), string.lower(v)) then
           count = count + 1
         end
       end
@@ -850,10 +852,11 @@ function SubstituteSelf(filename, name)
   
   if self then
     -- extract UCS category from name
-    local no_cat_name = string.match(name, "_([^_]+)$")
+    local no_cat_name = string.match(name, "[A-Z][a-z]+_(.*)")
     if no_cat_name then
       name = no_cat_name
     end
+    aaa = name
     return string.gsub(filename, "$self", name)
   end
   
@@ -1285,7 +1288,7 @@ function NavigatePrevious()
     and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false)
 end
 
-function GetNearestMarker(isrgn)
+function GetNearestMarker(isrgn, step)
   local t = {}
   if isrgn then t = data.regions else t = data.markers end
   
@@ -1294,10 +1297,14 @@ function GetNearestMarker(isrgn)
   local nearest_marker
   
   for i,v in ipairs(t) do
-    local distance = math.abs(v[2] - cur_pos) 
-    if distance < min or min == -1 then
-      min = distance
-      nearest_marker = {i, v[2]}
+    local distance = v[2] - cur_pos
+    
+    if (step > 0 and distance > 0) or (step < 0 and distance < 0) then
+      distance = math.abs(v[2] - cur_pos)
+      if distance < min or min == -1 then
+        min = distance
+        nearest_marker = {i, v[2]}
+      end
     end
   end
   
@@ -1314,13 +1321,22 @@ function NavigateMarker(isrgn, step)
   -- markers are cached in their respective order
   -- if no current marker is set (0), take the first one near cursor (default action)
   
-  local m = GetNearestMarker(isrgn)
+  local pos = reaper.GetCursorPositionEx(0)
+  local m = GetNearestMarker(isrgn, step)
   
-  if m[2] ~= reaper.GetCursorPositionEx(0) then 
+  if m and m[2] ~= reaper.GetCursorPositionEx(0) then 
     reaper.SetEditCurPos2(0, m[2], true, true)
     nav_marker = m[1]
   else
-    nav_marker = clamp(nav_marker + step, 1, #t)
+    if nav_marker == 0 then
+      if step > 0 then
+        nav_marker = #t
+      else
+        nav_marker = 1
+      end
+    else
+      nav_marker = clamp(nav_marker + step, 1, #t)
+    end
     
     local mrk = t[nav_marker]
     
@@ -1373,6 +1389,11 @@ function Navigate(next)
   if form.autoplay and not data.mx_open then
     reaper.Main_OnCommand(1016, 0) -- Transport: Stop
     reaper.Main_OnCommand(40044, 0) -- Transport: Play/stop
+  end
+  
+  if form.navigate_loop then
+    -- If loop area exists, move to next target
+    UpdateLoopPoints()
   end
 end
 
@@ -1493,6 +1514,24 @@ function Navigation()
     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
   end
   rv, form.autorename = reaper.ImGui_Checkbox(ctx, "Auto-Rename when navigating", form.autorename)
+  rv, form.navigate_rename = reaper.ImGui_Checkbox(ctx, "Navigate after Rename", form.navigate_rename)
+  if (data.target == 1 or data.target == 3) and not data.mx_open then
+    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+    rv, form.navigate_loop = reaper.ImGui_Checkbox(ctx, "Move loop area to next target", form.navigate_loop)
+  end
+end
+
+function UpdateLoopPoints()
+  if data.target == 1 then
+    reaper.Main_OnCommand(41039, 0) --Loop points: Set loop points to items
+  elseif data.target == 3 then
+    -- load start and end points from current navigated region
+    if data.nav_region then
+      local start_pos = data.regions[data.nav_region][2]
+      local end_pos = data.regions[data.nav_region][3]
+      reaper.GetSet_LoopTimeRange2(0, true, true, start_pos, end_pos, false)
+    end
+  end
 end
 
 function Main()
@@ -1590,7 +1629,9 @@ function Main()
   
   if form.applied then
     if form.clear_fx then form.fx_name = "" end
-    Navigate(true)
+    if form.navigate_rename then
+      Navigate(true)
+    end
   end
   
   WebsiteLink()
