@@ -75,7 +75,7 @@ local style = {
   window_rounding = 12,
 }
 
-local ucs = {
+ucs = {
   version = 0.0,
   categories = {},
   synonyms = {},
@@ -93,7 +93,7 @@ local combo = {
   sub_items = ""
 }
 
-local form = {
+form = {
   search = "",
   is_search_open = false,
   search_mouse = false,
@@ -118,7 +118,10 @@ local form = {
   name_focused = false,
   autorename = false,
   navigate_rename = true,
-  navigate_loop = false
+  navigate_loop = false,
+  autofill = true,
+  navigated = false,
+  lookup = false
 }
 
 data = {
@@ -143,7 +146,7 @@ data = {
 }
 
 local ext_section = "tdspk_ucstoolkit"
-local version = "0.2pre3"
+local version = "0.2pre6"
 
 local default_settings = {
   font_size = 16,
@@ -322,7 +325,7 @@ function clamp(v, min, max)
   return v
 end
 
-function ParseFilename(filename) 
+function FilenameToUCS(filename) 
   local words = {}
   
   for word in string.gmatch(filename, "([^_]+)") do
@@ -333,9 +336,13 @@ function ParseFilename(filename)
 end
 
 function ReverseLookup(cat_id)
+  if not form.lookup then
+    return
+  end
+  
   local cat = ""
   local sub = ""
-  local rv = false
+  local found = false
   
   -- iterate tables and look for id
   -- TODO optimize in future?
@@ -344,13 +351,19 @@ function ReverseLookup(cat_id)
       if (cat_id == id) then
         cat = k
         sub = j
-        rv = true
+        found = true
         break
       end
     end
   end
   
-  return rv, cat, sub
+  if found then
+    form.cat_name = cat
+    form.sub_name = sub
+    combo.sub_items = PopulateSubCategories(form.cat_name)
+    form.cur_cat = combo.cat_idx[form.cat_name]
+    form.cur_sub = combo.sub_idx[form.sub_name]
+  end
 end
 
 function PopulateSubCategories(cat_name)
@@ -636,6 +649,8 @@ function OperationMode()
 end
 
 function CategoryFields()
+  -- TODO init cat fields at startup!
+  
   local cat_changed, sub_changed, id_changed
   cat_changed, form.cur_cat = reaper.ImGui_Combo(ctx, "Category", form.cur_cat, combo.cat_items)
 
@@ -654,19 +669,8 @@ function CategoryFields()
   
   id_changed, form.cat_id = reaper.ImGui_InputText(ctx, "CatID", form.cat_id)
   
-  --CategoryBrowser()
-  
   if id_changed and form.cat_id ~= "" then
-    -- update categories if Category ID changed manually
-    local rv, cname, sname = ReverseLookup(form.cat_id)
-    
-    if rv then
-      form.cat_name = cname
-      form.sub_name = sname
-      combo.sub_items = PopulateSubCategories(form.cat_name)
-      form.cur_cat = combo.cat_idx[form.cat_name]
-      form.cur_sub = combo.sub_idx[form.sub_name]
-    end
+    form.lookup = true
   end
 end
 
@@ -764,59 +768,12 @@ function CategorySearch()
           form.search_idx = 1
           form.search_apply = true
           form.search_mouse = false
+          form.lookup = true
         end
       end
       
       reaper.ImGui_EndListBox(ctx)
     end
-    
-    -- update categories if Category ID changed manually
-    local rv, cname, sname = ReverseLookup(form.cat_id)
-    
-    if rv then
-      form.cat_name = cname
-      form.sub_name = sname
-      combo.sub_items = PopulateSubCategories(form.cat_name)
-      form.cur_cat = combo.cat_idx[form.cat_name]
-      form.cur_sub = combo.sub_idx[form.sub_name]
-    end
-  end
-end
-
-function CategoryBrowser()
-  if reaper.ImGui_Button(ctx, "Category Browser...") then
-    reaper.ImGui_OpenPopup(ctx, "Category Browser")
-  end
-  local viewport = reaper.ImGui_GetMainViewport(ctx)
-  local width, height = reaper.ImGui_Viewport_GetSize(viewport)
-  local x, y = reaper.ImGui_Viewport_GetCenter(viewport)
-  reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
-  
-  reaper.ImGui_SetNextWindowSize(ctx, width/2, height/2)
-  
-  if reaper.ImGui_BeginPopupModal(ctx, "Category Browser", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
-    if reaper.ImGui_BeginTable(ctx, "Category Tsable", 5) then
-      reaper.ImGui_TableSetupColumn(ctx, "Category")
-      reaper.ImGui_TableSetupColumn(ctx, "Subcategory")
-      reaper.ImGui_TableSetupColumn(ctx, "CatID")
-      reaper.ImGui_TableSetupColumn(ctx, "Explanations")
-      reaper.ImGui_TableSetupColumn(ctx, "Synonyms")
-      reaper.ImGui_TableHeadersRow(ctx)
-      
-      for i,v in ipairs(ucs.raw_data) do
-        local line = { string.match(v, "(.*);(.*);(.*);(.*);(.*)") }
-        reaper.ImGui_TableNextRow(ctx)
-        for column=0, 4 do
-          reaper.ImGui_TableSetColumnIndex(ctx, column)
-          reaper.ImGui_Text(ctx, line[column+1])
-        end
-      end
-      reaper.ImGui_EndTable(ctx)
-    end
-    if reaper.ImGui_Button(ctx, "Close") then
-      reaper.ImGui_CloseCurrentPopup(ctx)
-    end
-    reaper.ImGui_EndPopup(ctx)
   end
 end
 
@@ -853,6 +810,7 @@ function SubstituteSelf(filename, name)
   if self then
     -- extract UCS category from name
     local no_cat_name = string.match(name, "[A-Z][a-z]+_(.*)")
+    
     if no_cat_name then
       name = no_cat_name
     end
@@ -1096,26 +1054,46 @@ function CacheUCSData()
       end
     end
     
-    local parts = ParseFilename(target_name)
-    local fx_name = parts[2]
-    local creator_id = parts[3]
-    local source_id = parts[4]
-    
-    if form.fx_name ~= "" then
-      fx_name = form.fx_name
+    local parts = FilenameToUCS(target_name)
+    local cat_id, fx_name, creator_id, source_id = table.unpack(parts)
+  
+    -- Autofill needs to happen here, and only for the first selected item!
+    if i == 1 then
+      if form.autofill and form.navigated then
+        cat_id = string.match(cat_id, "([A-Z]+[a-z]+)")
+        aaa = cat_id
+        
+        if form.autofill then -- rewrite data, if UCS data is valid
+          if cat_id then form.cat_id = cat_id end
+          if fx_name then form.fx_name = fx_name end
+          if creator_id then form.creator_id = creator_id end
+          if source_id then form.source_id = source_id end
+        end
+        
+        form.lookup = true
+        
+        form.navigated = false
+      end
     end
     
-    if form.creator_id ~= "" then
-      creator_id = form.creator_id
-    end
+   --if not form.autofill then
+      if form.fx_name ~= "" then
+        fx_name = form.fx_name
+      end
+      
+      if form.creator_id ~= "" then
+        creator_id = form.creator_id
+      end
+      
+      if form.source_id ~= "" then
+        source_id = form.source_id
+      end
+    --end
     
-    if form.source_id ~= "" then
-      source_id = form.source_id
-    end
     
     local filename = CreateUCSFilename(settings.delimiter, form.cat_id, form.user_cat, form.vendor_cat, 
       fx_name, creator_id, source_id, form.user_data)
-    
+
     if string.find(filename, "$idx") then
       filename = SubstituteIdx(filename, i)
     end
@@ -1395,6 +1373,8 @@ function Navigate(next)
     -- If loop area exists, move to next target
     UpdateLoopPoints()
   end
+  
+  form.navigated = true
 end
 
 function MainFields()
@@ -1442,47 +1422,6 @@ function OptionalFields()
   reaper.ImGui_PopStyleColor(ctx)
 end
 
-function AutoFill()
-  local state_count= reaper.GetProjectStateChangeCount(0)
-  if state_count ~= data.state_count then
-    -- Update based on selected target
-    local target_name = ""
-    
-    if data.target == 0 then
-      local track = reaper.GetSelectedTrack(0, 0)
-      if track then
-        _, target_name = reaper.GetTrackName(track)
-      end
-    elseif data.target == 1 then
-      local item = reaper.GetSelectedMediaItem(0, 0)
-      if item then
-        local take = reaper.GetTake(item, 0)
-        target_name = reaper.GetTakeName(take)
-      end
-    elseif data.target == 2 then
-      --target_name = data.selected_markers[1][3]
-    elseif data.target == 3 then
-      --target_name = data.selected_regions[1][4]
-    end
-    
-    if target_name ~= "" then
-      form.cat_id, form.fx_name, form.creator_id, form.source_id = ParseFilename(target_name)
-      
-      local rv, cname, sname = ReverseLookup(form.cat_id)
-      
-      if rv then
-        form.cat_name = cname
-        form.sub_name = sname
-        combo.sub_items = PopulateSubCategories(form.cat_name)
-        form.cur_cat = combo.cat_idx[form.cat_name]
-        form.cur_sub = combo.sub_idx[form.sub_name]
-      end
-    end
-    
-    data.state_count = state_count
-  end
-end
-
 function PushMainStyleVars()
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, style.item_spacing_y)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_SeparatorTextPadding(), 0, 0)
@@ -1509,16 +1448,23 @@ function Navigation()
   
   Tooltip(ctx, "You can also navigate next/previous targets with Alt+Left/Right arrow keys")
   
-  if not data.mx_open then
-    rv, form.autoplay = reaper.ImGui_Checkbox(ctx, "Autoplay when navigating", form.autoplay)
-    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Header(), color.transparent)
+  if reaper.ImGui_CollapsingHeader(ctx, "Navigation Options", nil) then
+    if not data.mx_open then
+      rv, form.autoplay = reaper.ImGui_Checkbox(ctx, "Autoplay when navigating", form.autoplay)
+      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+    end
+    rv, form.autorename = reaper.ImGui_Checkbox(ctx, "Auto-Rename when navigating", form.autorename)
+    rv, form.navigate_rename = reaper.ImGui_Checkbox(ctx, "Navigate after Rename", form.navigate_rename)
+    if (data.target == 1 or data.target == 3) and not data.mx_open then
+      reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+      rv, form.navigate_loop = reaper.ImGui_Checkbox(ctx, "Move loop area to next target", form.navigate_loop)
+      Tooltip(ctx, "Moves a set loop area to the next target when navigating inside the UCS Toolkit.")
+    end
+    rv, form.autofill = reaper.ImGui_Checkbox(ctx, "Auto-Fill when navigating", form.autofill)
+    Tooltip(ctx, "Auto-fills the form if UCS data exists in the target. This works only with UCS Toolkit navigation!")
   end
-  rv, form.autorename = reaper.ImGui_Checkbox(ctx, "Auto-Rename when navigating", form.autorename)
-  rv, form.navigate_rename = reaper.ImGui_Checkbox(ctx, "Navigate after Rename", form.navigate_rename)
-  if (data.target == 1 or data.target == 3) and not data.mx_open then
-    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-    rv, form.navigate_loop = reaper.ImGui_Checkbox(ctx, "Move loop area to next target", form.navigate_loop)
-  end
+  reaper.ImGui_PopStyleColor(ctx)
 end
 
 function UpdateLoopPoints()
@@ -1592,6 +1538,11 @@ function Main()
   --TODO optimize cache behaviour - ticks vs changed state
   if data.update then
     data.rename_count = CountTargets()
+  end
+  
+  if form.lookup then
+    ReverseLookup(form.cat_id)
+    form.lookup = false
   end
 
   reaper.ImGui_Separator(ctx)
@@ -1676,6 +1627,7 @@ function Info()
     
     local thanks = {
       "Hans Ekevi",
+      "Soundly",
       "Cockos Inc.",
       "cfillion for ReaImGui",
       "The REAPER Community",
@@ -1707,60 +1659,6 @@ function Dock()
   end
 end
 
-function Menu()
-  reaper.ImGui_PushFont(ctx, style.font_menu)
-  if reaper.ImGui_BeginMenuBar(ctx) then
-    if reaper.ImGui_BeginMenu(ctx, "Info", true) then
-      local info = {
-        "UCS Toolkit " .. version,
-        "UCS Version " .. ucs.version,
-        "A tool by tdspk"
-      }
-      
-      for _, v in ipairs(info) do
-        reaper.ImGui_MenuItem(ctx, v, "", false, false)
-      end
-      
-      reaper.ImGui_Separator(ctx)
-      
-      if reaper.ImGui_BeginMenu(ctx, "Special Thanks to...") then
-        local thanks = {
-          "Hans Ekevi",
-          "Cockos Inc.",
-          "cfillion for ReaImGui",
-          "The REAPER Community",
-          "The Airwiggles Community"
-        }
-        
-        for _, v in ipairs(thanks) do
-          reaper.ImGui_MenuItem(ctx, v, "", false, false)
-        end
-        
-        reaper.ImGui_EndMenu(ctx)
-      end
-      
-      if reaper.ImGui_MenuItem(ctx, "Website") then
-        reaper.CF_ShellExecute("https://www.tdspkaudio.com")
-      end
-      
-      if reaper.ImGui_MenuItem(ctx, "Donate") then
-        reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
-      end
-      
-      if reaper.ImGui_MenuItem(ctx, "GitHub Repository") then
-        reaper.CF_ShellExecute("https://github.com/tdspk/ReaScripts")
-      end
-      
-      reaper.ImGui_EndMenu(ctx)
-    end
-
-    Support()
-    
-    reaper.ImGui_EndMenuBar(ctx)
-    reaper.ImGui_PopFont(ctx)
-  end
-end
-
 function Loop()
   reaper.ImGui_SetNextWindowDockID(ctx, app.dock_id)
   
@@ -1773,7 +1671,6 @@ function Loop()
   
   if visible then
     Main()
-    
     reaper.ImGui_End(ctx)
   end
   
