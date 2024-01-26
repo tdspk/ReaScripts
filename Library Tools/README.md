@@ -14,7 +14,7 @@
 - [x] Highlight window when focused
 - [x] Implement new features to Media Explorer Mode
 - [x] Wandering Loop region with items/regions when renaming
-- [ ] Autofill form when navigating
+- [x] Autofill form when navigating
 - [x] Toggle navigation when renaming
 
 # Post V1 Features
@@ -28,4 +28,4 @@
 - [x] Fix scrolling bug in category browser
 - [x] Improve search results
 - [x] Improve Marker/Region Navigation
-- [ ] Replace catId only if it's a valid catId
+- [x] Replace catId only if it's a valid catId

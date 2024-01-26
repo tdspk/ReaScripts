@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.2pre6
+--@version 0.2pre7
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -75,13 +75,12 @@ local style = {
   window_rounding = 12,
 }
 
-ucs = {
+local ucs = {
   version = 0.0,
   categories = {},
   synonyms = {},
   explanations = {},
-  search_data = {},
-  raw_data = {}
+  search_data = {}
 }
 
 local combo = {
@@ -119,7 +118,7 @@ form = {
   autorename = false,
   navigate_rename = true,
   navigate_loop = false,
-  autofill = true,
+  autofill = false,
   navigated = false,
   lookup = false
 }
@@ -146,7 +145,7 @@ data = {
 }
 
 local ext_section = "tdspk_ucstoolkit"
-local version = "0.2pre6"
+local version = "0.2pre7"
 
 local default_settings = {
   font_size = 16,
@@ -234,7 +233,6 @@ function ReadUcsData()
       ucs.version =  string.match(line, "(.*);;;;")
       got_version = true
     else
-      table.insert(ucs.raw_data, line)
       local cat, subcat, id, expl, syn = string.match(line, "(.*);(.*);(.*);(.*);(.*)")
       
       if cat ~= prev_cat then
@@ -1076,7 +1074,7 @@ function CacheUCSData()
       end
     end
     
-   --if not form.autofill then
+    if not form.autofill then
       if form.fx_name ~= "" then
         fx_name = form.fx_name
       end
@@ -1088,7 +1086,7 @@ function CacheUCSData()
       if form.source_id ~= "" then
         source_id = form.source_id
       end
-    --end
+    end
     
     
     local filename = CreateUCSFilename(settings.delimiter, form.cat_id, form.user_cat, form.vendor_cat, 
