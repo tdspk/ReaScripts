@@ -52,6 +52,7 @@ local app = {
   docked = false,
   window_width = 450,
   window_height = 760,
+  focused = false
 }
 
 local color = {
@@ -63,7 +64,8 @@ local color = {
   purple = reaper.ImGui_ColorConvertDouble4ToU32(0.667, 0, 1, 0.5),
   turquois = reaper.ImGui_ColorConvertDouble4ToU32(0, 1, 0.957, 0.5),
   mainfields = reaper.ImGui_ColorConvertDouble4ToU32(0.2, 0.2, 0.2, 1),
-  transparent = reaper.ImGui_ColorConvertDouble4ToU32(0, 0, 0, 0)
+  transparent = reaper.ImGui_ColorConvertDouble4ToU32(0, 0, 0, 0),
+  black = reaper.ImGui_ColorConvertDouble4ToU32(0, 0, 0, 1),
 }
 
 local style = {
@@ -594,7 +596,7 @@ function ToggleTarget()
 end
 
 function OperationMode()
-  reaper.ImGui_SeparatorText(ctx, "Renaming")
+  reaper.ImGui_SeparatorText(ctx, "Renaming\t")
   if data.mx_open then
     reaper.ImGui_Text(ctx, "Operating on ")
     reaper.ImGui_SameLine(ctx)
@@ -1423,14 +1425,15 @@ end
 function PushMainStyleVars()
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, style.item_spacing_y)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_SeparatorTextPadding(), 0, 0)
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_SeparatorTextBorderSize(), 1)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameRounding(), style.frame_rounding)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), style.frame_border)
   
-  return 4
+  return 5
 end
 
 function Navigation()
-  reaper.ImGui_SeparatorText(ctx, "Navigation")
+  reaper.ImGui_SeparatorText(ctx, "Navigation\t")
   
   if reaper.ImGui_ArrowButton(ctx, "Previous", reaper.ImGui_Dir_Left())
     or NavigatePrevious() then
@@ -1542,8 +1545,6 @@ function Main()
     ReverseLookup(form.cat_id)
     form.lookup = false
   end
-
-  reaper.ImGui_Separator(ctx)
   
   Navigation()
   
@@ -1665,14 +1666,17 @@ function Loop()
   end
 
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_WindowRounding(), 10)
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_WindowTitleAlign(), 0.5, 0.5) 
+  
   local visible, open = reaper.ImGui_Begin(ctx, "tdspk - UCS Toolkit", true)
   
   if visible then
+    app.focused = reaper.ImGui_IsWindowFocused(ctx)
     Main()
     reaper.ImGui_End(ctx)
   end
   
-  reaper.ImGui_PopStyleVar(ctx)
+  reaper.ImGui_PopStyleVar(ctx, 2)
   if open then
     reaper.defer(Loop)
   end
