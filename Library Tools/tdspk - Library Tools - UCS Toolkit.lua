@@ -120,7 +120,7 @@ form = {
   autorename = false,
   navigate_rename = true,
   navigate_loop = false,
-  autofill = false,
+  autofill = true,
   navigated = false,
   lookup = false
 }
@@ -292,6 +292,8 @@ function Init()
   
   style.font_menu = reaper.ImGui_CreateFont(font_res, math.floor(settings.font_size * 1.5))
   reaper.ImGui_Attach(ctx, style.font_menu)
+  
+  style.logo_soundly = reaper.ImGui_CreateImage(script_path .. "/data/soundly.png")
   
   reaper.ImGui_SetNextWindowSize(ctx, app.window_width, app.window_height)
   
@@ -1090,7 +1092,6 @@ function CacheUCSData()
       end
     end
     
-    
     local filename = CreateUCSFilename(settings.delimiter, form.cat_id, form.user_cat, form.vendor_cat, 
       fx_name, creator_id, source_id, form.user_data)
 
@@ -1591,15 +1592,22 @@ function Main()
 end
 
 function WebsiteLink()
-  reaper.ImGui_PushFont(ctx, style.font_info)
-  
   reaper.ImGui_Text(ctx, "tdspkaudio.com")
   
   if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
     reaper.CF_ShellExecute("https://www.tdspkaudio.com")
   end
   
-  reaper.ImGui_PopFont(ctx)
+  reaper.ImGui_SameLine(ctx)
+  reaper.ImGui_Text(ctx, "\t")
+  reaper.ImGui_SameLine(ctx)
+  
+  reaper.ImGui_Text(ctx, "Powered by")
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  reaper.ImGui_Image(ctx, style.logo_soundly, 118, 24)
+  if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
+    reaper.CF_ShellExecute("https://getsoundly.com/")
+  end
 end
 
 function Info()
