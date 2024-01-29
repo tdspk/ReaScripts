@@ -82,7 +82,8 @@ local ucs = {
   categories = {},
   synonyms = {},
   explanations = {},
-  search_data = {}
+  search_data = {},
+  cat_ids = {}
 }
 
 local combo = {
@@ -94,7 +95,7 @@ local combo = {
   sub_items = ""
 }
 
-form = {
+local form = {
   search = "",
   is_search_open = false,
   search_mouse = false,
@@ -120,7 +121,7 @@ form = {
   autorename = false,
   navigate_rename = true,
   navigate_loop = false,
-  autofill = true,
+  autofill = false,
   navigated = false,
   lookup = false
 }
@@ -243,6 +244,7 @@ function ReadUcsData()
         combo.cat_idx[cat] = i
         i = i + 1
       end
+      
       prev_cat = cat
       
       if not ucs.categories[cat] then
@@ -250,6 +252,7 @@ function ReadUcsData()
       end
       
       ucs.categories[cat][subcat] = id
+      ucs.cat_ids[id] = true
       table.insert(ucs.synonyms, id .. ";" .. syn)
       table.insert(ucs.explanations, id .. ";" .. expl)
       table.insert(ucs.search_data, string.format("%s;%s, %s, %s, %s", id, cat, subcat, expl, syn))
@@ -811,7 +814,7 @@ function SubstituteSelf(filename, name)
   
   if self then
     -- extract UCS category from name
-    local no_cat_name = string.match(name, "[A-Z][a-z]+_(.*)")
+    local no_cat_name = string.match(name, "[A-Z]+[a-z]+_(.*)")
     
     if no_cat_name then
       name = no_cat_name
@@ -1062,18 +1065,17 @@ function CacheUCSData()
     -- Autofill needs to happen here, and only for the first selected item!
     if i == 1 then
       if form.autofill and form.navigated then
-        cat_id = string.match(cat_id, "([A-Z]+[a-z]+)")
-        aaa = cat_id
-        
-        if form.autofill then -- rewrite data, if UCS data is valid
+        if ucs.cat_ids[cat_id] then
           if cat_id then form.cat_id = cat_id end
-          if fx_name then form.fx_name = fx_name end
-          if creator_id then form.creator_id = creator_id end
-          if source_id then form.source_id = source_id end
         end
         
-        form.lookup = true
+        form.fx_name, form.creator_id, form.source_id = ""
+         
+        if fx_name then form.fx_name = fx_name end
+        if creator_id then form.creator_id = creator_id end
+        if source_id then form.source_id = source_id end
         
+        form.lookup = true
         form.navigated = false
       end
     end
