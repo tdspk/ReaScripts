@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.2pre7
+--@version 0.2pre8
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -16,6 +16,7 @@
 --@provides
 --  data/ucs.csv
 --  data/OpenSans-Medium.ttf
+--  data/soundly.png
 --  [main] .
 -- @changelog
 --  First beta
