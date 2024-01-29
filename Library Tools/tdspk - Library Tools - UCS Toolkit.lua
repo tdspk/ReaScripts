@@ -1592,21 +1592,16 @@ function Main()
 end
 
 function WebsiteLink()
-  reaper.ImGui_Text(ctx, "tdspkaudio.com")
-  
-  if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
-    reaper.CF_ShellExecute("https://www.tdspkaudio.com")
-  end
-  
-  reaper.ImGui_SameLine(ctx)
-  reaper.ImGui_Text(ctx, "\t")
-  reaper.ImGui_SameLine(ctx)
-  
   reaper.ImGui_Text(ctx, "Powered by")
   reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-  reaper.ImGui_Image(ctx, style.logo_soundly, 118, 24)
+  reaper.ImGui_Image(ctx, style.logo_soundly, 94, 19)
   if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
     reaper.CF_ShellExecute("https://getsoundly.com/")
+  end
+
+  reaper.ImGui_Text(ctx, "tdspkaudio.com")
+  if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
+    reaper.CF_ShellExecute("https://www.tdspkaudio.com")
   end
 end
 
@@ -1633,9 +1628,8 @@ function Info()
     reaper.ImGui_SeparatorText(ctx, "Special Thanks to:")
     
     local thanks = {
-      "Hans Ekevi",
-      "Soundly",
-      "Cockos Inc.",
+      "Hans Ekevi and Soundly AS",
+      "Cockos Inc. for REAPER",
       "cfillion for ReaImGui",
       "The REAPER Community",
       "The Airwiggles Community"
