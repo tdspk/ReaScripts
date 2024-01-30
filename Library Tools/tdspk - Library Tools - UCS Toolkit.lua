@@ -707,22 +707,44 @@ function CategorySearch()
     -- TODO Update only when text filter changed
     local words = string.split(form.search, " ")
     local syns = {}
+    local findings = {}
     
     for i=1, #ucs.search_data do
       local entry = ucs.search_data[i]
       local count = 0
+      local minpos
       
-      for _,v in ipairs(words) do
-        if string.find(string.lower(entry), string.lower(v)) then
+      for i,v in ipairs(words) do
+        local pos = string.find(string.lower(entry), string.lower(v))
+        if pos then
           count = count + 1
+          
+          if i == 1 then
+            minpos = pos
+          end
         end
       end
       
       if count == #words then
-        table.insert(syns, entry)
+        findings[i] = minpos
       end
     end
     
+    -- sort the findings table
+    local sorted = {}
+    for k, v in pairs(findings) do
+      table.insert(sorted, {k, v})
+    end
+    
+    table.sort(sorted, function(a,b) return a[2] < b[2] end)
+    
+    -- Sort also by key / alphabetical order
+    
+    -- Populate syns with newly sorted table
+    for _, v in ipairs(sorted) do
+      table.insert(syns, ucs.search_data[v[1]])
+    end
+     
     select_next = -1
     
     if reaper.ImGui_GetMouseWheel(ctx) ~= 0 and not form.search_mouse then
@@ -820,7 +842,7 @@ function SubstituteSelf(filename, name)
     if no_cat_name then
       name = no_cat_name
     end
-    aaa = name
+
     return string.gsub(filename, "$self", name)
   end
   
