@@ -1,5 +1,5 @@
 --@description Media Item Spacer
---@version 1.0.0
+--@version 1.1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Media Item Spacer
@@ -12,15 +12,17 @@
 --  https://ko-fi.com/tdspkaudio
 --  https://coindrop.to/tdspkaudio
 --@changelog
---   First version
+--  Increased max spacing and added new modes (absolute and additive)
+--  First version
 
 dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8')
 
 local ctx = reaper.ImGui_CreateContext('Media Item Spacer')
 
 min_spacing = 1
-max_spacing = 10
+max_spacing = 25
 spacing = 5
+mode = 0
 
 local function CacheSelectedTracks()
   tracks = {} 
@@ -40,6 +42,10 @@ local function RenderWindow()
   
   if track_count > 0 then
     reaper.ImGui_Text(ctx, track_count .. " tracks selected.")
+    
+    rv, mode = reaper.ImGui_RadioButtonEx(ctx, "Absolute", mode, 0)
+    reaper.ImGui_SameLine(ctx)
+    rv, mode = reaper.ImGui_RadioButtonEx(ctx, "Additive", mode, 1)
     
     rv, spacing = reaper.ImGui_SliderInt(ctx, "Spacing", spacing, min_spacing, max_spacing, "%d seconds")
     if rv then
@@ -61,6 +67,11 @@ local function RenderWindow()
           end
           
           reaper.SetMediaItemPosition(item, current_pos, false)
+          if mode == 1 then
+            -- add item length to current pos for additive positioning
+            local item_length = reaper.GetMediaItemInfo_Value(item, "D_LENGTH")
+            current_pos = current_pos + item_length
+          end
           current_pos = current_pos + spacing
         end
         
