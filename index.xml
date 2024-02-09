@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="b05e1b0eedabef0c38bfc1fbe804e50c68e05e53">
+<index version="1" name="tdspk" commit="05a293a08fc838bb854feb587f07285a222f66bf">
   <category name="Creative">
     <reapack name="tdspk - Creative - ReaChopChop.lua" type="script" desc="ReaChopChop">
       <metadata>
@@ -142,6 +142,11 @@ First version]]></changelog>
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-12-28T14:57:46Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/f4eb5836d7533dc7479723a930aa23e44760b9e7/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20Media%20Item%20Spacer.lua</source>
+      </version>
+      <version name="1.1" author="Tadej Supukovic (tdspk)" time="2024-02-09T10:43:18Z">
+        <changelog><![CDATA[Increased max spacing and added new modes (absolute and additive)
+First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/05a293a08fc838bb854feb587f07285a222f66bf/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20Media%20Item%20Spacer.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Library Tools - UCS Toolkit.lua" type="script" desc="UCS Toolkit">
