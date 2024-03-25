@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.2pre8
+--@version 0.2pre9
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -149,7 +149,7 @@ data = {
 }
 
 local ext_section = "tdspk_ucstoolkit"
-local version = "0.2pre7"
+local version = "0.2pre9"
 
 local default_settings = {
   font_size = 16,
@@ -1617,7 +1617,7 @@ function Main()
 end
 
 function WebsiteLink()
-  reaper.ImGui_Text(ctx, "Powered by")
+  reaper.ImGui_Text(ctx, "In collaboration with")
   reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
   reaper.ImGui_Image(ctx, style.logo_soundly, 94, 19)
   if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
