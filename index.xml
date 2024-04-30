@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="f39e11a5305b0889c4c1c11c777c97116b35d3db">
+<index version="1" name="tdspk" commit="de1d3d7906599f92dcd91221f60963be0148022f">
   <category name="Creative">
     <reapack name="tdspk - Creative - ReaChopChop.lua" type="script" desc="ReaChopChop">
       <metadata>
@@ -376,6 +376,12 @@ First version]]></changelog>
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-08-13T19:00:09Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/7ed948c4b90c830c58c82e8abf3e36a062781d9b/Various/tdspk%20-%20Toggle%20Global%20Sampler.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Various - Toggle solo for tracks of selected items.lua" type="script" desc="Toggle solo for tracks of selected items">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2024-04-30T07:29:34Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/de1d3d7906599f92dcd91221f60963be0148022f/Various/tdspk%20-%20Various%20-%20Toggle%20solo%20for%20tracks%20of%20selected%20items.lua</source>
       </version>
     </reapack>
   </category>
