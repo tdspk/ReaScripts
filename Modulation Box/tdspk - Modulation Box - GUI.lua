@@ -1,3 +1,22 @@
+--@description Modulation Box - GUI
+--@version 0.1pre1
+--@author Tadej Supukovic (tdspk)
+--@about
+--  # Modulation Box
+--  Work in progress...
+--  # Requirements
+--  JS_ReaScriptAPI, SWS Extension, ReaImGui
+--@links
+--  Website https://www.tdspkaudio.com
+--  Forum Thread https://www.tdspkaudio.com
+--@donation
+--  https://ko-fi.com/tdspkaudio
+--  https://coindrop.to/tdspkaudio
+--@provides
+--  [main] .
+-- @changelog
+--  first draft (0.1pre1)
+
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 
