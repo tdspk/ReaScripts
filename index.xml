@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="d7a2d9f6701f27f91904b5071a95c4e2e343914a">
+<index version="1" name="tdspk" commit="c3c24c44f5c9e3ce9eef26b12466e30483d5733e">
   <category name="Creative">
     <reapack name="tdspk - Creative - ReaChopChop.lua" type="script" desc="ReaChopChop">
       <metadata>
@@ -310,6 +310,10 @@ First version]]></changelog>
       <version name="0.1pre1" author="Tadej Supukovic (tdspk)" time="2024-05-02T16:17:53Z">
         <changelog><![CDATA[first draft (0.1pre1)]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/719f631a90024d0c1be66a197ef46609bf052a8f/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20GUI.lua</source>
+      </version>
+      <version name="0.1pre2" author="Tadej Supukovic (tdspk)" time="2024-05-10T13:30:35Z">
+        <changelog><![CDATA[first draft (0.1pre1)]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/c3c24c44f5c9e3ce9eef26b12466e30483d5733e/Modulation%20Box/tdspk%20-%20Modulation%20Box%20-%20GUI.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Modulation Box.lua" type="script" desc="Modulation Box">
