@@ -1,5 +1,5 @@
 --@description Modulation Box - GUI
---@version 0.1pre1
+--@version 0.1pre2
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Modulation Box
@@ -60,8 +60,13 @@ ui = {
         offset = 1,
         time = 0.0,
         data = reaper.new_array(50)
-    }
+    },
+    param_filter = reaper.ImGui_CreateTextFilter()
 }
+
+function map(x, in_min, in_max, out_min, out_max)
+    return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
+end
 
 local function CacheTracks()
     ui.tracks = {}
@@ -77,6 +82,7 @@ end
 local function CacheTrackFxData()
     fx_data = {}
 
+    if not ui.selected_track_ref then return end
     -- iterate all fx and add them to data array
     for i = 0, reaper.TrackFX_GetCount(ui.selected_track_ref) - 1 do
         -- iterate all params from each fx
@@ -101,6 +107,17 @@ local function CacheTrackFxData()
     end
 end
 
+local function DrawModIndicator(val, minval, maxval)
+    local x, y = reaper.ImGui_GetCursorScreenPos(ctx)
+    -- reaper.ImGui_Text(ctx, ("%d, %d"):format(x, y))
+    local drawlist = reaper.ImGui_GetWindowDrawList(ctx)
+
+    val = map(val, minval, maxval, 0, 1)
+    local white = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, val)
+
+    reaper.ImGui_DrawList_AddCircleFilled(drawlist, x + 5, y + 5, 8, white, 0)
+end
+
 local function RenderFxList()
     for fx_id, v in pairs(fx_data) do
         local fx_name = v.name
@@ -110,11 +127,26 @@ local function RenderFxList()
         for p_id, v in pairs(v.params) do
             local p_name = v.name
 
+            local rv, mod = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
+                "param." .. p_id ..
+                ".mod.active")
+
             if ui.selected_param == p_id then
-                reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color.green)
+                reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(),
+                    reaper.ImGui_GetStyleColor(ctx, reaper.ImGui_Col_ButtonActive()))
+            end
+
+            if mod == "1" then
+                local val, minval, maxval = reaper.TrackFX_GetParam(ui.selected_track_ref, fx_id, p_id)
+                val = map(val, minval, maxval, 0, 1)
+                local col = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, val)
+                reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), col)
             end
 
             local btn = reaper.ImGui_Button(ctx, ("  %s  ##%d%d"):format(p_name, fx_id, p_id), 0, style.big_btn_height)
+
+            if ui.selected_param == p_id then reaper.ImGui_PopStyleColor(ctx) end
+            if mod == "1" then reaper.ImGui_PopStyleColor(ctx) end
 
             if reaper.ImGui_BeginDragDropSource(ctx, reaper.ImGui_DragDropFlags_None()) then
                 -- fxid and param id as payload
@@ -145,10 +177,6 @@ local function RenderFxList()
                 reaper.ImGui_EndDragDropTarget(ctx)
             end
 
-            if ui.selected_param == p_id then
-                reaper.ImGui_PopStyleColor(ctx)
-            end
-
             if btn then
                 if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Alt()) then
                     reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id, "param." ..
@@ -167,23 +195,37 @@ local function RenderFxList()
                 end
             end
 
-
-
             counter = counter + 1
 
             -- do a SameLine until 5 elements have been drawn
             if counter % 5 ~= 0 then reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x) end
         end
 
+        local popup_id = ("Popup##%d"):format(fx_id)
+
         if reaper.ImGui_Button(ctx, ("  +  ##%d"):format(fx_id), style.big_btn_height, style.big_btn_height) then
-            reaper.ImGui_OpenPopup(ctx, "Parameter Selection")
+            reaper.ImGui_OpenPopup(ctx, popup_id)
         end
+
+        reaper.ImGui_SetNextWindowSize(ctx, -1, 300, reaper.ImGui_Cond_Always())
         -- open parameter dialog to for param selection
-        if reaper.ImGui_BeginPopup(ctx, "Parameter Selection") then
+        if reaper.ImGui_BeginPopup(ctx, popup_id) then
+            -- create filter field for parameter selection
+            reaper.ImGui_TextFilter_Draw(ui.param_filter, ctx)
+
             for j = 0, reaper.TrackFX_GetNumParams(ui.selected_track_ref, fx_id) - 1 do
                 local rv, pname = reaper.TrackFX_GetParamName(ui.selected_track_ref, fx_id, j)
-                if pname ~= "MIDI" then
-                    if reaper.ImGui_Selectable(ctx, pname) then
+
+                local disabled = false
+                local rv, mod = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
+                    "param." .. j ..
+                    ".mod.active")
+                if mod == "1" then disabled = true end
+
+                if reaper.ImGui_TextFilter_PassFilter(ui.param_filter, pname) then
+                    reaper.ImGui_BeginDisabled(ctx, disabled)
+
+                    if reaper.ImGui_Selectable(ctx, ("%s##%d"):format(pname, j)) then
                         -- enable parameter modulation of selected parameter
                         reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id,
                             "param." .. j ..
@@ -195,11 +237,19 @@ local function RenderFxList()
 
                         ui.selected_fx = fx_id
                         ui.selected_param = j
+
+                        reaper.ImGui_TextFilter_Clear(ui.param_filter)
                     end
+
+                    reaper.ImGui_EndDisabled(ctx)
                 end
             end
 
             reaper.ImGui_EndPopup(ctx)
+        end
+
+        if not reaper.ImGui_IsPopupOpen(ctx, popup_id) then
+            reaper.ImGui_TextFilter_Clear(ui.param_filter)
         end
     end
 end
@@ -457,14 +507,9 @@ local function RenderModulation()
     end
     local p_name = fx_data[ui.selected_fx].params[ui.selected_param].name
 
-    local x, y = reaper.ImGui_GetCursorScreenPos(ctx)
-    -- reaper.ImGui_Text(ctx, ("%d, %d"):format(x, y))
-    local drawlist = reaper.ImGui_GetWindowDrawList(ctx)
+    local val, minval, maxval = reaper.TrackFX_GetParam(ui.selected_track_ref, ui.selected_fx, ui.selected_param)
+    DrawModIndicator(val, minval, maxval)
 
-    local val = reaper.TrackFX_GetParam(ui.selected_track_ref, ui.selected_fx, ui.selected_param)
-    local white = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, val)
-
-    reaper.ImGui_DrawList_AddCircleFilled(drawlist, x + 5, y + 5, 8, white, 0)
     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x + 8)
     reaper.ImGui_Text(ctx, p_name)
 
@@ -475,8 +520,8 @@ local function RenderModulation()
         ui.selected_param ..
         ".mod.baseline")
 
-    local rv, mod = reaper.ImGui_SliderDouble(ctx, "Baseline", tonumber(mod), 0,
-        1)
+    local rv, mod = reaper.ImGui_SliderDouble(ctx, "Baseline", tonumber(mod), minval,
+        maxval)
     if rv then
         -- set parameter modulation baseline to mod
         reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
@@ -564,5 +609,7 @@ local function Loop()
 
     if open then reaper.defer(Loop) end
 end
+
+reaper.ImGui_Attach(ctx, ui.param_filter)
 
 reaper.defer(Loop)
