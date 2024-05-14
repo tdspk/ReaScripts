@@ -23,6 +23,7 @@ script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 local ctx = reaper.ImGui_CreateContext('Modulation Box - GUI')
 
 fx_data = {}
+fx_keys = {}
 
 local color = {
     red = reaper.ImGui_ColorConvertDouble4ToU32(1, 0, 0, 1),
@@ -95,7 +96,10 @@ local function CacheTrackFxData()
                 ".mod.active")
             if mod == "1" then
                 local rv, pname = reaper.TrackFX_GetParamName(ui.selected_track_ref, i, j)
-                local param_info = { name = pname }
+                -- get plink effect and param id
+                local rv, plink_fx = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i, "param." .. j .. ".plink.effect")
+                local rv, plink_param = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i, "param." .. j .. ".plink.param")
+                local param_info = { name = pname, plink_fx = tonumber(plink_fx), plink_param = tonumber(plink_param) }
 
                 fx_params[j] = param_info
             end
@@ -105,6 +109,13 @@ local function CacheTrackFxData()
         local fx_info = { name = fx_name, params = fx_params }
         fx_data[i] = fx_info
     end
+
+    -- sort fx keys for later iteration
+    fx_keys = {}
+    for k, _ in pairs(fx_data) do
+        table.insert(fx_keys, k)
+    end
+    table.sort(fx_keys)
 end
 
 local function DrawModIndicator(val, minval, maxval)
@@ -118,10 +129,29 @@ local function DrawModIndicator(val, minval, maxval)
     reaper.ImGui_DrawList_AddCircleFilled(drawlist, x + 5, y + 5, 8, white, 0)
 end
 
-local function RenderFxList()
-    for fx_id, v in pairs(fx_data) do
+local function GetLinkTargets(in_fx_id, in_p_id)
+    local link_targets = {}
+
+    for _, fx_id in ipairs(fx_keys) do
+        local v = fx_data[fx_id]
         local fx_name = v.name
-        reaper.ImGui_SeparatorText(ctx, fx_name)
+
+        for p_id, v in pairs(v.params) do
+            if v.plink_fx == in_fx_id and v.plink_param == in_p_id then
+                local target = { fx_id = v.plink_fx, p_id = v.plink_param }
+                table.insert(link_targets, target)
+            end
+        end        
+    end
+
+    return link_targets
+end
+
+local function RenderFxList()
+    for _, fx_id in ipairs(fx_keys) do
+        local v = fx_data[fx_id]
+        local fx_name = v.name
+        reaper.ImGui_SeparatorText(ctx, ("%d - %s"):format(fx_id + 1, fx_name))
 
         local counter = 0
         for p_id, v in pairs(v.params) do
@@ -143,7 +173,16 @@ local function RenderFxList()
                 reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), col)
             end
 
-            local btn = reaper.ImGui_Button(ctx, ("  %s  ##%d%d"):format(p_name, fx_id, p_id), 0, style.big_btn_height)
+            
+            local rv, has_lfo = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id, "param." .. p_id .. ".lfo.active")
+            has_lfo = has_lfo == "1" and "~" or ""
+            local rv, has_acs = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id, "param." .. p_id .. ".acs.active")
+            has_acs = has_acs == "1" and "/" or ""
+            local link_targets = GetLinkTargets(fx_id, p_id)
+
+            local indicators = ("%s %s %d"):format(has_acs, has_lfo, #link_targets)
+
+            local btn = reaper.ImGui_Button(ctx, ("%s  %s  ##%d%d"):format(indicators, p_name, fx_id, p_id), 0, style.big_btn_height)
 
             if ui.selected_param == p_id then reaper.ImGui_PopStyleColor(ctx) end
             if mod == "1" then reaper.ImGui_PopStyleColor(ctx) end
@@ -216,32 +255,34 @@ local function RenderFxList()
             for j = 0, reaper.TrackFX_GetNumParams(ui.selected_track_ref, fx_id) - 1 do
                 local rv, pname = reaper.TrackFX_GetParamName(ui.selected_track_ref, fx_id, j)
 
-                local disabled = false
-                local rv, mod = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
-                    "param." .. j ..
-                    ".mod.active")
-                if mod == "1" then disabled = true end
+                if not pname:lower():find("midi") then
+                    local disabled = false
+                    local rv, mod = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
+                        "param." .. j ..
+                        ".mod.active")
+                    if mod == "1" then disabled = true end
 
-                if reaper.ImGui_TextFilter_PassFilter(ui.param_filter, pname) then
-                    reaper.ImGui_BeginDisabled(ctx, disabled)
+                    if reaper.ImGui_TextFilter_PassFilter(ui.param_filter, pname) then
+                        reaper.ImGui_BeginDisabled(ctx, disabled)
 
-                    if reaper.ImGui_Selectable(ctx, ("%s##%d"):format(pname, j)) then
-                        -- enable parameter modulation of selected parameter
-                        reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id,
-                            "param." .. j ..
-                            ".mod.active", "1")
+                        if reaper.ImGui_Selectable(ctx, ("%s##%d"):format(pname, j)) then
+                            -- enable parameter modulation of selected parameter
+                            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id,
+                                "param." .. j ..
+                                ".mod.active", "1")
 
-                        local param_info = { name = pname }
+                            local param_info = { name = pname }
 
-                        v.params[j] = param_info
+                            v.params[j] = param_info
 
-                        ui.selected_fx = fx_id
-                        ui.selected_param = j
+                            ui.selected_fx = fx_id
+                            ui.selected_param = j
 
-                        reaper.ImGui_TextFilter_Clear(ui.param_filter)
+                            reaper.ImGui_TextFilter_Clear(ui.param_filter)
+                        end
+
+                        reaper.ImGui_EndDisabled(ctx)
                     end
-
-                    reaper.ImGui_EndDisabled(ctx)
                 end
             end
 
@@ -492,7 +533,30 @@ local function RenderLFOModulation()
 end
 
 local function RenderLinkModulation()
+    -- display fx name and linked parameter as text
+    local plink_fx = fx_data[ui.selected_fx].params[ui.selected_param].plink_fx
+    local plink_param = fx_data[ui.selected_fx].params[ui.selected_param].plink_param
 
+    if not plink_fx or not plink_param then return end
+
+    if tonumber(plink_fx) < 0 then
+        reaper.ImGui_Text(ctx, "No linked Parameter")
+    else
+        reaper.ImGui_Text(ctx, "Linked to:")
+        reaper.ImGui_Text(ctx, ("%d - %s"):format(plink_fx+1, fx_data[plink_fx].name))
+        reaper.ImGui_Text(ctx, fx_data[plink_fx].params[plink_param].name)
+    end
+
+    local link_targets = GetLinkTargets(ui.selected_fx, ui.selected_param)
+
+    if link_targets then
+        reaper.ImGui_Text(ctx, ("%d Targets:"):format(#link_targets))
+        for _, v in ipairs(link_targets) do
+            local fx_name = fx_data[v.fx_id].name
+            local param_name = fx_data[v.fx_id].params[v.p_id].name
+            reaper.ImGui_Text(ctx, ("%d - %s - %s"):format(v.fx_id + 1, fx_name, param_name))
+        end
+    end
 end
 
 local function RenderModulation()
@@ -531,6 +595,7 @@ local function RenderModulation()
 
     RenderACSModulation()
     RenderLFOModulation()
+    RenderLinkModulation()
 
     -- while ui.plot.time < reaper.ImGui_GetTime(ctx) do
     --     local val = reaper.TrackFX_GetParam(ui.selected_track_ref, ui.selected_fx, ui.selected_param)
