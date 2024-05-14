@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.2pre10
+--@version 0.3pre1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -152,7 +152,7 @@ data = {
 }
 
 local ext_section = "tdspk_ucstoolkit"
-local version = "0.2pre9"
+local version = "0.3pre1"
 
 local default_settings = {
   font_size = 16,
