@@ -1497,7 +1497,8 @@ function Navigation()
       Tooltip(ctx, "Moves a set loop area to the next target when navigating inside the UCS Toolkit.")
     end
     rv, form.autofill = reaper.ImGui_Checkbox(ctx, "Auto-Fill when navigating", form.autofill)
-    Tooltip(ctx, "Auto-fills the form if UCS data exists in the target. This works only with UCS Toolkit navigation!")
+    Tooltip(ctx,
+      "Auto-fills the form if UCS data exists in the target. This only works when using UCS Toolkit's navigation!\nIf you are working with Markers/Regions, please clear your timeselection for this to work properly!")
   end
   reaper.ImGui_PopStyleColor(ctx)
 end
@@ -1665,7 +1666,8 @@ function Info()
       "Cockos Inc. for REAPER",
       "cfillion for ReaImGui",
       "The REAPER Community",
-      "The Airwiggles Community"
+      "The Airwiggles Community",
+      "Tim Nielsen and the team behind UCS"
     }
 
     for _, v in ipairs(thanks) do
