@@ -297,6 +297,7 @@ function Init()
   reaper.ImGui_Attach(ctx, style.font_menu)
 
   style.logo_soundly = reaper.ImGui_CreateImage(script_path .. "/data/soundly.png")
+  reaper.ImGui_Attach(ctx, style.logo_soundly)
 
   reaper.ImGui_SetNextWindowSize(ctx, app.window_width, app.window_height)
 
