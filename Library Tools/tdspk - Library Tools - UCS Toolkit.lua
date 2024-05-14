@@ -127,6 +127,10 @@ local form = {
   lookup = false
 }
 
+local form_config_keys = {
+  "autoplay", "autorename", "autofill", "navigate_loop", "navigate_rename", "target"
+}
+
 data = {
   target = 0,
   target_self = "",
@@ -260,27 +264,38 @@ function ReadUcsData()
   end
 end
 
+function MapExtStateValues(ext_value)
+  if tonumber(ext_value) then
+    ext_value = tonumber(ext_value)
+  end
+
+  if ext_value == "true" then ext_value = true end
+  if ext_value == "false" then ext_value = false end
+
+  return ext_value
+end
+
 function LoadSettings()
   for k, v in pairs(default_settings) do
-    local ext_value = reaper.GetExtState(ext_section, k)
-
-    if ext_value == "" then
-      settings[k] = v
+    if reaper.HasExtState(ext_section, k) then
+      settings[k] = MapExtStateValues(reaper.GetExtState(ext_section, k))
     else
-      if tonumber(ext_value) then
-        ext_value = tonumber(ext_value)
-      end
+      settings[k] = v
+    end
+  end
+end
 
-      if ext_value == "true" then ext_value = true end
-      if ext_value == "false" then ext_value = false end
-
-      settings[k] = ext_value
+function LoadFormConfig()
+  for _, v in ipairs(form_config_keys) do
+    if reaper.HasExtState(ext_section, v) then
+      form[v] = MapExtStateValues(reaper.GetExtState(ext_section, v))
     end
   end
 end
 
 function Init()
   LoadSettings()
+  LoadFormConfig()
 
   data.os = reaper.GetOS()
 
@@ -443,14 +458,16 @@ function SaveSettings()
   end
 end
 
+function SaveFormConfig()
+  for _, v in ipairs(form_config_keys) do
+    reaper.SetExtState(ext_section, v, tostring(form[v]), false)
+  end
+end
+
 function Settings()
   if SmallButton(ctx, "Settings") then
     reaper.ImGui_OpenPopup(ctx, "Settings")
   end
-
-  --if IconButton("Settings", style.icon_settings) then
-  --  reaper.ImGui_OpenPopup(ctx, "Settings")
-  --end
 
   local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetWindowViewport(ctx))
   reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
@@ -1106,17 +1123,17 @@ function CacheUCSData()
     end
 
     --if not form.autofill then
-      if form.fx_name ~= "" then
-        fx_name = form.fx_name
-      end
+    if form.fx_name ~= "" then
+      fx_name = form.fx_name
+    end
 
-      if form.creator_id ~= "" then
-        creator_id = form.creator_id
-      end
+    if form.creator_id ~= "" then
+      creator_id = form.creator_id
+    end
 
-      if form.source_id ~= "" then
-        source_id = form.source_id
-      end
+    if form.source_id ~= "" then
+      source_id = form.source_id
+    end
     --end
 
     local filename = CreateUCSFilename(settings.delimiter, form.cat_id, form.user_cat, form.vendor_cat,
@@ -1709,6 +1726,8 @@ function Loop()
   reaper.ImGui_PopStyleVar(ctx, 2)
   if open then
     reaper.defer(Loop)
+  else
+    SaveFormConfig()
   end
 end
 
