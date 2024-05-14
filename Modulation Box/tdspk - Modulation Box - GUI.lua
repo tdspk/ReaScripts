@@ -97,8 +97,10 @@ local function CacheTrackFxData()
             if mod == "1" then
                 local rv, pname = reaper.TrackFX_GetParamName(ui.selected_track_ref, i, j)
                 -- get plink effect and param id
-                local rv, plink_fx = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i, "param." .. j .. ".plink.effect")
-                local rv, plink_param = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i, "param." .. j .. ".plink.param")
+                local rv, plink_fx = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
+                    "param." .. j .. ".plink.effect")
+                local rv, plink_param = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
+                    "param." .. j .. ".plink.param")
                 local param_info = { name = pname, plink_fx = tonumber(plink_fx), plink_param = tonumber(plink_param) }
 
                 fx_params[j] = param_info
@@ -134,20 +136,23 @@ local function GetLinkTargets(in_fx_id, in_p_id)
 
     for _, fx_id in ipairs(fx_keys) do
         local v = fx_data[fx_id]
-        local fx_name = v.name
-
         for p_id, v in pairs(v.params) do
             if v.plink_fx == in_fx_id and v.plink_param == in_p_id then
-                local target = { fx_id = v.plink_fx, p_id = v.plink_param }
+                local target = { fx_id = fx_id, p_id = p_id }
                 table.insert(link_targets, target)
             end
-        end        
+        end
     end
 
     return link_targets
 end
 
 local function RenderFxList()
+    -- table for button coordinate data
+    button_data = {}
+    local hov_btn = 0
+    local btn_id = 0
+
     for _, fx_id in ipairs(fx_keys) do
         local v = fx_data[fx_id]
         local fx_name = v.name
@@ -155,6 +160,8 @@ local function RenderFxList()
 
         local counter = 0
         for p_id, v in pairs(v.params) do
+            btn_id = btn_id + 1
+
             local p_name = v.name
 
             local rv, mod = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
@@ -173,16 +180,25 @@ local function RenderFxList()
                 reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), col)
             end
 
-            
-            local rv, has_lfo = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id, "param." .. p_id .. ".lfo.active")
+            local rv, has_lfo = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
+                "param." .. p_id .. ".lfo.active")
             has_lfo = has_lfo == "1" and "~" or ""
-            local rv, has_acs = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id, "param." .. p_id .. ".acs.active")
+            local rv, has_acs = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
+                "param." .. p_id .. ".acs.active")
             has_acs = has_acs == "1" and "/" or ""
             local link_targets = GetLinkTargets(fx_id, p_id)
 
             local indicators = ("%s %s %d"):format(has_acs, has_lfo, #link_targets)
 
-            local btn = reaper.ImGui_Button(ctx, ("%s  %s  ##%d%d"):format(indicators, p_name, fx_id, p_id), 0, style.big_btn_height)
+            local btn = reaper.ImGui_Button(ctx, ("%s  %s  ##%d%d"):format(indicators, p_name, fx_id, p_id), 0,
+                style.big_btn_height)
+            if reaper.ImGui_IsItemHovered(ctx) then hov_btn = btn_id end
+
+            local x, y = reaper.ImGui_GetItemRectMin(ctx)
+            local w, h = reaper.ImGui_GetItemRectSize(ctx)
+            x = x + w / 2
+            y = y + h / 2
+            button_data[btn_id] = { fx_id = fx_id, p_id = p_id, fx_name = fx_name, p_name = p_name, x = x, y = y }
 
             if ui.selected_param == p_id then reaper.ImGui_PopStyleColor(ctx) end
             if mod == "1" then reaper.ImGui_PopStyleColor(ctx) end
@@ -291,6 +307,48 @@ local function RenderFxList()
 
         if not reaper.ImGui_IsPopupOpen(ctx, popup_id) then
             reaper.ImGui_TextFilter_Clear(ui.param_filter)
+        end
+
+        if hov_btn > 0 then
+            -- get link targets for currently hovered button
+            local link_targets = GetLinkTargets(button_data[hov_btn].fx_id,
+                button_data[hov_btn].p_id)
+
+            -- iterate button data and draw line to all buttons with link targets
+            if link_targets then
+                local drawlist = reaper.ImGui_GetWindowDrawList(ctx)
+
+                for i, v in ipairs(button_data) do
+                    for _, t in ipairs(link_targets) do
+                        if v.fx_id == t.fx_id and v.p_id == t.p_id then
+                            local white = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, 0.8)
+                            local start_x = button_data[hov_btn].x
+                            local start_y = button_data[hov_btn].y
+                            local end_x = v.x
+                            local end_y = v.y
+
+                            local bez_x = end_x
+                            local bez_y = start_y
+
+                            local bez_mod = 100
+
+                            if start_x == end_x then
+                                bez_x = bez_x - bez_mod
+                            end
+
+                            if start_y == end_y then
+                                bez_y = bez_y - bez_mod
+                            end
+
+                            -- reaper.ImGui_DrawList_AddLine(drawlist, button_data[hov_btn].x, button_data[hov_btn].y, v.x,
+                            --     v.y, white)
+
+                            reaper.ImGui_DrawList_AddBezierQuadratic(drawlist, start_x, start_y, bez_x, bez_y, end_x, end_y, white, 1)
+                            reaper.ImGui_DrawList_AddCircleFilled(drawlist, end_x, end_y, 5, white)
+                        end
+                    end
+                end
+            end
         end
     end
 end
@@ -543,11 +601,12 @@ local function RenderLinkModulation()
         reaper.ImGui_Text(ctx, "No linked Parameter")
     else
         reaper.ImGui_Text(ctx, "Linked to:")
-        reaper.ImGui_Text(ctx, ("%d - %s"):format(plink_fx+1, fx_data[plink_fx].name))
+        reaper.ImGui_Text(ctx, ("%d - %s"):format(plink_fx + 1, fx_data[plink_fx].name))
         reaper.ImGui_Text(ctx, fx_data[plink_fx].params[plink_param].name)
     end
 
     local link_targets = GetLinkTargets(ui.selected_fx, ui.selected_param)
+    aa = link_targets
 
     if link_targets then
         reaper.ImGui_Text(ctx, ("%d Targets:"):format(#link_targets))
