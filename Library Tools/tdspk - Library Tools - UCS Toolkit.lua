@@ -1090,13 +1090,15 @@ function CacheUCSData()
     end
 
     local parts = FilenameToUCS(target_name)
+
     local cat_id, fx_name, creator_id, source_id = table.unpack(parts)
+    if #parts == 1 then fx_name = parts[1] end
 
     -- Autofill needs to happen here, and only for the first selected item!
     if i == 1 then
       if form.autofill and form.navigated then
         if ucs.cat_ids[cat_id] then
-          if cat_id then form.cat_id = cat_id end
+          form.cat_id = cat_id
         end
 
         form.fx_name, form.creator_id, form.source_id = ""
@@ -1110,7 +1112,6 @@ function CacheUCSData()
       end
     end
 
-    --if not form.autofill then
     if form.fx_name ~= "" then
       fx_name = form.fx_name
     end
@@ -1122,7 +1123,6 @@ function CacheUCSData()
     if form.source_id ~= "" then
       source_id = form.source_id
     end
-    --end
 
     local filename = CreateUCSFilename(settings.delimiter, form.cat_id, form.user_cat, form.vendor_cat,
       fx_name, creator_id, source_id, form.user_data)
