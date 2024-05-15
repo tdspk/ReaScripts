@@ -174,6 +174,11 @@ local function RenderFxList()
         local v = fx_data[fx_id]
         local fx_name = v.name
         reaper.ImGui_SeparatorText(ctx, ("%d - %s"):format(fx_id + 1, fx_name))
+        reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+
+        if reaper.ImGui_Button(ctx, "Open FX") then
+            reaper.TrackFX_SetOpen(ui.selected_track_ref, fx_id, true)
+        end
 
         local counter = 0
         for p_id, v in pairs(v.params) do
@@ -344,6 +349,7 @@ local function RenderFxList()
                         reaper.ImGui_BeginDisabled(ctx, disabled)
 
                         if reaper.ImGui_Selectable(ctx, ("%s##%d"):format(pname, j)) then
+                            -- TODO Refactor this for later use when adding last touhed
                             -- enable parameter modulation of selected parameter
                             reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id,
                                 "param." .. j ..
@@ -370,42 +376,70 @@ local function RenderFxList()
         if not reaper.ImGui_IsPopupOpen(ctx, popup_id) then
             reaper.ImGui_TextFilter_Clear(ui.param_filter)
         end
+    end
 
-        if hov_btn > 0 then
-            -- get link targets for currently hovered button
-            local link_targets = GetLinkTargets(button_data[hov_btn].fx_id,
-                button_data[hov_btn].p_id)
+    local rv, _, _, _, last_fx, last_param = reaper.GetTouchedOrFocusedFX(0)
+    local rv, fx_name = reaper.TrackFX_GetFXName(ui.selected_track_ref, last_fx)
+    local rv, param_name = reaper.TrackFX_GetParamName(ui.selected_track_ref, last_fx, last_param)
 
-            -- iterate button data and draw line to all buttons with link targets
-            if link_targets then
-                local drawlist = reaper.ImGui_GetWindowDrawList(ctx)
+    -- Feature for last touched parameter
+    if rv and reaper.ImGui_Button(ctx, "  + Last Touched   ", 0, style.big_btn_height) then
+        -- add parameter to fx_data array
+        reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, last_fx,
+            "param." .. last_param ..
+            ".mod.active", "1")
 
-                for i, v in ipairs(button_data) do
-                    for _, t in ipairs(link_targets) do
-                        if v.fx_id == t.fx_id and v.p_id == t.p_id then
-                            local white = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, 1)
-                            local start_x = button_data[hov_btn].x
-                            local start_y = button_data[hov_btn].y
-                            local end_x = v.x
-                            local end_y = v.y
+        local param_info = { name = param_name }
 
-                            local bez_x = end_x
-                            local bez_y = start_y
+        fx_data[last_fx].params[last_param] = param_info
 
-                            local bez_mod = 100
+        ui.selected_fx = fx_id
+        ui.selected_param = last_param
+    end
 
-                            if start_x == end_x then
-                                bez_x = bez_x - bez_mod
-                            end
+    -- show last touched on hover
+    if rv and reaper.ImGui_IsItemHovered(ctx) then
+        reaper.ImGui_BeginTooltip(ctx) -- TODO Tooltip function refactor
+        reaper.ImGui_SetTooltip(ctx, ("Last touched: %s - %s"):format(fx_name, param_name))
+        reaper.ImGui_EndTooltip(ctx)
+    end
 
-                            if start_y == end_y then
-                                bez_y = bez_y + bez_mod
-                            end
+    -- Draw lines to link targets when hovering
 
-                            reaper.ImGui_DrawList_AddBezierQuadratic(drawlist, start_x, start_y + 4, bez_x, bez_y, end_x,
-                                end_y, white, t.scale * 2)
-                            reaper.ImGui_DrawList_AddCircleFilled(drawlist, end_x, end_y, 5, white)
+    if hov_btn > 0 then
+        -- get link targets for currently hovered button
+        local link_targets = GetLinkTargets(button_data[hov_btn].fx_id,
+            button_data[hov_btn].p_id)
+
+        -- iterate button data and draw line to all buttons with link targets
+        if link_targets then
+            local drawlist = reaper.ImGui_GetWindowDrawList(ctx)
+
+            for i, v in ipairs(button_data) do
+                for _, t in ipairs(link_targets) do
+                    if v.fx_id == t.fx_id and v.p_id == t.p_id then
+                        local white = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, 1)
+                        local start_x = button_data[hov_btn].x
+                        local start_y = button_data[hov_btn].y
+                        local end_x = v.x
+                        local end_y = v.y
+
+                        local bez_x = end_x
+                        local bez_y = start_y
+
+                        local bez_mod = 100
+
+                        if start_x == end_x then
+                            bez_x = bez_x - bez_mod
                         end
+
+                        if start_y == end_y then
+                            bez_y = bez_y + bez_mod
+                        end
+
+                        reaper.ImGui_DrawList_AddBezierQuadratic(drawlist, start_x, start_y + 4, bez_x, bez_y, end_x,
+                            end_y, white, t.scale * 2)
+                        reaper.ImGui_DrawList_AddCircleFilled(drawlist, end_x, end_y, 5, white)
                     end
                 end
             end
