@@ -49,7 +49,7 @@ local style = {
 
 
 ui = {
-    show_settings = true,
+    show_settings = false,
     tracks = {},
     selected_track = 0,
     selected_track_ref = nil,
@@ -794,17 +794,21 @@ local function Loop()
 
             if not ui.selected_track_ref then ui.selected_track_ref = reaper.GetTrack(0, ui.selected_track) end
 
-            reaper.ImGui_SameLine(ctx, 0, 100)
+            -- reaper.ImGui_SameLine(ctx, 0, 100)
 
-            local arrow_btn = ui.show_settings and reaper.ImGui_Dir_Right() or reaper.ImGui_Dir_Left()
-            if reaper.ImGui_ArrowButton(ctx, "ToggleModWindow", arrow_btn) then
-                ui.show_settings = not ui.show_settings
-            end
+            -- local arrow_btn = ui.show_settings and reaper.ImGui_Dir_Right() or reaper.ImGui_Dir_Left()
+            -- if reaper.ImGui_ArrowButton(ctx, "ToggleModWindow", arrow_btn) then
+            --     ui.show_settings = not ui.show_settings
+            -- end
 
             CacheTrackFxData()
             RenderFxList()
 
             reaper.ImGui_EndChild(ctx)
+        end
+
+        if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
+            ui.show_settings = false
         end
 
         reaper.ImGui_SameLine(ctx)
