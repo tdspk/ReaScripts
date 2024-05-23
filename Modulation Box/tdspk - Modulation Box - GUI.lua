@@ -103,16 +103,20 @@ local function CacheTrackFxData()
                     "param." .. j .. ".plink.param")
                 local rv, plink_scale = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
                     "param." .. j .. ".plink.scale")
+                local rv, plink_offset = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
+                    "param." .. j .. ".plink.offset")
 
                 local plink_fx = tonumber(plink_fx)
                 local plink_param = tonumber(plink_param)
                 local plink_scale = tonumber(plink_scale)
+                local plink_offset = tonumber(plink_offset)
 
                 local param_info = {
                     name = pname,
                     plink_fx = plink_fx,
                     plink_param = plink_param,
-                    plink_scale = plink_scale
+                    plink_scale = plink_scale,
+                    plink_offset = plink_offset
                 }
 
                 fx_params[j] = param_info
@@ -154,6 +158,7 @@ local function GetLinkTargets(in_fx_id, in_p_id)
                     fx_id = fx_id,
                     p_id = p_id,
                     scale = v.plink_scale,
+                    offset = v.plink_offset,
                     name = v.name
                 }
                 table.insert(link_targets, target)
@@ -248,10 +253,15 @@ local function RenderFxList()
                 for _, v in ipairs(link_targets) do
                     -- separate by fx
                     local scale = v.scale
+                    local offset = v.offset
                     scale = tonumber(scale) * 100
-                    rv, scale = reaper.ImGui_SliderDouble(ctx, ("%s##%d%d"):format(v.name, v.fx_id, v.p_id), scale, -100,
-                        100, "%.1f")
+                    offset = tonumber(offset) * 100
+
+                    rv, scale, offset = reaper.ImGui_SliderDouble2(ctx, ("%s (Scale / Offset)##%d%d"):format(v.name, v.fx_id, v.p_id), scale, offset, -100, 100, "%.1f")
+
+                    --rv, scale = reaper.ImGui_SliderDouble(ctx, ("%s##%d%d"):format(v.name, v.fx_id, v.p_id), scale, -100, 100, "%.1f")
                     scale = scale / 100
+                    offset = offset / 100
 
                     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
@@ -266,6 +276,8 @@ local function RenderFxList()
 
                     reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
                         "param." .. v.p_id .. ".plink.scale", scale)
+                    reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
+                        "param." .. v.p_id .. ".plink.offset", offset)
                 end
                 reaper.ImGui_EndPopup(ctx)
             end
