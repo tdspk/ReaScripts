@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.3pre1
+--@version 0.3pre2
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -26,18 +26,25 @@ local sws_exists = reaper.APIExists("CF_GetSWSVersion")
 local js_exists = reaper.APIExists("JS_ReaScriptAPI_Version")
 
 if not imgui_exists or not sws_exists or not js_exists then
+  local open_reapack = false
+
   local msg = "UCS Toolkit requires the following extensions/packages to work:\n"
   if not sws_exists then
     msg = msg .. "SWS Extension - please visit https://www.sws-extension.org\n"
   end
   if not js_exists then
     msg = msg .. "js_ReaScriptAPI: API functions for ReaScripts - please install via ReaPack\n"
+    open_reapack = true
   end
   if not imgui_exists then
     msg = msg .. "ReaImGui: ReaScript binding for Dear ImGui - please install via ReaPack\n"
+    open_reapack = true
   end
 
+  if open_reapack then reaper.ReaPack_BrowsePackages("") end
+
   reaper.ShowMessageBox(msg, "Missing extensions/packages", 0)
+  
   goto eof
 end
 
@@ -451,13 +458,13 @@ end
 
 function SaveSettings()
   for k, v in pairs(default_settings) do
-    reaper.SetExtState(ext_section, k, tostring(settings[k]), false)
+    reaper.SetExtState(ext_section, k, tostring(settings[k]), true)
   end
 end
 
 function SaveFormConfig()
   for _, v in ipairs(form_config_keys) do
-    reaper.SetExtState(ext_section, v, tostring(form[v]), false)
+    reaper.SetExtState(ext_section, v, tostring(form[v]), true)
   end
 end
 
@@ -894,12 +901,14 @@ function Rename()
 
     -- disable autoplay, stop playback
     reaper.JS_Window_OnCommand(data.mx_handle, 1009)  -- Preview: Stop
-    reaper.JS_Window_OnCommand(data.mx_handle, 1009)  -- Preview: Stop
     reaper.JS_Window_OnCommand(data.mx_handle, 40036) -- Autoplay: Off
 
     for i, v in ipairs(data.files) do
       local old_file = data.directory .. "/" .. v
-      local _, _, ext = string.match(v, "(.-)([^\\/]-%.?([^%.\\/]*))$")
+      --local _, _, ext = string.match(v, "(.-)([^\\/]-%.?([^%.\\/]*))$")
+
+      -- get extension of a filename
+      local ext = string.match(v, "%.(%w+)$")
 
       local filename = data.ucs_names[i]
       local new_file = data.directory .. "/" .. filename .. "." .. ext
@@ -907,8 +916,8 @@ function Rename()
       rv, osbuf = os.rename(old_file, new_file)
     end
 
-    if autoplay == 1 then                     -- Enable autoplay if it was toggled on
-      reaper.JS_Window_OnCommand(hWnd, 40035) -- Autoplay: On
+    if autoplay == 1 then -- Enable autoplay if it was toggled on
+      reaper.JS_Window_OnCommand(data.mx_handle, 40035) -- Autoplay: On
     end
 
     form.applied = true
