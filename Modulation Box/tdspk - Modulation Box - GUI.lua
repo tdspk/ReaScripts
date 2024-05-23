@@ -255,7 +255,7 @@ local function RenderFxList()
 
                     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
-                    if reaper.ImGui_SmallButton(ctx, "X") then
+                    if reaper.ImGui_SmallButton(ctx, ("X##%d%d"):format(v.fx_id, v.p_id)) then
                         reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
                             "param." .. v.p_id .. ".plink.active", 0)
                         reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
