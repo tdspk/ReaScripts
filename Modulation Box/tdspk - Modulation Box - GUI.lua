@@ -257,9 +257,29 @@ local function RenderFxList()
                     scale = tonumber(scale) * 100
                     offset = tonumber(offset) * 100
 
-                    rv, scale, offset = reaper.ImGui_SliderDouble2(ctx, ("%s (Scale / Offset)##%d%d"):format(v.name, v.fx_id, v.p_id), scale, offset, -100, 100, "%.1f")
+                    -- rv, scale, offset = reaper.ImGui_SliderDouble2(ctx, ("%s (Scale / Offset)##%d%d"):format(v.name, v.fx_id, v.p_id), scale, offset, -100, 100, "%.1f")
+                    -- reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+                    -- rv, scale = reaper.ImGui_SliderDouble(ctx, ("##%d%d"):format(v.fx_id, v.p_id), scale, -100, 100)
 
-                    --rv, scale = reaper.ImGui_SliderDouble(ctx, ("%s##%d%d"):format(v.name, v.fx_id, v.p_id), scale, -100, 100, "%.1f")
+                    local item_w = reaper.ImGui_CalcItemWidth(ctx)
+                    reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
+                    rv, scale = reaper.ImGui_SliderDouble(ctx, ("##Scale%d%d"):format(v.fx_id, v.p_id), scale, -100, 100)
+
+                    if reaper.ImGui_IsItemClicked(ctx, 1) then
+                        scale = 0
+                    end
+
+                    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+                    reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
+                    rv, offset = reaper.ImGui_SliderDouble(ctx, ("##Offset%d%d"):format(v.fx_id, v.p_id), offset, -100, 100)
+
+                    if reaper.ImGui_IsItemClicked(ctx, 1) then
+                        offset = 0
+                    end
+
+                    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+                    reaper.ImGui_Text(ctx, ("%s (Scale / Offset)"):format(v.name))
+
                     scale = scale / 100
                     offset = offset / 100
 
