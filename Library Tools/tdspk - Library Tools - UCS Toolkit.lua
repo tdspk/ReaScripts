@@ -159,7 +159,7 @@ data = {
 }
 
 local ext_section = "tdspk_ucstoolkit"
-local version = "0.3pre1"
+local version = "0.3pre2"
 
 local default_settings = {
   font_size = 16,
