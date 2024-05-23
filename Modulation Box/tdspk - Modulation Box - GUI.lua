@@ -249,7 +249,7 @@ local function RenderFxList()
                     -- separate by fx
                     local scale = v.scale
                     scale = tonumber(scale) * 100
-                    rv, scale = reaper.ImGui_SliderDouble(ctx, ("%s##%d%d"):format(v.name, v.fx_id, v.p_id), scale, 0,
+                    rv, scale = reaper.ImGui_SliderDouble(ctx, ("%s##%d%d"):format(v.name, v.fx_id, v.p_id), scale, -100,
                         100, "%.1f")
                     scale = scale / 100
 
