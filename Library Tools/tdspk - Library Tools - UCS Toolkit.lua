@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.3pre3
+--@version 0.3
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
