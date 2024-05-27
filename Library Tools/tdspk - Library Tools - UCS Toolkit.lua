@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.3pre2
+--@version 0.3pre3
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -136,7 +136,7 @@ local form = {
 }
 
 local form_config_keys = {
-  "autoplay", "autorename", "autofill", "navigate_loop", "navigate_rename", "target"
+  "creator_id", "source_id", "autoplay", "autorename", "autofill", "navigate_loop", "navigate_rename", "target"
 }
 
 data = {
@@ -159,7 +159,7 @@ data = {
 }
 
 local ext_section = "tdspk_ucstoolkit"
-local version = "0.3pre2"
+local version = "0.3pre3"
 
 local default_settings = {
   font_size = 16,
@@ -277,6 +277,7 @@ function MapExtStateValues(ext_value)
 
   if ext_value == "true" then ext_value = true end
   if ext_value == "false" then ext_value = false end
+  if ext_value == "nil" then ext_value = nil end
 
   return ext_value
 end
