@@ -105,18 +105,30 @@ local function CacheTrackFxData()
                     "param." .. j .. ".plink.scale")
                 local rv, plink_offset = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
                     "param." .. j .. ".plink.offset")
+                local rv, baseline = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
+                    "param." .. j .. ".mod.baseline")
+                local val, minval, maxval = reaper.TrackFX_GetParam(ui.selected_track_ref, ui.selected_fx, ui.selected_param)
+
+
+                -- TODO cache all values here, no need for later caching
+                -- TODO Write function for getting cached data from table
 
                 local plink_fx = tonumber(plink_fx)
                 local plink_param = tonumber(plink_param)
                 local plink_scale = tonumber(plink_scale)
                 local plink_offset = tonumber(plink_offset)
+                local baseline = tonumber(baseline)
 
                 local param_info = {
                     name = pname,
                     plink_fx = plink_fx,
                     plink_param = plink_param,
                     plink_scale = plink_scale,
-                    plink_offset = plink_offset
+                    plink_offset = plink_offset,
+                    baseline = baseline,
+                    val = val,
+                    minval = minval,
+                    maxval = maxval
                 }
 
                 fx_params[j] = param_info
@@ -159,12 +171,15 @@ local function GetLinkTargets(in_fx_id, in_p_id)
                     p_id = p_id,
                     scale = v.plink_scale,
                     offset = v.plink_offset,
+                    baseline = v.baseline,
                     name = v.name
                 }
                 table.insert(link_targets, target)
             end
         end
     end
+
+    -- Filter targets to a new table and return the existing data structure instead of creating a new one
 
     return link_targets
 end
@@ -253,35 +268,30 @@ local function RenderFxList()
                 for _, v in ipairs(link_targets) do
                     -- separate by fx
                     local scale = v.scale
-                    local offset = v.offset
+                    local baseline = v.baseline
                     scale = tonumber(scale) * 100
-                    offset = tonumber(offset) * 100
+                    baseline = tonumber(baseline) * 100
 
-                    -- rv, scale, offset = reaper.ImGui_SliderDouble2(ctx, ("%s (Scale / Offset)##%d%d"):format(v.name, v.fx_id, v.p_id), scale, offset, -100, 100, "%.1f")
-                    -- reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-                    -- rv, scale = reaper.ImGui_SliderDouble(ctx, ("##%d%d"):format(v.fx_id, v.p_id), scale, -100, 100)
 
                     local item_w = reaper.ImGui_CalcItemWidth(ctx)
                     reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
                     rv, scale = reaper.ImGui_SliderDouble(ctx, ("##Scale%d%d"):format(v.fx_id, v.p_id), scale, -100, 100)
 
-                    if reaper.ImGui_IsItemClicked(ctx, 1) then
-                        scale = 0
-                    end
+                    if reaper.ImGui_IsItemClicked(ctx, 1) then scale = 0 end -- TODO make function with default values
 
                     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
                     reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
-                    rv, offset = reaper.ImGui_SliderDouble(ctx, ("##Offset%d%d"):format(v.fx_id, v.p_id), offset, -100, 100)
+                    rv, baseline = reaper.ImGui_SliderDouble(ctx, ("##Baseline%d%d"):format(v.fx_id, v.p_id), baseline, -100, 100)
 
                     if reaper.ImGui_IsItemClicked(ctx, 1) then
-                        offset = 0
+                        baseline = 0
                     end
 
                     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-                    reaper.ImGui_Text(ctx, ("%s (Scale / Offset)"):format(v.name))
+                    reaper.ImGui_Text(ctx, ("%s (Scale / Baseline)"):format(v.name))
 
                     scale = scale / 100
-                    offset = offset / 100
+                    offset = baseline / 100
 
                     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
@@ -777,18 +787,6 @@ local function RenderModulation()
 
     RenderACSModulation()
     RenderLFOModulation()
-    -- RenderLinkModulation()
-
-    -- while ui.plot.time < reaper.ImGui_GetTime(ctx) do
-    --     local val = reaper.TrackFX_GetParam(ui.selected_track_ref, ui.selected_fx, ui.selected_param)
-    --     ui.plot.data[ui.plot.offset] = val
-    --     ui.plot.offset = (ui.plot.offset % #ui.plot.data) + 1
-    --     ui.plot.time = ui.plot.time + (1.0 / 60.0)
-    -- end
-    -- -- get current value from parameter and output as text
-
-    -- local w = reaper.ImGui_GetWindowSize(ctx)
-    -- reaper.ImGui_PlotLines(ctx, "##ModulationValue", ui.plot.data, ui.plot.offset - 1, nil, FLT_MAX, FLT_MAX, w, 100)
 end
 
 function PushMainStyleVars()
