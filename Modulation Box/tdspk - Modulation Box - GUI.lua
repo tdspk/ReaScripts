@@ -1,5 +1,5 @@
 --@description Modulation Box - GUI
---@version 0.1pre4
+--@version 0.1pre5
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Modulation Box
