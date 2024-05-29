@@ -97,38 +97,36 @@ local function CacheTrackFxData()
             if mod == "1" then
                 local rv, pname = reaper.TrackFX_GetParamName(ui.selected_track_ref, i, j)
                 -- get plink effect and param id
-                local rv, plink_fx = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
+                local rv, link_fx = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
                     "param." .. j .. ".plink.effect")
-                local rv, plink_param = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
+                local rv, link_param = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
                     "param." .. j .. ".plink.param")
-                local rv, plink_scale = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
+                local rv, link_scale = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
                     "param." .. j .. ".plink.scale")
-                local rv, plink_offset = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
+                local rv, link_offset = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
                     "param." .. j .. ".plink.offset")
                 local rv, baseline = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
                     "param." .. j .. ".mod.baseline")
-                local val, minval, maxval = reaper.TrackFX_GetParam(ui.selected_track_ref, ui.selected_fx, ui.selected_param)
+                local val, minval, maxval = reaper.TrackFX_GetParam(ui.selected_track_ref, i, j)
 
-
-                -- TODO cache all values here, no need for later caching
-                -- TODO Write function for getting cached data from table
-
-                local plink_fx = tonumber(plink_fx)
-                local plink_param = tonumber(plink_param)
-                local plink_scale = tonumber(plink_scale)
-                local plink_offset = tonumber(plink_offset)
+                local link_fx = tonumber(link_fx)
+                local link_param = tonumber(link_param)
+                local link_scale = tonumber(link_scale)
+                local link_offset = tonumber(link_offset)
                 local baseline = tonumber(baseline)
 
                 local param_info = {
+                    fx_id = i,
+                    p_id = j,
                     name = pname,
-                    plink_fx = plink_fx,
-                    plink_param = plink_param,
-                    plink_scale = plink_scale,
-                    plink_offset = plink_offset,
-                    baseline = baseline,
                     val = val,
                     minval = minval,
-                    maxval = maxval
+                    maxval = maxval,
+                    link_fx = link_fx,
+                    link_param = link_param,
+                    link_scale = link_scale,
+                    link_offset = link_offset,
+                    baseline = baseline,
                 }
 
                 fx_params[j] = param_info
@@ -161,34 +159,23 @@ end
 
 local function GetLinkTargets(in_fx_id, in_p_id)
     local link_targets = {}
-
+    -- Filter targets to a new table and return the existing data structure instead of creating a new one
     for _, fx_id in ipairs(fx_keys) do
         local v = fx_data[fx_id]
         for p_id, v in pairs(v.params) do
-            if v.plink_fx == in_fx_id and v.plink_param == in_p_id then
-                local target = { -- TODO use v instead when refactoring?
-                    fx_id = fx_id,
-                    p_id = p_id,
-                    scale = v.plink_scale,
-                    offset = v.plink_offset,
-                    baseline = v.baseline,
-                    name = v.name
-                }
-                table.insert(link_targets, target)
+            if v.link_fx == in_fx_id and v.link_param == in_p_id then
+                table.insert(link_targets, v)
             end
         end
     end
 
-    -- Filter targets to a new table and return the existing data structure instead of creating a new one
-
     return link_targets
 end
 
-local function RenderFxList()
-    -- table for button coordinate data
-    button_data = {}
-    local hov_btn = 0
+local function RenderParameterButtons(fx_id)
     local btn_id = 0
+    local button_data = {}
+    local hov_btn = 0
 
     for _, fx_id in ipairs(fx_keys) do
         local v = fx_data[fx_id]
@@ -267,11 +254,9 @@ local function RenderFxList()
                 -- iterate link targets and create scale slider for each
                 for _, v in ipairs(link_targets) do
                     -- separate by fx
-                    local scale = v.scale
+                    local scale = v.link_scale
                     local baseline = v.baseline
                     scale = tonumber(scale) * 100
-                    baseline = tonumber(baseline) * 100
-
 
                     local item_w = reaper.ImGui_CalcItemWidth(ctx)
                     reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
@@ -281,17 +266,15 @@ local function RenderFxList()
 
                     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
                     reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
-                    rv, baseline = reaper.ImGui_SliderDouble(ctx, ("##Baseline%d%d"):format(v.fx_id, v.p_id), baseline, -100, 100)
+                    rv, baseline = reaper.ImGui_SliderDouble(ctx, ("##Baseline%d%d"):format(v.fx_id, v.p_id), baseline,
+                        v.minval, v.maxval)
 
-                    if reaper.ImGui_IsItemClicked(ctx, 1) then
-                        baseline = 0
-                    end
+                    if reaper.ImGui_IsItemClicked(ctx, 1) then baseline = v.minval end
 
                     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
                     reaper.ImGui_Text(ctx, ("%s (Scale / Baseline)"):format(v.name))
 
                     scale = scale / 100
-                    offset = baseline / 100
 
                     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
@@ -307,7 +290,7 @@ local function RenderFxList()
                     reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
                         "param." .. v.p_id .. ".plink.scale", scale)
                     reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
-                        "param." .. v.p_id .. ".plink.offset", offset)
+                        "param." .. v.p_id .. ".mod.baseline", baseline)
                 end
                 reaper.ImGui_EndPopup(ctx)
             end
@@ -391,7 +374,7 @@ local function RenderFxList()
                         reaper.ImGui_BeginDisabled(ctx, disabled)
 
                         if reaper.ImGui_Selectable(ctx, ("%s##%d"):format(pname, j)) then
-                            -- TODO Refactor this for later use when adding last touhed
+                            -- TODO Refactor this for later use when adding last touched
                             -- enable parameter modulation of selected parameter
                             reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id,
                                 "param." .. j ..
@@ -420,6 +403,10 @@ local function RenderFxList()
         end
     end
 
+    return button_data, hov_btn
+end
+
+local function RenderLastTouchedButton()
     local rv, _, _, _, last_fx, last_param = reaper.GetTouchedOrFocusedFX(0)
     local rv, fx_name = reaper.TrackFX_GetFXName(ui.selected_track_ref, last_fx)
     local rv, param_name = reaper.TrackFX_GetParamName(ui.selected_track_ref, last_fx, last_param)
@@ -445,9 +432,10 @@ local function RenderFxList()
         reaper.ImGui_SetTooltip(ctx, ("Last touched: %s - %s"):format(fx_name, param_name))
         reaper.ImGui_EndTooltip(ctx)
     end
+end
 
+local function RenderLinkConnections(button_data, hov_btn)
     -- Draw lines to link targets when hovering
-
     if hov_btn > 0 then
         -- get link targets for currently hovered button
         local link_targets = GetLinkTargets(button_data[hov_btn].fx_id,
@@ -480,13 +468,20 @@ local function RenderFxList()
                         end
 
                         reaper.ImGui_DrawList_AddBezierQuadratic(drawlist, start_x, start_y + 4, bez_x, bez_y, end_x,
-                            end_y, white, t.scale * 2)
+                            end_y, white, t.link_scale * 2)
                         reaper.ImGui_DrawList_AddCircleFilled(drawlist, end_x, end_y, 5, white)
                     end
                 end
             end
         end
     end
+end
+
+local function RenderFxList()
+    -- table for button coordinate data
+    local button_data, hov_btn = RenderParameterButtons()
+    RenderLastTouchedButton()
+    RenderLinkConnections(button_data, hov_btn)
 end
 
 local function RenderACSModulation()
@@ -761,25 +756,25 @@ local function RenderModulation()
         ui.selected_param = nil
         return
     end
-    local p_name = fx_data[ui.selected_fx].params[ui.selected_param].name
 
-    local val, minval, maxval = reaper.TrackFX_GetParam(ui.selected_track_ref, ui.selected_fx, ui.selected_param)
+    local current_param = fx_data[ui.selected_fx].params[ui.selected_param]
+
+    local p_name = current_param.name
+    local val = current_param.val
+    local minval = current_param.minval
+    local maxval = current_param.maxval
+
     DrawModIndicator(val, minval, maxval)
 
     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x + 8)
     reaper.ImGui_Text(ctx, p_name)
 
-    -- create slider for modulation baseline
-    -- read parameter modulation baseline value
-    local rv, mod = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, ui.selected_fx,
-        "param." ..
-        ui.selected_param ..
-        ".mod.baseline")
+    local mod = current_param.baseline
 
     local rv, mod = reaper.ImGui_SliderDouble(ctx, "Baseline", tonumber(mod), minval,
         maxval)
     if rv then
-        -- set parameter modulation baseline to mod
+        -- TODO Write wrapper for this get/set functions set parameter modulation baseline to mod
         reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
             ui.selected_param ..
             ".mod.baseline", mod)
