@@ -47,93 +47,100 @@ local style = {
     window_rounding = 12,
 }
 
-
-ui = {
+-- TODO separate tables into mapping and data tables
+data = {
     show_settings = false,
     tracks = {},
     selected_track = 0,
-    selected_track_ref = nil,
+    track = nil,
     selected_fx = nil,
     selected_param = nil,
     lfo_map = { "Sine", "Square", "Saw L", "Saw R", "Triangle", "Random" },
     dir_map = { [-1] = "Negative", [0] = "Centered", [1] = "Positive" },
-    plot = {
-        offset = 1,
-        time = 0.0,
-        data = reaper.new_array(50)
-    },
     param_filter = reaper.ImGui_CreateTextFilter()
 }
 
-function map(x, in_min, in_max, out_min, out_max)
+function Debug(msg)
+    reaper.ClearConsole()
+    reaper.ShowConsoleMsg(msg)
+end
+
+function Map(x, in_min, in_max, out_min, out_max)
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 end
 
 local function CacheTracks()
-    ui.tracks = {}
+    data.tracks = {}
 
     -- iterate all tracks and add to ui.tracks array
     for i = 0, reaper.CountTracks(0) - 1 do
         local track = reaper.GetTrack(0, i)
         local _, track_name = reaper.GetTrackName(track)
-        table.insert(ui.tracks, track_name)
+        track_name = ("%d: %s"):format(i + 1, track_name)
+        table.insert(data.tracks, track_name)
     end
+end
+
+local function BuildParameterInfo(fx_id, p_id)
+    local rv, pname = reaper.TrackFX_GetParamName(data.track, fx_id, p_id)
+    
+    local rv, link_fx = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
+        "param." .. p_id .. ".plink.effect")
+    local rv, link_param = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
+        "param." .. p_id .. ".plink.param")
+    local rv, link_scale = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
+        "param." .. p_id .. ".plink.scale")
+    local rv, link_offset = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
+        "param." .. p_id .. ".plink.offset")
+    local rv, baseline = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
+        "param." .. p_id .. ".mod.baseline")
+    local val, minval, maxval = reaper.TrackFX_GetParam(data.track, fx_id, p_id)
+
+    local link_fx = tonumber(link_fx)
+    local link_param = tonumber(link_param)
+    local link_scale = tonumber(link_scale)
+    local link_offset = tonumber(link_offset)
+    local baseline = tonumber(baseline)
+
+    local param_info = {
+        fx_id = fx_id,
+        p_id = p_id,
+        name = pname,
+        val = val,
+        minval = minval,
+        maxval = maxval,
+        link_fx = link_fx,
+        link_param = link_param,
+        link_scale = link_scale,
+        link_offset = link_offset,
+        baseline = baseline,
+    }
+
+    return param_info
 end
 
 local function CacheTrackFxData()
     fx_data = {}
 
-    if not ui.selected_track_ref then return end
+    if not data.track then return end
+
     -- iterate all fx and add them to data array
-    for i = 0, reaper.TrackFX_GetCount(ui.selected_track_ref) - 1 do
+    for i = 0, reaper.TrackFX_GetCount(data.track) - 1 do
         -- iterate all params from each fx
         local fx_params = {}
 
-        for j = 0, reaper.TrackFX_GetNumParams(ui.selected_track_ref, i) - 1 do
+        for j = 0, reaper.TrackFX_GetNumParams(data.track, i) - 1 do
             -- if param modulation is enabled, add it to the list
-            local rv, mod = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
+            local rv, mod = reaper.TrackFX_GetNamedConfigParm(data.track, i,
                 "param." .. j ..
                 ".mod.active")
+
             if mod == "1" then
-                local rv, pname = reaper.TrackFX_GetParamName(ui.selected_track_ref, i, j)
-                -- get plink effect and param id
-                local rv, link_fx = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
-                    "param." .. j .. ".plink.effect")
-                local rv, link_param = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
-                    "param." .. j .. ".plink.param")
-                local rv, link_scale = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
-                    "param." .. j .. ".plink.scale")
-                local rv, link_offset = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
-                    "param." .. j .. ".plink.offset")
-                local rv, baseline = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, i,
-                    "param." .. j .. ".mod.baseline")
-                local val, minval, maxval = reaper.TrackFX_GetParam(ui.selected_track_ref, i, j)
-
-                local link_fx = tonumber(link_fx)
-                local link_param = tonumber(link_param)
-                local link_scale = tonumber(link_scale)
-                local link_offset = tonumber(link_offset)
-                local baseline = tonumber(baseline)
-
-                local param_info = {
-                    fx_id = i,
-                    p_id = j,
-                    name = pname,
-                    val = val,
-                    minval = minval,
-                    maxval = maxval,
-                    link_fx = link_fx,
-                    link_param = link_param,
-                    link_scale = link_scale,
-                    link_offset = link_offset,
-                    baseline = baseline,
-                }
-
-                fx_params[j] = param_info
+                fx_params[j] = BuildParameterInfo(i, j)
             end
         end
 
-        local rv, fx_name = reaper.TrackFX_GetFXName(ui.selected_track_ref, i)
+        local rv, fx_name = reaper.TrackFX_GetFXName(data.track, i)
         local fx_info = { name = fx_name, params = fx_params }
         fx_data[i] = fx_info
     end
@@ -151,7 +158,7 @@ local function DrawModIndicator(val, minval, maxval)
     -- reaper.ImGui_Text(ctx, ("%d, %d"):format(x, y))
     local drawlist = reaper.ImGui_GetWindowDrawList(ctx)
 
-    val = map(val, minval, maxval, 0, 1)
+    val = Map(val, minval, maxval, 0, 1)
     local white = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, val)
 
     reaper.ImGui_DrawList_AddCircleFilled(drawlist, x + 5, y + 5, 8, white, 0)
@@ -184,7 +191,7 @@ local function RenderParameterButtons(fx_id)
         reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
         if reaper.ImGui_Button(ctx, "Open FX") then
-            reaper.TrackFX_SetOpen(ui.selected_track_ref, fx_id, true)
+            reaper.TrackFX_SetOpen(data.track, fx_id, true)
         end
 
         local counter = 0
@@ -193,37 +200,43 @@ local function RenderParameterButtons(fx_id)
 
             local p_name = v.name
 
-            local rv, mod = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
+            local rv, mod = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
                 "param." .. p_id ..
                 ".mod.active")
+            local style_colors, style_vars = 0, 0
 
-            if ui.selected_param == p_id then
+            if data.selected_fx == fx_id and data.selected_param == p_id then
                 reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(),
                     reaper.ImGui_GetStyleColor(ctx, reaper.ImGui_Col_ButtonActive()))
+                style_colors = style_colors + 1
             end
 
             if mod == "1" then
-                local val, minval, maxval = reaper.TrackFX_GetParam(ui.selected_track_ref, fx_id, p_id)
-                val = map(val, minval, maxval, 0, 1)
+                local val, minval, maxval = reaper.TrackFX_GetParam(data.track, fx_id, p_id)
+                val = Map(val, minval, maxval, 0, 1)
                 local col = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, val)
                 reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), 2)
                 reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), col)
+
+                style_colors = style_colors + 1
+                style_vars = style_vars + 1
             end
 
-            local rv, has_lfo = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
+            local rv, has_lfo = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
                 "param." .. p_id .. ".lfo.active")
             has_lfo = has_lfo == "1" and "~" or ""
-            local rv, has_acs = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
+            local rv, has_acs = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
                 "param." .. p_id .. ".acs.active")
             has_acs = has_acs == "1" and "/" or ""
             local link_targets = GetLinkTargets(fx_id, p_id)
 
             local indicators = ("%s %s"):format(has_acs, has_lfo)
 
-            local btn = reaper.ImGui_Button(ctx, ("%s  %s  ##%d%d"):format(indicators, p_name, fx_id, p_id), 0,
+            local btn = reaper.ImGui_Button(ctx, ("%s  %s  ##%d%d"):format(indicators, p_name, fx_id, p_id, btr_id), 0,
                 style.big_btn_height)
             if reaper.ImGui_IsItemHovered(ctx) then hov_btn = btn_id end
 
+            -- Calculate button position
             local x, y = reaper.ImGui_GetItemRectMin(ctx)
             local w, h = reaper.ImGui_GetItemRectSize(ctx)
             x = x + w / 2
@@ -243,11 +256,8 @@ local function RenderParameterButtons(fx_id)
                 reaper.ImGui_DrawList_AddText(drawlist, x - 4, target_y - 8, color.black, #link_targets)
             end
 
-            if ui.selected_param == p_id then reaper.ImGui_PopStyleColor(ctx) end
-            if mod == "1" then
-                reaper.ImGui_PopStyleColor(ctx)
-                reaper.ImGui_PopStyleVar(ctx)
-            end
+            reaper.ImGui_PopStyleColor(ctx, style_colors)
+            reaper.ImGui_PopStyleVar(ctx, style_vars)
 
             if #link_targets > 0 and reaper.ImGui_BeginPopupContextItem(ctx) then
                 reaper.ImGui_Text(ctx, "Link Settings")
@@ -279,17 +289,17 @@ local function RenderParameterButtons(fx_id)
                     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
                     if reaper.ImGui_SmallButton(ctx, ("X##%d%d"):format(v.fx_id, v.p_id)) then
-                        reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
+                        reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
                             "param." .. v.p_id .. ".plink.active", 0)
-                        reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
+                        reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
                             "param." .. v.p_id .. ".plink.effect", -1)
-                        reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
+                        reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
                             "param." .. v.p_id .. ".plink.param", -1)
                     end
 
-                    reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
+                    reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
                         "param." .. v.p_id .. ".plink.scale", scale)
-                    reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, v.fx_id,
+                    reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
                         "param." .. v.p_id .. ".mod.baseline", baseline)
                 end
                 reaper.ImGui_EndPopup(ctx)
@@ -314,11 +324,11 @@ local function RenderParameterButtons(fx_id)
                     local linkfx = t[1]
                     local linkparm = t[2]
 
-                    reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id,
+                    reaper.TrackFX_SetNamedConfigParm(data.track, fx_id,
                         ("param.%d.plink.active"):format(p_id), "1")
-                    reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id,
+                    reaper.TrackFX_SetNamedConfigParm(data.track, fx_id,
                         ("param.%d.plink.effect"):format(p_id), linkfx)
-                    reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id, ("param.%d.plink.param"):format(p_id),
+                    reaper.TrackFX_SetNamedConfigParm(data.track, fx_id, ("param.%d.plink.param"):format(p_id),
                         linkparm)
                 end
                 reaper.ImGui_EndDragDropTarget(ctx)
@@ -326,19 +336,20 @@ local function RenderParameterButtons(fx_id)
 
             if btn then
                 if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Alt()) then
-                    reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id, "param." ..
+                    reaper.TrackFX_SetNamedConfigParm(data.track, fx_id, "param." ..
                         p_id .. ".mod.active",
                         "0")
-                    ui.selected_param = nil
-                    ui.selected_fx = nil
+                    data.selected_param = nil
+                    data.selected_fx = nil
+                    data.show_settings = false
                 else
-                    ui.selected_fx = fx_id
-                    ui.selected_param = p_id
-                    ui.show_settings = true
+                    data.selected_fx = fx_id
+                    data.selected_param = p_id
+                    data.show_settings = true
 
                     -- get and set param values to force last touched
-                    local val = reaper.TrackFX_GetParam(ui.selected_track_ref, ui.selected_fx, ui.selected_param)
-                    reaper.TrackFX_SetParam(ui.selected_track_ref, ui.selected_fx, ui.selected_param, val)
+                    local val = reaper.TrackFX_GetParam(data.track, data.selected_fx, data.selected_param)
+                    reaper.TrackFX_SetParam(data.track, data.selected_fx, data.selected_param, val)
                 end
             end
 
@@ -358,36 +369,35 @@ local function RenderParameterButtons(fx_id)
         -- open parameter dialog to for param selection
         if reaper.ImGui_BeginPopup(ctx, popup_id) then
             -- create filter field for parameter selection
-            reaper.ImGui_TextFilter_Draw(ui.param_filter, ctx)
+            reaper.ImGui_TextFilter_Draw(data.param_filter, ctx)
 
-            for j = 0, reaper.TrackFX_GetNumParams(ui.selected_track_ref, fx_id) - 1 do
-                local rv, pname = reaper.TrackFX_GetParamName(ui.selected_track_ref, fx_id, j)
+            for j = 0, reaper.TrackFX_GetNumParams(data.track, fx_id) - 1 do
+                local rv, pname = reaper.TrackFX_GetParamName(data.track, fx_id, j)
 
                 if not pname:lower():find("midi") then
                     local disabled = false
-                    local rv, mod = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, fx_id,
+                    local rv, mod = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
                         "param." .. j ..
                         ".mod.active")
                     if mod == "1" then disabled = true end
 
-                    if reaper.ImGui_TextFilter_PassFilter(ui.param_filter, pname) then
+                    if reaper.ImGui_TextFilter_PassFilter(data.param_filter, pname) then
                         reaper.ImGui_BeginDisabled(ctx, disabled)
 
                         if reaper.ImGui_Selectable(ctx, ("%s##%d"):format(pname, j)) then
                             -- TODO Refactor this for later use when adding last touched
                             -- enable parameter modulation of selected parameter
-                            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, fx_id,
+                            reaper.TrackFX_SetNamedConfigParm(data.track, fx_id,
                                 "param." .. j ..
                                 ".mod.active", "1")
 
-                            local param_info = { name = pname }
+                            v.params[j] = BuildParameterInfo(fx_id, j)
 
-                            v.params[j] = param_info
+                            data.selected_fx = fx_id
+                            data.selected_param = j
+                            data.show_settings = true
 
-                            ui.selected_fx = fx_id
-                            ui.selected_param = j
-
-                            reaper.ImGui_TextFilter_Clear(ui.param_filter)
+                            reaper.ImGui_TextFilter_Clear(data.param_filter)
                         end
 
                         reaper.ImGui_EndDisabled(ctx)
@@ -399,7 +409,7 @@ local function RenderParameterButtons(fx_id)
         end
 
         if not reaper.ImGui_IsPopupOpen(ctx, popup_id) then
-            reaper.ImGui_TextFilter_Clear(ui.param_filter)
+            reaper.ImGui_TextFilter_Clear(data.param_filter)
         end
     end
 
@@ -407,14 +417,15 @@ local function RenderParameterButtons(fx_id)
 end
 
 local function RenderLastTouchedButton()
+    if not data.track then return end
     local rv, _, _, _, last_fx, last_param = reaper.GetTouchedOrFocusedFX(0)
-    local rv, fx_name = reaper.TrackFX_GetFXName(ui.selected_track_ref, last_fx)
-    local rv, param_name = reaper.TrackFX_GetParamName(ui.selected_track_ref, last_fx, last_param)
+    local rv, fx_name = reaper.TrackFX_GetFXName(data.track, last_fx)
+    local rv, param_name = reaper.TrackFX_GetParamName(data.track, last_fx, last_param)
 
     -- Feature for last touched parameter
     if rv and reaper.ImGui_Button(ctx, "  + Last Touched   ", 0, style.big_btn_height) then
         -- add parameter to fx_data array
-        reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, last_fx,
+        reaper.TrackFX_SetNamedConfigParm(data.track, last_fx,
             "param." .. last_param ..
             ".mod.active", "1")
 
@@ -422,8 +433,8 @@ local function RenderLastTouchedButton()
 
         fx_data[last_fx].params[last_param] = param_info
 
-        ui.selected_fx = fx_id
-        ui.selected_param = last_param
+        data.selected_fx = fx_id
+        data.selected_param = last_param
     end
 
     -- show last touched on hover
@@ -477,7 +488,7 @@ local function RenderLinkConnections(button_data, hov_btn)
     end
 end
 
-local function RenderFxList()
+local function RenderParameterList()
     -- table for button coordinate data
     local button_data, hov_btn = RenderParameterButtons()
     RenderLastTouchedButton()
@@ -485,16 +496,16 @@ local function RenderFxList()
 end
 
 local function RenderACSModulation()
-    local rv, acs = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, ui.selected_fx,
-        "param." .. ui.selected_param .. ".acs.active")
+    local rv, acs = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx,
+        "param." .. data.selected_param .. ".acs.active")
 
     acs = acs == "1" and true or false
     local rv, acs = reaper.ImGui_Checkbox(ctx, "ACS", acs)
 
     if rv then
         acs = acs and 1 or 0
-        reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-            ui.selected_param .. ".acs.active",
+        reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
+            data.selected_param .. ".acs.active",
             acs)
     end
 
@@ -505,59 +516,59 @@ local function RenderACSModulation()
             reaper.Main_OnCommand(41143, 0) -- FX: Show parameter modulation/link for last touched FX parameter
         end
 
-        local rv, attack = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-            ui.selected_param ..
+        local rv, attack = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx, "param." ..
+            data.selected_param ..
             ".acs.attack")
         -- create SliderInt from 0 to 1000 ms and update attack time when it's value changes
         local rv, attack = reaper.ImGui_SliderInt(ctx, "Attack", attack, 0, 1000, "%d ms")
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-                ui.selected_param .. ".acs.attack",
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
+                data.selected_param .. ".acs.attack",
                 attack)
         end
 
-        local rv, release = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-            ui.selected_param ..
+        local rv, release = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx, "param." ..
+            data.selected_param ..
             ".acs.release")
         -- create SliderInt from 0 to 1000 ms and update release time when it's value changes
         local rv, release = reaper.ImGui_SliderInt(ctx, "Release", release, 0, 1000, "%d ms")
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-                ui.selected_param .. ".acs.release",
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
+                data.selected_param .. ".acs.release",
                 release)
         end
 
         -- get acs dblo and output as imgui_text (dB Range from -60 to 12)
-        local rv, dblo = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-            ui.selected_param ..
+        local rv, dblo = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx, "param." ..
+            data.selected_param ..
             ".acs.dblo")
         -- create SliderDouble from -60.00 to 12.00 dB and update value when changes
         local rv, dblo = reaper.ImGui_SliderDouble(ctx, "Min Volume", dblo, -60, 12, "%.2f dB")
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-                ui.selected_param .. ".acs.dblo",
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
+                data.selected_param .. ".acs.dblo",
                 dblo)
         end
 
         -- get acs dbhi and output as imgui_text (dB Range from -60 to 12)
-        local rv, dbhi = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-            ui.selected_param ..
+        local rv, dbhi = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx, "param." ..
+            data.selected_param ..
             ".acs.dbhi")
         -- create SliderDouble from -60.00 to 12.00 dB and update value when changes
         local rv, dbhi = reaper.ImGui_SliderDouble(ctx, "Max Volume", dbhi, -60, 12, "%.2f dB")
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-                ui.selected_param .. ".acs.dbhi",
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
+                data.selected_param .. ".acs.dbhi",
                 dbhi)
         end
 
         -- get acs strength and output as imgui_text
-        local rv, strength = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-            ui.selected_param ..
+        local rv, strength = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx, "param." ..
+            data.selected_param ..
             ".acs.strength")
         -- create SliderDouble from 0.0 to 1.0 and update value when changes
         strength = strength * 100
@@ -565,23 +576,23 @@ local function RenderACSModulation()
         strength = strength / 100
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-                ui.selected_param .. ".acs.strength",
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
+                data.selected_param .. ".acs.strength",
                 strength)
         end
 
 
         -- get acs dir and output as imgui_text
-        local rv, dir = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-            ui.selected_param ..
+        local rv, dir = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx, "param." ..
+            data.selected_param ..
             ".acs.dir")
 
         local rv, dir = reaper.ImGui_SliderInt(ctx, "Direction", dir, -1,
-            1, ui.dir_map[tonumber(dir)])
+            1, data.dir_map[tonumber(dir)])
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-                ui.selected_param .. ".acs.dir",
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
+                data.selected_param .. ".acs.dir",
                 dir)
         end
     end
@@ -591,57 +602,57 @@ end
 
 local function RenderLFOModulation()
     -- create checkbox for LFO activation
-    local rv, lfo = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref, ui.selected_fx,
+    local rv, lfo = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx,
         "param." ..
-        ui.selected_param ..
+        data.selected_param ..
         ".lfo.active")
     lfo = lfo == "1" and true or false
 
     local rv, lfo = reaper.ImGui_Checkbox(ctx, "LFO", lfo)
     if rv then
         lfo = lfo and 1 or 0
-        reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-            ui.selected_param .. ".lfo.active",
+        reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
+            data.selected_param .. ".lfo.active",
             lfo)
     end
 
     if lfo then
-        local rv, lfo_shape = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref,
-            ui.selected_fx,
+        local rv, lfo_shape = reaper.TrackFX_GetNamedConfigParm(data.track,
+            data.selected_fx,
             "param." ..
-            ui.selected_param ..
+            data.selected_param ..
             ".lfo.shape")
         -- shape returns 0 - 5 - map it to: sine, square, saw L, saw R, triangle, random
         local rv, lfo_shape = reaper.ImGui_SliderInt(ctx, "Shape", lfo_shape, 0,
-            5, ui.lfo_map[tonumber(lfo_shape) + 1])
+            5, data.lfo_map[tonumber(lfo_shape) + 1])
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx,
-                "param." .. ui.selected_param ..
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx,
+                "param." .. data.selected_param ..
                 ".lfo.shape", lfo_shape)
         end
 
         -- read tempo sync from config
-        local rv, lfo_tempo_sync = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref,
-            ui.selected_fx,
+        local rv, lfo_tempo_sync = reaper.TrackFX_GetNamedConfigParm(data.track,
+            data.selected_fx,
             "param." ..
-            ui.selected_param ..
+            data.selected_param ..
             ".lfo.temposync")
         lfo_tempo_sync = lfo_tempo_sync == "1" and true or false
         local rv, lfo_tempo_sync = reaper.ImGui_Checkbox(ctx, "Tempo Sync", lfo_tempo_sync)
         lfo_tempo_sync = lfo_tempo_sync and 1 or 0
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx,
-                "param." .. ui.selected_param ..
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx,
+                "param." .. data.selected_param ..
                 ".lfo.temposync", lfo_tempo_sync)
         end
 
         -- read lfo speed from config
-        local rv, lfo_speed = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref,
-            ui.selected_fx,
+        local rv, lfo_speed = reaper.TrackFX_GetNamedConfigParm(data.track,
+            data.selected_fx,
             "param." ..
-            ui.selected_param ..
+            data.selected_param ..
             ".lfo.speed")
 
         if lfo_tempo_sync == 0 then
@@ -651,69 +662,69 @@ local function RenderLFOModulation()
         end
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx,
-                "param." .. ui.selected_param ..
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx,
+                "param." .. data.selected_param ..
                 ".lfo.speed", lfo_speed)
         end
 
         -- read lfo strength from config
-        local rv, lfo_strength = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref,
-            ui.selected_fx,
+        local rv, lfo_strength = reaper.TrackFX_GetNamedConfigParm(data.track,
+            data.selected_fx,
             "param." ..
-            ui.selected_param ..
+            data.selected_param ..
             ".lfo.strength")
         lfo_strength = tonumber(lfo_strength) * 100
         local rv, lfo_strength = reaper.ImGui_SliderDouble(ctx, "Strength", lfo_strength, 0, 100, "%.1f")
         lfo_strength = lfo_strength / 100
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx,
-                "param." .. ui.selected_param ..
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx,
+                "param." .. data.selected_param ..
                 ".lfo.strength", lfo_strength)
         end
 
         -- read lfo phase from config
-        local rv, lfo_phase = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref,
-            ui.selected_fx,
+        local rv, lfo_phase = reaper.TrackFX_GetNamedConfigParm(data.track,
+            data.selected_fx,
             "param." ..
-            ui.selected_param ..
+            data.selected_param ..
             ".lfo.phase")
         local rv, lfo_phase = reaper.ImGui_SliderDouble(ctx, "Phase", lfo_phase, 0, 1, "%.2f")
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx,
-                "param." .. ui.selected_param ..
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx,
+                "param." .. data.selected_param ..
                 ".lfo.phase", lfo_phase)
         end
 
         -- read direction from config and
-        local rv, lfo_dir = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref,
-            ui.selected_fx,
+        local rv, lfo_dir = reaper.TrackFX_GetNamedConfigParm(data.track,
+            data.selected_fx,
             "param." ..
-            ui.selected_param ..
+            data.selected_param ..
             ".lfo.dir")
 
         local rv, lfo_dir = reaper.ImGui_SliderInt(ctx, "Direction", lfo_dir, -1,
-            1, ui.dir_map[tonumber(lfo_dir)])
+            1, data.dir_map[tonumber(lfo_dir)])
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx,
-                "param." .. ui.selected_param ..
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx,
+                "param." .. data.selected_param ..
                 ".lfo.dir", lfo_dir)
         end
 
         -- read free parameter from config
-        local rv, lfo_free = reaper.TrackFX_GetNamedConfigParm(ui.selected_track_ref,
-            ui.selected_fx,
+        local rv, lfo_free = reaper.TrackFX_GetNamedConfigParm(data.track,
+            data.selected_fx,
             "param." ..
-            ui.selected_param ..
+            data.selected_param ..
             ".lfo.free")
         lfo_free = lfo_free == "1" and true or false
         local rv, lfo_free = reaper.ImGui_Checkbox(ctx, "Free", lfo_free)
 
         if rv then
-            reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx,
-                "param." .. ui.selected_param ..
+            reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx,
+                "param." .. data.selected_param ..
                 ".lfo.free", lfo_free and 1 or 0)
         end
     end
@@ -723,8 +734,8 @@ end
 
 local function RenderLinkModulation()
     -- display fx name and linked parameter as text
-    local plink_fx = fx_data[ui.selected_fx].params[ui.selected_param].plink_fx
-    local plink_param = fx_data[ui.selected_fx].params[ui.selected_param].plink_param
+    local plink_fx = fx_data[data.selected_fx].params[data.selected_param].plink_fx
+    local plink_param = fx_data[data.selected_fx].params[data.selected_param].plink_param
 
     if not plink_fx or not plink_param then return end
 
@@ -734,7 +745,7 @@ local function RenderLinkModulation()
         reaper.ImGui_Text(ctx, fx_data[plink_fx].params[plink_param].name)
     end
 
-    local link_targets = GetLinkTargets(ui.selected_fx, ui.selected_param)
+    local link_targets = GetLinkTargets(data.selected_fx, data.selected_param)
 
     if #link_targets > 0 then
         reaper.ImGui_Text(ctx, ("%d Targets:"):format(#link_targets))
@@ -747,17 +758,17 @@ local function RenderLinkModulation()
 end
 
 local function RenderModulation()
-    if not ui.selected_fx then return end
-    if not ui.selected_param then return end
+    if not data.selected_fx then return end
+    if not data.selected_param then return end
 
     -- check if track has any fx, otherwise unset ui.selected_fx and param
-    if reaper.TrackFX_GetCount(ui.selected_track_ref) == 0 then
-        ui.selected_fx = nil
-        ui.selected_param = nil
+    if reaper.TrackFX_GetCount(data.track) == 0 then
+        data.selected_fx = nil
+        data.selected_param = nil
         return
     end
 
-    local current_param = fx_data[ui.selected_fx].params[ui.selected_param]
+    local current_param = fx_data[data.selected_fx].params[data.selected_param]
 
     local p_name = current_param.name
     local val = current_param.val
@@ -775,8 +786,8 @@ local function RenderModulation()
         maxval)
     if rv then
         -- TODO Write wrapper for this get/set functions set parameter modulation baseline to mod
-        reaper.TrackFX_SetNamedConfigParm(ui.selected_track_ref, ui.selected_fx, "param." ..
-            ui.selected_param ..
+        reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
+            data.selected_param ..
             ".mod.baseline", mod)
     end
 
@@ -802,43 +813,37 @@ local function Loop()
         local child_flags = reaper.ImGui_ChildFlags_Border()
 
         local w = reaper.ImGui_GetWindowSize(ctx)
-        if ui.show_settings then w = w * 0.7 end
+        if data.show_settings then w = w * 0.7 end
+
         if reaper.ImGui_BeginChild(ctx, "Tracks and FX", w, 0, child_flags) then
             CacheTracks()
             -- unpack ui.tracks, separate them by \n and null terminate the string
-            local track_list = table.concat(ui.tracks, '\0') .. "\0"
-            rv, ui.selected_track = reaper.ImGui_Combo(ctx, 'Tracks',
-                ui.selected_track,
+            local track_list = table.concat(data.tracks, '\0') .. "\0"
+            rv, data.selected_track = reaper.ImGui_Combo(ctx, 'Tracks',
+                data.selected_track,
                 track_list, 0)
 
             if rv then
-                ui.selected_track_ref = nil
-                ui.selected_fx = nil
-                ui.selected_param = nil
+                data.track = nil
+                data.selected_fx = nil
+                data.selected_param = nil
             end
 
-            if not ui.selected_track_ref then ui.selected_track_ref = reaper.GetTrack(0, ui.selected_track) end
-
-            -- reaper.ImGui_SameLine(ctx, 0, 100)
-
-            -- local arrow_btn = ui.show_settings and reaper.ImGui_Dir_Right() or reaper.ImGui_Dir_Left()
-            -- if reaper.ImGui_ArrowButton(ctx, "ToggleModWindow", arrow_btn) then
-            --     ui.show_settings = not ui.show_settings
-            -- end
+            if not data.track then data.track = reaper.GetTrack(0, data.selected_track) end
 
             CacheTrackFxData()
-            RenderFxList()
+            RenderParameterList()
 
             reaper.ImGui_EndChild(ctx)
         end
 
         if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
-            ui.show_settings = false
+            data.show_settings = false
         end
 
         reaper.ImGui_SameLine(ctx)
 
-        if ui.show_settings then
+        if data.show_settings then
             if reaper.ImGui_BeginChild(ctx, "Parameter Modulation", 0, 0,
                     child_flags) then
                 RenderModulation()
@@ -847,6 +852,8 @@ local function Loop()
         end
 
         reaper.ImGui_End(ctx)
+
+        data.track = nil
     end
 
     reaper.ImGui_PopStyleVar(ctx, pushes)
@@ -854,6 +861,6 @@ local function Loop()
     if open then reaper.defer(Loop) end
 end
 
-reaper.ImGui_Attach(ctx, ui.param_filter)
+reaper.ImGui_Attach(ctx, data.param_filter)
 
 reaper.defer(Loop)
