@@ -272,7 +272,7 @@ local function RenderParameterButtons(fx_id)
                     reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
                     rv, scale = reaper.ImGui_SliderDouble(ctx, ("##Scale%d%d"):format(v.fx_id, v.p_id), scale, -100, 100)
 
-                    if reaper.ImGui_IsItemClicked(ctx, 1) then scale = 0 end -- TODO make function with default values
+                    if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Right()) then scale = 0 end
 
                     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
                     reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
@@ -782,8 +782,11 @@ local function RenderModulation()
 
     local mod = current_param.baseline
 
-    local rv, mod = reaper.ImGui_SliderDouble(ctx, "Baseline", tonumber(mod), minval,
+    local rv, mod = reaper.ImGui_SliderDouble(ctx, "Baseline", mod, minval,
         maxval)
+
+    if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Right()) then mod = minval; rv = true end
+    
     if rv then
         -- TODO Write wrapper for this get/set functions set parameter modulation baseline to mod
         reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
