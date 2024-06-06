@@ -69,7 +69,7 @@ function Map(x, in_min, in_max, out_min, out_max)
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min
 end
 
-local function CacheTracks()
+function CacheTracks()
     data.tracks = {}
 
     -- iterate all tracks and add to ui.tracks array
@@ -81,9 +81,9 @@ local function CacheTracks()
     end
 end
 
-local function BuildParameterInfo(fx_id, p_id)
+function BuildParameterInfo(fx_id, p_id)
     local rv, pname = reaper.TrackFX_GetParamName(data.track, fx_id, p_id)
-    
+
     local rv, link_fx = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
         "param." .. p_id .. ".plink.effect")
     local rv, link_param = reaper.TrackFX_GetNamedConfigParm(data.track, fx_id,
@@ -119,7 +119,7 @@ local function BuildParameterInfo(fx_id, p_id)
     return param_info
 end
 
-local function CacheTrackFxData()
+function CacheTrackFxData()
     fx_data = {}
 
     if not data.track then return end
@@ -153,7 +153,7 @@ local function CacheTrackFxData()
     table.sort(fx_keys)
 end
 
-local function DrawModIndicator(val, minval, maxval)
+function DrawModIndicator(val, minval, maxval)
     local x, y = reaper.ImGui_GetCursorScreenPos(ctx)
     -- reaper.ImGui_Text(ctx, ("%d, %d"):format(x, y))
     local drawlist = reaper.ImGui_GetWindowDrawList(ctx)
@@ -164,7 +164,7 @@ local function DrawModIndicator(val, minval, maxval)
     reaper.ImGui_DrawList_AddCircleFilled(drawlist, x + 5, y + 5, 8, white, 0)
 end
 
-local function GetLinkTargets(in_fx_id, in_p_id)
+function GetLinkTargets(in_fx_id, in_p_id)
     local link_targets = {}
     -- Filter targets to a new table and return the existing data structure instead of creating a new one
     for _, fx_id in ipairs(fx_keys) do
@@ -179,7 +179,7 @@ local function GetLinkTargets(in_fx_id, in_p_id)
     return link_targets
 end
 
-local function RenderParameterButtons(fx_id)
+function RenderParameterButtons()
     local btn_id = 0
     local button_data = {}
     local hov_btn = 0
@@ -259,48 +259,56 @@ local function RenderParameterButtons(fx_id)
             reaper.ImGui_PopStyleColor(ctx, style_colors)
             reaper.ImGui_PopStyleVar(ctx, style_vars)
 
-            if #link_targets > 0 and reaper.ImGui_BeginPopupContextItem(ctx) then
-                reaper.ImGui_Text(ctx, "Link Settings")
-                -- iterate link targets and create scale slider for each
-                for _, v in ipairs(link_targets) do
-                    -- separate by fx
-                    local scale = v.link_scale
-                    local baseline = v.baseline
-                    scale = tonumber(scale) * 100
+            if reaper.ImGui_BeginPopupContextItem(ctx) then
+                reaper.ImGui_Text(ctx, "Parameter Settings")
+                local baseline = v.baseline
+                RenderBaselineSlider(fx_id, p_id, v, v.minval, v.maxval)
 
-                    local item_w = reaper.ImGui_CalcItemWidth(ctx)
-                    reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
-                    rv, scale = reaper.ImGui_SliderDouble(ctx, ("##Scale%d%d"):format(v.fx_id, v.p_id), scale, -100, 100)
+                if #link_targets > 0 then
+                    reaper.ImGui_Text(ctx, "Link Settings")
+                    -- iterate link targets and create scale slider for each
+                    for _, v in ipairs(link_targets) do
+                        -- separate by fx
+                        local scale = v.link_scale
+                        local baseline = v.baseline
+                        scale = tonumber(scale) * 100
 
-                    if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Right()) then scale = 0 end
+                        local item_w = reaper.ImGui_CalcItemWidth(ctx)
+                        reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
+                        rv, scale = reaper.ImGui_SliderDouble(ctx, ("##Scale%d%d"):format(v.fx_id, v.p_id), scale, -100,
+                            100)
 
-                    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-                    reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
-                    rv, baseline = reaper.ImGui_SliderDouble(ctx, ("##Baseline%d%d"):format(v.fx_id, v.p_id), baseline,
-                        v.minval, v.maxval)
+                        if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Right()) then scale = 0 end
 
-                    if reaper.ImGui_IsItemClicked(ctx, 1) then baseline = v.minval end
+                        reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+                        reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
+                        rv, baseline = reaper.ImGui_SliderDouble(ctx, ("##Baseline%d%d"):format(v.fx_id, v.p_id),
+                            baseline,
+                            v.minval, v.maxval)
 
-                    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-                    reaper.ImGui_Text(ctx, ("%s (Scale / Baseline)"):format(v.name))
+                        if reaper.ImGui_IsItemClicked(ctx, 1) then baseline = v.minval end
 
-                    scale = scale / 100
+                        reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+                        reaper.ImGui_Text(ctx, ("%s (Scale / Baseline)"):format(v.name))
 
-                    reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+                        scale = scale / 100
 
-                    if reaper.ImGui_SmallButton(ctx, ("X##%d%d"):format(v.fx_id, v.p_id)) then
+                        reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+
+                        if reaper.ImGui_SmallButton(ctx, ("X##%d%d"):format(v.fx_id, v.p_id)) then
+                            reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
+                                "param." .. v.p_id .. ".plink.active", 0)
+                            reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
+                                "param." .. v.p_id .. ".plink.effect", -1)
+                            reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
+                                "param." .. v.p_id .. ".plink.param", -1)
+                        end
+
                         reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
-                            "param." .. v.p_id .. ".plink.active", 0)
+                            "param." .. v.p_id .. ".plink.scale", scale)
                         reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
-                            "param." .. v.p_id .. ".plink.effect", -1)
-                        reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
-                            "param." .. v.p_id .. ".plink.param", -1)
+                            "param." .. v.p_id .. ".mod.baseline", baseline)
                     end
-
-                    reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
-                        "param." .. v.p_id .. ".plink.scale", scale)
-                    reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
-                        "param." .. v.p_id .. ".mod.baseline", baseline)
                 end
                 reaper.ImGui_EndPopup(ctx)
             end
@@ -416,7 +424,7 @@ local function RenderParameterButtons(fx_id)
     return button_data, hov_btn
 end
 
-local function RenderLastTouchedButton()
+function RenderLastTouchedButton()
     if not data.track then return end
     local rv, _, _, _, last_fx, last_param = reaper.GetTouchedOrFocusedFX(0)
     local rv, fx_name = reaper.TrackFX_GetFXName(data.track, last_fx)
@@ -445,7 +453,7 @@ local function RenderLastTouchedButton()
     end
 end
 
-local function RenderLinkConnections(button_data, hov_btn)
+function RenderLinkConnections(button_data, hov_btn)
     -- Draw lines to link targets when hovering
     if hov_btn > 0 then
         -- get link targets for currently hovered button
@@ -488,14 +496,14 @@ local function RenderLinkConnections(button_data, hov_btn)
     end
 end
 
-local function RenderParameterList()
+function RenderParameterList()
     -- table for button coordinate data
     local button_data, hov_btn = RenderParameterButtons()
     RenderLastTouchedButton()
     RenderLinkConnections(button_data, hov_btn)
 end
 
-local function RenderACSModulation()
+function RenderACSModulation()
     local rv, acs = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx,
         "param." .. data.selected_param .. ".acs.active")
 
@@ -600,7 +608,7 @@ local function RenderACSModulation()
     reaper.ImGui_Separator(ctx)
 end
 
-local function RenderLFOModulation()
+function RenderLFOModulation()
     -- create checkbox for LFO activation
     local rv, lfo = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx,
         "param." ..
@@ -732,7 +740,7 @@ local function RenderLFOModulation()
     reaper.ImGui_Separator(ctx)
 end
 
-local function RenderLinkModulation()
+function RenderLinkModulation()
     -- display fx name and linked parameter as text
     local plink_fx = fx_data[data.selected_fx].params[data.selected_param].plink_fx
     local plink_param = fx_data[data.selected_fx].params[data.selected_param].plink_param
@@ -757,7 +765,25 @@ local function RenderLinkModulation()
     end
 end
 
-local function RenderModulation()
+function RenderBaselineSlider(fx_id, p_id, param, minval, maxval)
+    local baseline = param.baseline
+
+    local rv, baseline = reaper.ImGui_SliderDouble(ctx, "Baseline", baseline, minval,
+        maxval)
+
+    if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Right()) then
+        baseline = minval; rv = true
+    end
+
+    if rv then
+        -- TODO Write wrapper for this get/set functions set parameter modulation baseline to mod
+        reaper.TrackFX_SetNamedConfigParm(data.track, fx_id, "param." ..
+            p_id ..
+            ".mod.baseline", baseline)
+    end
+end
+
+function RenderModulation()
     if not data.selected_fx then return end
     if not data.selected_param then return end
 
@@ -780,19 +806,7 @@ local function RenderModulation()
     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x + 8)
     reaper.ImGui_Text(ctx, p_name)
 
-    local mod = current_param.baseline
-
-    local rv, mod = reaper.ImGui_SliderDouble(ctx, "Baseline", mod, minval,
-        maxval)
-
-    if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Right()) then mod = minval; rv = true end
-    
-    if rv then
-        -- TODO Write wrapper for this get/set functions set parameter modulation baseline to mod
-        reaper.TrackFX_SetNamedConfigParm(data.track, data.selected_fx, "param." ..
-            data.selected_param ..
-            ".mod.baseline", mod)
-    end
+    RenderBaselineSlider(data.selected_fx, data.selected_param, current_param, minval, maxval)
 
     RenderACSModulation()
     RenderLFOModulation()
@@ -808,7 +822,7 @@ function PushMainStyleVars()
     return 5
 end
 
-local function Loop()
+function Loop()
     local pushes = PushMainStyleVars()
 
     local visible, open = reaper.ImGui_Begin(ctx, 'Modulation Box - GUI', true)
@@ -835,7 +849,7 @@ local function Loop()
             if not data.track then data.track = reaper.GetTrack(0, data.selected_track) end
 
             CacheTrackFxData()
-            RenderParameterList()
+            if #fx_data > 0 then RenderParameterList() end
 
             reaper.ImGui_EndChild(ctx)
         end
