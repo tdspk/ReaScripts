@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.3
+--@version 0.3.1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -1557,8 +1557,8 @@ function Main()
   Info()
   reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
-  Dock()
-  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  -- Dock()
+  -- reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
   Support()
   reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
@@ -1706,7 +1706,7 @@ function Dock()
 end
 
 function Loop()
-  reaper.ImGui_SetNextWindowDockID(ctx, app.dock_id)
+  -- reaper.ImGui_SetNextWindowDockID(ctx, app.dock_id)
 
   if app.has_undocked then
     reaper.ImGui_SetNextWindowSize(ctx, app.window_width, app.window_height)
