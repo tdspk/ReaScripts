@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="14b63f48a78b83eb5edcca7b8f72c260224771e2">
+<index version="1" name="tdspk" commit="706b5e051dffa52417855a217f60bbeb8ab2ffbf">
   <category name="Creative">
     <reapack name="tdspk - Creative - ReaChopChop.lua" type="script" desc="ReaChopChop">
       <metadata>
@@ -320,6 +320,13 @@ First version]]></changelog>
         <source file="data/OpenSans-Medium.ttf">https://github.com/tdspk/ReaScripts/raw/14b63f48a78b83eb5edcca7b8f72c260224771e2/Library%20Tools/data/OpenSans-Medium.ttf</source>
         <source file="data/soundly.png">https://github.com/tdspk/ReaScripts/raw/14b63f48a78b83eb5edcca7b8f72c260224771e2/Library%20Tools/data/soundly.png</source>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/14b63f48a78b83eb5edcca7b8f72c260224771e2/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20UCS%20Toolkit.lua</source>
+      </version>
+      <version name="1.0" author="Tadej Supukovic (tdspk)" time="2024-06-12T08:54:12Z">
+        <changelog><![CDATA[Initial Release (v1.0)]]></changelog>
+        <source file="data/ucs.csv">https://github.com/tdspk/ReaScripts/raw/706b5e051dffa52417855a217f60bbeb8ab2ffbf/Library%20Tools/data/ucs.csv</source>
+        <source file="data/OpenSans-Medium.ttf">https://github.com/tdspk/ReaScripts/raw/706b5e051dffa52417855a217f60bbeb8ab2ffbf/Library%20Tools/data/OpenSans-Medium.ttf</source>
+        <source file="data/soundly.png">https://github.com/tdspk/ReaScripts/raw/706b5e051dffa52417855a217f60bbeb8ab2ffbf/Library%20Tools/data/soundly.png</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/706b5e051dffa52417855a217f60bbeb8ab2ffbf/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20UCS%20Toolkit.lua</source>
       </version>
     </reapack>
   </category>
