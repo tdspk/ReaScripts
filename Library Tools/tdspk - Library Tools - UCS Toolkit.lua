@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 0.3.1
+--@version 1.0
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -19,7 +19,7 @@
 --  data/soundly.png
 --  [main] .
 -- @changelog
---  First beta
+--  Initial Release (v1.0)
 
 local imgui_exists = reaper.APIExists("ImGui_GetVersion")
 local sws_exists = reaper.APIExists("CF_GetSWSVersion")
@@ -48,7 +48,7 @@ if not imgui_exists or not sws_exists or not js_exists then
   goto eof
 end
 
-dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8')
+dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')
 
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
@@ -159,7 +159,7 @@ data = {
 }
 
 local ext_section = "tdspk_ucstoolkit"
-local version = "0.3pre3"
+local version = "1.0"
 
 local default_settings = {
   font_size = 16,
