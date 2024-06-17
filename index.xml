@@ -1,5 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="706b5e051dffa52417855a217f60bbeb8ab2ffbf">
+<index version="1" name="tdspk" commit="970133385c7f294a61005aa74947cd69fa5e7300">
+  <category name="Automation">
+    <reapack name="tdspk - Automation Tool.lua" type="script" desc="Automation Tool">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel0 \b \fs36 Automation Tool\par}
+}
+]]></description>
+        <link rel="website" href="https://www.tdspkaudio.com">Website</link>
+        <link rel="donation">https://ko-fi.com/tdspkaudio</link>
+        <link rel="donation">https://coindrop.to/tdspkaudio</link>
+      </metadata>
+      <version name="0.1pre1" author="Tadej Supukovic (tdspk)" time="2024-06-17T18:14:05Z">
+        <changelog><![CDATA[Implement envelopes for global and track settings]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/970133385c7f294a61005aa74947cd69fa5e7300/Automation/tdspk%20-%20Automation%20Tool.lua</source>
+      </version>
+    </reapack>
+  </category>
   <category name="Creative">
     <reapack name="tdspk - Creative - ReaChopChop.lua" type="script" desc="ReaChopChop">
       <metadata>
