@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 1.0
+--@version 1.1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -19,6 +19,7 @@
 --  data/soundly.png
 --  [main] .
 -- @changelog
+--  fixed typo in title
 --  Initial Release (v1.0)
 
 local imgui_exists = reaper.APIExists("ImGui_GetVersion")
@@ -1538,7 +1539,7 @@ function Main()
   end
 
   reaper.ImGui_PushFont(ctx, style.font_menu)
-  reaper.ImGui_Text(ctx, "USC Toolkit")
+  reaper.ImGui_Text(ctx, "UCS Toolkit")
   reaper.ImGui_PopFont(ctx)
 
   reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
