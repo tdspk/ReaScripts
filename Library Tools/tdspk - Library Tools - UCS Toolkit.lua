@@ -373,7 +373,6 @@ function ReverseLookup(cat_id)
   local found = false
 
   -- iterate tables and look for id
-  -- TODO optimize in future?
   for k, v in pairs(ucs.categories) do
     for j, id in pairs(v) do
       if (cat_id == id) then
@@ -670,8 +669,6 @@ function OperationMode()
 end
 
 function CategoryFields()
-  -- TODO init cat fields at startup!
-
   local cat_changed, sub_changed, id_changed
   cat_changed, form.cur_cat = reaper.ImGui_Combo(ctx, "Category", form.cur_cat, combo.cat_items)
 
@@ -719,7 +716,6 @@ function CategorySearch()
   end
 
   if form.is_search_open then
-    -- TODO Update only when text filter changed
     local words = string.split(form.search, " ")
     local syns = {}
     local findings = {}
@@ -848,13 +844,12 @@ end
 function SubstituteSelf(filename, name)
   local self = string.find(filename, "$self")
 
-  --TODO Test self for Files
-
   if self then
     -- extract UCS category from name
     local no_cat_name = string.match(name, "[A-Z]+[a-z]+_(.*)")
 
     if no_cat_name then
+      no_cat_name = string.gsub(no_cat_name, "%.(%w+)$","") -- remove possible file endings
       name = no_cat_name
     end
 
