@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 1.1
+--@version 1.2
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -19,7 +19,7 @@
 --  data/soundly.png
 --  [main] .
 -- @changelog
---  fixed typo in title
+--  1.1 fixed typo in title
 --  Initial Release (v1.0)
 
 local imgui_exists = reaper.APIExists("ImGui_GetVersion")
@@ -1117,7 +1117,10 @@ function CacheUCSData()
 
         if fx_name then form.fx_name = fx_name end
         if creator_id then form.creator_id = creator_id end
-        if source_id then form.source_id = source_id end
+        if source_id then 
+          source_id = string.gsub(source_id, "%.(%w+)$","") -- remove possible file endings
+          form.source_id = source_id 
+        end
 
         form.lookup = true
         form.navigated = false
