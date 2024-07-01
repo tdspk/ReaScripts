@@ -45,7 +45,7 @@ if not imgui_exists or not sws_exists or not js_exists then
   if open_reapack then reaper.ReaPack_BrowsePackages("") end
 
   reaper.ShowMessageBox(msg, "Missing extensions/packages", 0)
-  
+
   goto eof
 end
 
@@ -104,7 +104,7 @@ local combo = {
   sub_items = ""
 }
 
-local form = {
+form = {
   search = "",
   is_search_open = false,
   search_mouse = false,
@@ -133,7 +133,8 @@ local form = {
   autofill = false,
   navigated = false,
   lookup = false,
-  target = 0
+  target = 0,
+  navigation_offset = 0
 }
 
 local form_config_keys = {
@@ -918,7 +919,7 @@ function Rename()
       rv, osbuf = os.rename(old_file, new_file)
     end
 
-    if autoplay == 1 then -- Enable autoplay if it was toggled on
+    if autoplay == 1 then                               -- Enable autoplay if it was toggled on
       reaper.JS_Window_OnCommand(data.mx_handle, 40035) -- Autoplay: On
     end
 
@@ -1419,6 +1420,7 @@ function Navigate(next)
   end
 
   form.navigated = true
+  form.navigation_offset = (next and -1 or 1)
 end
 
 function MainFields()
@@ -1430,14 +1432,30 @@ function MainFields()
     form.applied = false
   end
 
-  rv, form.fx_name = reaper.ImGui_InputText(ctx, "FXName", form.fx_name)
+  local callback
+  if form.navigated then
+    if not reaper.ImGui_ValidatePtr(form.input_callback, "ImGui_Function*") then
+      form.input_callback = reaper.ImGui_CreateFunctionFromEEL([[
+        pos = CursorPos;
+        CursorPos = pos + navigation_offset;
+      ]])
+    end
+    reaper.ImGui_Function_SetValue(form.input_callback, "navigation_offset", form.navigation_offset)
+    form.navigation_offset = 0
+    callback = form.input_callback
+  end
+
+  rv, form.fx_name = reaper.ImGui_InputText(ctx, "FXName", form.fx_name, reaper.ImGui_InputTextFlags_CallbackAlways(),
+    callback)
   form.name_focused = reaper.ImGui_IsItemFocused(ctx)
   Tooltip(ctx, "Brief Description or Title (under 25 characters preferably)")
 
-  rv, form.creator_id = reaper.ImGui_InputText(ctx, "CreatorID", form.creator_id)
+  rv, form.creator_id = reaper.ImGui_InputText(ctx, "CreatorID", form.creator_id, reaper.ImGui_InputTextFlags_CallbackAlways(),
+  callback)
   Tooltip(ctx, "Sound Designer, Recordist or Vendor (or abbreviaton for them")
 
-  rv, form.source_id = reaper.ImGui_InputText(ctx, "SourceID", form.source_id)
+  rv, form.source_id = reaper.ImGui_InputText(ctx, "SourceID", form.source_id, reaper.ImGui_InputTextFlags_CallbackAlways(),
+  callback)
   Tooltip(ctx, "Project, Show or Library name (or abbreviation representing it")
 
   reaper.ImGui_PopStyleColor(ctx)
