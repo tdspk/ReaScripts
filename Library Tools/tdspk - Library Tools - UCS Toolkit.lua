@@ -60,7 +60,7 @@ local app = {
   dock_id = 0,
   docked = false,
   window_width = 450,
-  window_height = 760,
+  window_height = 720,
   focused = false
 }
 
@@ -161,7 +161,7 @@ data = {
 }
 
 local ext_section = "tdspk_ucstoolkit"
-local version = "1.0"
+local version = "1.2"
 
 local default_settings = {
   font_size = 16,
@@ -235,7 +235,6 @@ local wildcards = {
       return ""
     end)
 }
-
 
 function ReadUcsData()
   local prev_cat = ""
@@ -703,8 +702,6 @@ function CategorySearch()
 
   rv, form.search = reaper.ImGui_InputText(ctx, "Search category...", form.search)
 
-  Tooltip(ctx, "Search for multiple results by ...")
-
   if rv then
     form.search_idx = 1
   end
@@ -849,7 +846,7 @@ function SubstituteSelf(filename, name)
     local no_cat_name = string.match(name, "[A-Z]+[a-z]+_(.*)")
 
     if no_cat_name then
-      no_cat_name = string.gsub(no_cat_name, "%.(%w+)$","") -- remove possible file endings
+      no_cat_name = string.gsub(no_cat_name, "%.(%w+)$", "") -- remove possible file endings
       name = no_cat_name
     end
 
@@ -1112,9 +1109,9 @@ function CacheUCSData()
 
         if fx_name then form.fx_name = fx_name end
         if creator_id then form.creator_id = creator_id end
-        if source_id then 
-          source_id = string.gsub(source_id, "%.(%w+)$","") -- remove possible file endings
-          form.source_id = source_id 
+        if source_id then
+          source_id = string.gsub(source_id, "%.(%w+)$", "") -- remove possible file endings
+          form.source_id = source_id
         end
 
         form.lookup = true
@@ -1448,12 +1445,14 @@ function MainFields()
   form.name_focused = reaper.ImGui_IsItemFocused(ctx)
   Tooltip(ctx, "Brief Description or Title (under 25 characters preferably)")
 
-  rv, form.creator_id = reaper.ImGui_InputText(ctx, "CreatorID", form.creator_id, reaper.ImGui_InputTextFlags_CallbackAlways(),
-  callback)
+  rv, form.creator_id = reaper.ImGui_InputText(ctx, "CreatorID", form.creator_id,
+    reaper.ImGui_InputTextFlags_CallbackAlways(),
+    callback)
   Tooltip(ctx, "Sound Designer, Recordist or Vendor (or abbreviaton for them")
 
-  rv, form.source_id = reaper.ImGui_InputText(ctx, "SourceID", form.source_id, reaper.ImGui_InputTextFlags_CallbackAlways(),
-  callback)
+  rv, form.source_id = reaper.ImGui_InputText(ctx, "SourceID", form.source_id,
+    reaper.ImGui_InputTextFlags_CallbackAlways(),
+    callback)
   Tooltip(ctx, "Project, Show or Library name (or abbreviation representing it")
 
   reaper.ImGui_PopStyleColor(ctx)
@@ -1562,11 +1561,10 @@ function Main()
 
   reaper.ImGui_PushFont(ctx, style.font_info)
   reaper.ImGui_Text(ctx, "UCS Version " .. ucs.version)
-
   reaper.ImGui_PopFont(ctx)
 
   reaper.ImGui_SameLine(ctx)
-  reaper.ImGui_Dummy(ctx, 70, 0)
+  reaper.ImGui_Dummy(ctx, style.item_spacing_x, 0)
   reaper.ImGui_SameLine(ctx)
 
   reaper.ImGui_PushFont(ctx, style.font)
@@ -1574,13 +1572,14 @@ function Main()
   Info()
   reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
-  -- Dock()
-  -- reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-
   Support()
   reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
   Settings()
+
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+
+  WebsiteLink()
 
   reaper.ImGui_Separator(ctx)
   reaper.ImGui_Dummy(ctx, 0, style.item_spacing_y)
@@ -1646,23 +1645,18 @@ function Main()
     end
   end
 
-  WebsiteLink()
+  SoundlyLink()
 
   reaper.ImGui_PopStyleVar(ctx, style_pushes)
   reaper.ImGui_PopFont(ctx)
 end
 
-function WebsiteLink()
+function SoundlyLink()
   reaper.ImGui_Text(ctx, "In collaboration with")
   reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
   reaper.ImGui_Image(ctx, style.logo_soundly, 94, 19)
   if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
     reaper.CF_ShellExecute("https://getsoundly.com/")
-  end
-
-  reaper.ImGui_Text(ctx, "tdspkaudio.com")
-  if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
-    reaper.CF_ShellExecute("https://www.tdspkaudio.com")
   end
 end
 
@@ -1719,6 +1713,12 @@ function Dock()
     if SmallButton(ctx, "Dock") then
       app.dock_id = -1
     end
+  end
+end
+
+function WebsiteLink()
+  if SmallButton(ctx, "tdspkaudio.com") then
+    reaper.CF_ShellExecute("https://www.tdspkaudio.com")
   end
 end
 
