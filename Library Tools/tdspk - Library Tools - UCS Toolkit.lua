@@ -264,9 +264,9 @@ function ReadUcsData()
 
       ucs.categories[cat][subcat] = id
       ucs.cat_ids[id] = true
-      table.insert(ucs.synonyms, id .. ";" .. syn)
-      table.insert(ucs.explanations, id .. ";" .. expl)
-      table.insert(ucs.search_data, string.format("%s;%s, %s, %s, %s", id, cat, subcat, expl, syn))
+      table.insert(ucs.synonyms, syn)
+      table.insert(ucs.explanations, expl)
+      table.insert(ucs.search_data, string.format("%s;%s;%s;%s;%s", id, cat, subcat, expl, syn))
     end
   end
 end
@@ -781,13 +781,27 @@ function CategorySearch()
       for i = 1, #syns do
         local is_selected = form.search_idx == i and not form.search_mouse
         local entry = syns[i]
-        local id, syn = string.match(entry, "(.*);(.*)")
+        local id, cat, subcat, expl, syn = string.match(entry, "(.*);(.*);(.*);(.*);(.*)")
 
-        local selectable = reaper.ImGui_Selectable(ctx, id .. "\n" .. syn, is_selected); reaper.ImGui_Separator(ctx)
+        local selectable = reaper.ImGui_Selectable(ctx, id .. "\n" .. cat .. " / " .. subcat, is_selected)
 
+        if reaper.ImGui_IsItemHovered(ctx) then
+          if reaper.ImGui_BeginTooltip(ctx) then
+            reaper.ImGui_PushTextWrapPos(ctx, settings.font_size * 35.0)
+            reaper.ImGui_Text(ctx, expl)
+            reaper.ImGui_Separator(ctx)
+            reaper.ImGui_Text(ctx, "Synonyms")
+            reaper.ImGui_Text(ctx, syn)
+            reaper.ImGui_PopTextWrapPos(ctx)
+            reaper.ImGui_EndTooltip(ctx)
+          end
+        end
+        
         if form.search_mouse and reaper.ImGui_IsItemHovered(ctx) then
           form.search_idx = i
         end
+
+        reaper.ImGui_Separator(ctx)
 
         if is_selected and not form.search_mouse then
           reaper.ImGui_SetScrollHereY(ctx, 1)
