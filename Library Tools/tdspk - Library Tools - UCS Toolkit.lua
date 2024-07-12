@@ -19,6 +19,7 @@
 --  data/soundly.png
 --  [main] .
 -- @changelog
+--  1.2 show UCS explanations and synonyms as tooltip in search box
 --  1.1 fixed typo in title
 --  Initial Release (v1.0)
 
