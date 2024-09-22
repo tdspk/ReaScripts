@@ -55,6 +55,13 @@ dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
 
+local version = reaper.GetAppVersion()
+version = tonumber(version:match("%d.%d"))
+
+if version >= 7.0 then
+  reaper.set_action_options(3) -- Terminate and restart the script if it's already running
+end
+
 ucs_file = script_path .. "/data/ucs.csv"
 
 local app = {
@@ -139,7 +146,7 @@ form = {
 }
 
 local form_config_keys = {
-  "creator_id", "source_id", "autoplay", "autorename", "autofill", "navigate_loop", "navigate_rename", "target"
+  "fx_name", "creator_id", "source_id", "autoplay", "autorename", "autofill", "navigate_loop", "navigate_rename", "target"
 }
 
 data = {
@@ -1558,7 +1565,11 @@ function UpdateLoopPoints()
 end
 
 function Main()
-  -- check if data can update
+  -- Check if Focus UCS Toolkit script has been called
+  if reaper.GetExtState(ext_section, "focus") == "1" then
+    form.search_sc = true
+    reaper.SetExtState(ext_section, "focus", "0", false)
+  end
 
   data.update = false
   data.ticks = data.ticks + 1
@@ -1738,8 +1749,6 @@ function WebsiteLink()
 end
 
 function Loop()
-  -- reaper.ImGui_SetNextWindowDockID(ctx, app.dock_id)
-
   if app.has_undocked then
     reaper.ImGui_SetNextWindowSize(ctx, app.window_width, app.window_height)
   end
