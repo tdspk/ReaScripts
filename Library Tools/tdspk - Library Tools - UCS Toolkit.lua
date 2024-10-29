@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 1.2.2
+--@version 1.2.3
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -20,6 +20,7 @@
 --  [main] .
 --  [main] tdspk - Library Tools - Focus UCS Toolkit.lua
 -- @changelog
+--  1.2.3 refresh Media Explorer after renaming files
 --  1.2.2 save FX when closing UCS Toolkit, introduce action to focus UCS toolkit and jump to the search box
 --  1.2 show UCS explanations and synonyms as tooltip in search box
 --  1.1 fixed typo in title
