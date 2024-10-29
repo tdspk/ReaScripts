@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="5fef0e41761802e2987e72a0dcf9ad77e3ec6ec2">
+<index version="1" name="tdspk" commit="9a202ad5f97cef0d6747542b384bff6376e27a00">
   <category name="Automation">
     <reapack name="tdspk - Automation Tool.lua" type="script" desc="Automation Tool">
       <metadata>
@@ -383,6 +383,18 @@ Initial Release (v1.0)]]></changelog>
         <source file="data/soundly.png">https://github.com/tdspk/ReaScripts/raw/5fef0e41761802e2987e72a0dcf9ad77e3ec6ec2/Library%20Tools/data/soundly.png</source>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/5fef0e41761802e2987e72a0dcf9ad77e3ec6ec2/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20UCS%20Toolkit.lua</source>
         <source main="main" file="tdspk - Library Tools - Focus UCS Toolkit.lua">https://github.com/tdspk/ReaScripts/raw/5fef0e41761802e2987e72a0dcf9ad77e3ec6ec2/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20Focus%20UCS%20Toolkit.lua</source>
+      </version>
+      <version name="1.2.3" author="Tadej Supukovic (tdspk)" time="2024-10-29T19:22:03Z">
+        <changelog><![CDATA[1.2.3 refresh Media Explorer after renaming files
+1.2.2 save FX when closing UCS Toolkit, introduce action to focus UCS toolkit and jump to the search box
+1.2 show UCS explanations and synonyms as tooltip in search box
+1.1 fixed typo in title
+Initial Release (v1.0)]]></changelog>
+        <source file="data/ucs.csv">https://github.com/tdspk/ReaScripts/raw/9a202ad5f97cef0d6747542b384bff6376e27a00/Library%20Tools/data/ucs.csv</source>
+        <source file="data/OpenSans-Medium.ttf">https://github.com/tdspk/ReaScripts/raw/9a202ad5f97cef0d6747542b384bff6376e27a00/Library%20Tools/data/OpenSans-Medium.ttf</source>
+        <source file="data/soundly.png">https://github.com/tdspk/ReaScripts/raw/9a202ad5f97cef0d6747542b384bff6376e27a00/Library%20Tools/data/soundly.png</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/9a202ad5f97cef0d6747542b384bff6376e27a00/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20UCS%20Toolkit.lua</source>
+        <source main="main" file="tdspk - Library Tools - Focus UCS Toolkit.lua">https://github.com/tdspk/ReaScripts/raw/9a202ad5f97cef0d6747542b384bff6376e27a00/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20Focus%20UCS%20Toolkit.lua</source>
       </version>
     </reapack>
   </category>
