@@ -939,6 +939,8 @@ function Rename()
       reaper.JS_Window_OnCommand(data.mx_handle, 40035) -- Autoplay: On
     end
 
+    reaper.JS_Window_OnCommand(data.mx_handle, 40018) -- Browser: Refresh
+
     form.applied = true
   else
     if form.target == 0 then
