@@ -1,5 +1,5 @@
 --@description Media Item Spacer
---@version 1.1
+--@version 1.2
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Media Item Spacer
@@ -12,6 +12,7 @@
 --  https://ko-fi.com/tdspkaudio
 --  https://coindrop.to/tdspkaudio
 --@changelog
+--  Added Padding parameter for left padding
 --  Increased max spacing and added new modes (absolute and additive)
 --  First version
 
@@ -22,6 +23,9 @@ local ctx = reaper.ImGui_CreateContext('Media Item Spacer')
 min_spacing = 1
 max_spacing = 25
 spacing = 5
+padding = 0
+min_padding = 0
+max_padding = 10
 mode = 0
 
 local function CacheSelectedTracks()
@@ -47,8 +51,13 @@ local function RenderWindow()
     reaper.ImGui_SameLine(ctx)
     rv, mode = reaper.ImGui_RadioButtonEx(ctx, "Additive", mode, 1)
     
+    local changed = false
     rv, spacing = reaper.ImGui_SliderInt(ctx, "Spacing", spacing, min_spacing, max_spacing, "%d seconds")
-    if rv then
+    changed = changed or rv
+    rv, padding = reaper.ImGui_SliderInt(ctx, "Padding", padding, min_padding, max_padding, "%d seconds")
+    changed = changed or rv
+
+    if changed then
       tracks = CacheSelectedTracks()
       
       reaper.Undo_BeginBlock()
@@ -63,6 +72,7 @@ local function RenderWindow()
           item = reaper.GetSelectedMediaItem(0, i)
           
           if i == 0 then
+            reaper.SetMediaItemPosition(item, padding, false)
             current_pos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
           end
           
@@ -92,7 +102,7 @@ local function RenderWindow()
 end
 
 local function Loop()
-  reaper.ImGui_SetNextWindowSize(ctx, 300, 100)
+  reaper.ImGui_SetNextWindowSize(ctx, 300, 0)
   local visible, open = reaper.ImGui_Begin(ctx, 'Media Item Spacer', true)
   if visible then
     RenderWindow()
