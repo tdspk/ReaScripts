@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="5314968358cc68b8b6bde30e09d176d50a854524">
+<index version="1" name="tdspk" commit="8836556ff02171a59e257ee73c343a2e2b0816be">
   <category name="Automation">
     <reapack name="tdspk - Automation Tool.lua" type="script" desc="Automation Tool">
       <metadata>
@@ -179,6 +179,12 @@ First version]]></changelog>
         <changelog><![CDATA[Increased max spacing and added new modes (absolute and additive)
 First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/05a293a08fc838bb854feb587f07285a222f66bf/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20Media%20Item%20Spacer.lua</source>
+      </version>
+      <version name="1.2" author="Tadej Supukovic (tdspk)" time="2024-11-05T19:04:32Z">
+        <changelog><![CDATA[Added Padding parameter for left padding
+Increased max spacing and added new modes (absolute and additive)
+First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/8836556ff02171a59e257ee73c343a2e2b0816be/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20Media%20Item%20Spacer.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Library Tools - UCS Toolkit.lua" type="script" desc="UCS Toolkit">
