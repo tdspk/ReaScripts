@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="9a202ad5f97cef0d6747542b384bff6376e27a00">
+<index version="1" name="tdspk" commit="5314968358cc68b8b6bde30e09d176d50a854524">
   <category name="Automation">
     <reapack name="tdspk - Automation Tool.lua" type="script" desc="Automation Tool">
       <metadata>
@@ -93,6 +93,12 @@ First version]]></changelog>
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2024-01-15T11:20:08Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/fb81cdf51436a8f4a3b8622bfd5027ee43a633f8/Editing/tdspk%20-%20Editing%20-%20Enclose%20Track%20Items%20with%20Razor%20Edit%20Area.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Glue individual items.lua" type="script" desc="Glue individual items">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2024-11-05T14:01:34Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/5314968358cc68b8b6bde30e09d176d50a854524/Editing/tdspk%20-%20Editing%20-%20Glue%20individual%20items.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Editing - Move next take marker to snap offset.lua" type="script" desc="Move next take marker to snap offset">
