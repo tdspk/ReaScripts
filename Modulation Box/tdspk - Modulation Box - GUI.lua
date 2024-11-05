@@ -64,6 +64,10 @@ data = {
   update_count = 0
 }
 
+local modulators = {
+  ["JS: MSEG-1"] = "Value"
+}
+
 function CanUpdate()
   local update_count = reaper.GetProjectStateChangeCount(0)
 
@@ -277,8 +281,10 @@ function RenderParameterButtons()
 
       if reaper.ImGui_BeginPopupContextItem(ctx) then
         reaper.ImGui_Text(ctx, "Parameter Settings")
-        local baseline = v.baseline
-        RenderBaselineSlider(fx_id, p_id, v, v.minval, v.maxval)
+        -- local baseline = v.baseline
+        -- RenderBaselineSlider(fx_id, p_id, v, v.minval, v.maxval)
+
+        RenderModulation()
 
         if #link_targets > 0 then
           reaper.ImGui_Text(ctx, "Link Settings")
@@ -365,12 +371,9 @@ function RenderParameterButtons()
             "0")
           data.selected_param = nil
           data.selected_fx = nil
-          data.show_settings = false
         else
           data.selected_fx = fx_id
           data.selected_param = p_id
-          data.show_settings = true
-
           -- get and set param values to force last touched
           local val = reaper.TrackFX_GetParam(data.track, data.selected_fx, data.selected_param)
           reaper.TrackFX_SetParam(data.track, data.selected_fx, data.selected_param, val)
@@ -419,7 +422,7 @@ function RenderParameterButtons()
 
               data.selected_fx = fx_id
               data.selected_param = j
-              data.show_settings = true
+              -- data.show_settings = true
 
               reaper.ImGui_TextFilter_Clear(data.param_filter)
             end
@@ -514,6 +517,7 @@ end
 
 function RenderParameterList()
   -- table for button coordinate data
+  local buttond
   local button_data, hov_btn = RenderParameterButtons()
   RenderLastTouchedButton()
   RenderLinkConnections(button_data, hov_btn)
@@ -604,7 +608,6 @@ function RenderACSModulation()
         data.selected_param .. ".acs.strength",
         strength)
     end
-
 
     -- get acs dir and output as imgui_text
     local rv, dir = reaper.TrackFX_GetNamedConfigParm(data.track, data.selected_fx, "param." ..
@@ -817,7 +820,7 @@ function RenderModulation()
   local minval = current_param.minval
   local maxval = current_param.maxval
 
-  DrawModIndicator(val, minval, maxval)
+  -- DrawModIndicator(val, minval, maxval)
 
   reaper.ImGui_SameLine(ctx, 0, ui.item_spacing_x + 8)
   reaper.ImGui_Text(ctx, p_name)
@@ -846,7 +849,7 @@ function Loop()
     local child_flags = reaper.ImGui_ChildFlags_Border()
 
     local w = reaper.ImGui_GetWindowSize(ctx)
-    if data.show_settings then w = w * 0.7 end
+    -- if data.show_settings then w = w * 0.7 end
 
     if reaper.ImGui_BeginChild(ctx, "Tracks and FX", w, 0, child_flags) then
       if CanUpdate() and not data.lock_track_selection then
@@ -873,18 +876,18 @@ function Loop()
     end
 
     if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
-      data.show_settings = false
+      -- data.show_settings = false
     end
 
     reaper.ImGui_SameLine(ctx)
 
-    if data.show_settings then
-      if reaper.ImGui_BeginChild(ctx, "Parameter Modulation", 0, 0,
-            child_flags) then
-        RenderModulation()
-        reaper.ImGui_EndChild(ctx)
-      end
-    end
+    -- if data.show_settings then
+    --   if reaper.ImGui_BeginChild(ctx, "Parameter Modulation", 0, 0,
+    --         child_flags) then
+    --     RenderModulation()
+    --     reaper.ImGui_EndChild(ctx)
+    --   end
+    -- end
 
     reaper.ImGui_End(ctx)
   end
