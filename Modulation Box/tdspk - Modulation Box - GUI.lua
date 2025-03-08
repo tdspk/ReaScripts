@@ -279,12 +279,14 @@ function RenderParameterButtons()
       reaper.ImGui_PopStyleColor(ctx, style_colors)
       reaper.ImGui_PopStyleVar(ctx, style_vars)
 
-      if reaper.ImGui_BeginPopupContextItem(ctx) then
+      reaper.ImGui_OpenPopupOnItemClick(ctx, "Parameter Settings")
+
+      if reaper.ImGui_BeginPopup(ctx, "Parameter Settings") then
         reaper.ImGui_Text(ctx, "Parameter Settings")
         -- local baseline = v.baseline
         -- RenderBaselineSlider(fx_id, p_id, v, v.minval, v.maxval)
 
-        RenderModulation()
+        -- RenderModulation()
 
         if #link_targets > 0 then
           reaper.ImGui_Text(ctx, "Link Settings")
@@ -334,6 +336,62 @@ function RenderParameterButtons()
         end
         reaper.ImGui_EndPopup(ctx)
       end
+
+      -- if reaper.ImGui_BeginPopupContextItem(ctx) then
+      --   reaper.ImGui_Text(ctx, "Parameter Settings")
+      --   -- local baseline = v.baseline
+      --   -- RenderBaselineSlider(fx_id, p_id, v, v.minval, v.maxval)
+
+      --   RenderModulation()
+
+      --   if #link_targets > 0 then
+      --     reaper.ImGui_Text(ctx, "Link Settings")
+      --     -- iterate link targets and create scale slider for each
+      --     for _, v in ipairs(link_targets) do
+      --       -- separate by fx
+      --       local scale = v.link_scale
+      --       local baseline = v.baseline
+      --       scale = tonumber(scale) * 100
+
+      --       local item_w = reaper.ImGui_CalcItemWidth(ctx)
+      --       reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
+      --       rv, scale = reaper.ImGui_SliderDouble(ctx, ("##Scale%d%d"):format(v.fx_id, v.p_id), scale, -100,
+      --         100)
+
+      --       if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Right()) then scale = 0 end
+
+      --       reaper.ImGui_SameLine(ctx, 0, ui.item_spacing_x)
+      --       reaper.ImGui_SetNextItemWidth(ctx, item_w / 2)
+      --       rv, baseline = reaper.ImGui_SliderDouble(ctx, ("##Baseline%d%d"):format(v.fx_id, v.p_id),
+      --         baseline,
+      --         v.minval, v.maxval)
+
+      --       if reaper.ImGui_IsItemClicked(ctx, 1) then baseline = v.minval end
+
+      --       reaper.ImGui_SameLine(ctx, 0, ui.item_spacing_x)
+      --       reaper.ImGui_Text(ctx, ("%s (Scale / Baseline)"):format(v.name))
+
+      --       scale = scale / 100
+
+      --       reaper.ImGui_SameLine(ctx, 0, ui.item_spacing_x)
+
+      --       if reaper.ImGui_SmallButton(ctx, ("X##%d%d"):format(v.fx_id, v.p_id)) then
+      --         reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
+      --           "param." .. v.p_id .. ".plink.active", 0)
+      --         reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
+      --           "param." .. v.p_id .. ".plink.effect", -1)
+      --         reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
+      --           "param." .. v.p_id .. ".plink.param", -1)
+      --       end
+
+      --       reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
+      --         "param." .. v.p_id .. ".plink.scale", scale)
+      --       reaper.TrackFX_SetNamedConfigParm(data.track, v.fx_id,
+      --         "param." .. v.p_id .. ".mod.baseline", baseline)
+      --     end
+      --   end
+      --   reaper.ImGui_EndPopup(ctx)
+      -- end
 
       if reaper.ImGui_BeginDragDropSource(ctx, reaper.ImGui_DragDropFlags_None()) then
         -- fxid and param id as payload
