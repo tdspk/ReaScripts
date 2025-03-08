@@ -8,7 +8,8 @@
 for i = 0, reaper.CountSelectedTracks(0) - 1 do
     local track = reaper.GetSelectedTrack(0, i)
     local rv, name = reaper.GetTrackName(track)
-    -- remove "- stem" suffix from track name
+    -- remove " - stem" suffix from track name
     name = string.gsub(name, "- stem", "")
+    name = string.gsub(name, "%s+$", "") -- remove trailing spaces
     reaper.GetSetMediaTrackInfo_String(track, "P_NAME", name, true)
 end
