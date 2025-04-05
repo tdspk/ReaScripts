@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="8836556ff02171a59e257ee73c343a2e2b0816be">
+<index version="1" name="tdspk" commit="22f483a61570903e32f58f4384531f0721f4914e">
   <category name="Automation">
     <reapack name="tdspk - Automation Tool.lua" type="script" desc="Automation Tool">
       <metadata>
@@ -87,6 +87,12 @@ First version]]></changelog>
       <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2023-11-18T21:48:48Z">
         <changelog><![CDATA[First version]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/c87b56e889e59fc9e70ac77085c0c6e9b8ced632/Editing/tdspk%20-%20Editing%20-%20Align%20item%20positions%20to%20project%20markers.lua</source>
+      </version>
+    </reapack>
+    <reapack name="tdspk - Editing - Batch-Undo last action.lua" type="script" desc="Batch-Undo last action">
+      <version name="1.0.0" author="Tadej Supukovic (tdspk)" time="2025-04-05T17:06:48Z">
+        <changelog><![CDATA[First version]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/22f483a61570903e32f58f4384531f0721f4914e/Editing/tdspk%20-%20Editing%20-%20Batch-Undo%20last%20action.lua</source>
       </version>
     </reapack>
     <reapack name="tdspk - Editing - Enclose Track Items with Razor Edit Area.lua" type="script" desc="Enclose Track Items with Razor Edit Area">
