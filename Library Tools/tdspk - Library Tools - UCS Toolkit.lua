@@ -1662,6 +1662,14 @@ function Main()
     reaper.ImGui_Combo(ctx, "Filenames", 0, filenames)
   end
 
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  if reaper.ImGui_SmallButton(ctx, "Copy") then
+    local clipboard = table.concat(data.ucs_names, "\n")
+    reaper.CF_SetClipboard(tostring(clipboard))
+  end
+
+  Tooltip(ctx, "Copy the filenames to the clipboard.")
+
   RenameButton()
 
   Tooltip(ctx, "Quick Rename targets with Ctrl+Enter")
