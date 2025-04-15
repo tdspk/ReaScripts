@@ -108,13 +108,13 @@ function Loop()
 
   local dpi = reaper.ImGui_GetWindowDpiScale(ctx)
 
-  if ui.pinned then
-    rv, ui.mx_x, ui.mx_y = reaper.JS_Window_GetRect(data.mx_handle)
-    -- set pinned position relative to media explorer position
-    local x = ui.mx_x - ui.pinned_pos.x
-    local y = ui.mx_y - ui.pinned_pos.y
-    reaper.ImGui_SetNextWindowPos(ctx, x, y)
-  end
+  -- if ui.pinned then
+  --   rv, ui.mx_x, ui.mx_y = reaper.JS_Window_GetRect(data.mx_handle)
+  --   -- set pinned position relative to media explorer position
+  --   local x = ui.mx_x + ui.pinned_pos.x
+  --   local y = ui.mx_y + ui.pinned_pos.y
+  --   reaper.ImGui_SetNextWindowPos(ctx, x, y)
+  -- end
 
   reaper.ImGui_SetNextWindowSize(ctx, 0, 0)
   local visible, open = reaper.ImGui_Begin(ctx, 'Media Explorer Tabs', false,
@@ -128,11 +128,17 @@ function Loop()
         -- reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
         -- reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color)
 
-        if reaper.ImGui_Button(ctx, string.format("%s##%d", tab.term, idx)) then
-          data.selected_tab = idx
+        local btn = reaper.ImGui_Button(ctx, string.format("%s##%d", tab.term, idx))
 
-          -- Perform Search
-          Search(data.tabs[idx].path, data.tabs[idx].term)
+        if btn then
+          if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Alt()) then
+            -- remove table entry
+            table.remove(data.tabs, idx)
+          else
+            data.selected_tab = idx
+            -- Perform Search
+            Search(data.tabs[idx].path, data.tabs[idx].term)
+          end
         end
 
         -- reaper.ImGui_PopStyleColor(ctx, 3)
@@ -141,7 +147,9 @@ function Loop()
       end
 
       if reaper.ImGui_Button(ctx, "+") then
-        table.insert(data.tabs, { term = "New Tab", path = "" })
+        local term = reaper.JS_Window_GetTitle(data.mx_search)
+        local path = reaper.JS_Window_GetTitle(data.mx_path)
+        table.insert(data.tabs, { term = term, path = "" })
         data.selected_tab = #data.tabs
       end
 
@@ -150,9 +158,12 @@ function Loop()
       if reaper.ImGui_BeginPopupContextWindow(ctx) then
         if reaper.ImGui_MenuItem(ctx, "Pinned", "", ui.pinned) then
           ui.pinned = not ui.pinned
-          -- local viewport = reaper.ImGui_GetWindowViewport(ctx)
-          -- local vx, vy = reaper.ImGui_GetViewportPos(viewport)
-          ui.pinned_pos.x, ui.pinned_pos.y = reaper.ImGui_GetWindowPos(ctx)
+          -- rv, ui.mx_x, ui.mx_y = reaper.JS_Window_GetRect(data.mx_handle)
+          -- -- local viewport = reaper.ImGui_GetWindowViewport(ctx)
+          -- -- local vx, vy = reaper.ImGui_GetViewportPos(viewport)
+          -- local x, y = reaper.ImGui_GetWindowPos(ctx)
+          -- ui.pinned_pos.x = x - ui.mx_x
+          -- ui.pinned_pos.y = y - ui.mx_y
         end
 
         reaper.ImGui_EndPopup(ctx)
