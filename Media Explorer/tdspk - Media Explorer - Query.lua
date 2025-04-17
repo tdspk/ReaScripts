@@ -1,5 +1,5 @@
 --@description Media Explorer - Query
---@version 0.1pre1
+--@version 0.1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Media Explorer - Query
@@ -8,7 +8,6 @@
 --  JS_ReaScriptAPI, SWS Extension, ReaImGui
 --@links
 --  Website https://www.tdspkaudio.com
---  Forum Thread 
 --@donation
 --  https://ko-fi.com/tdspkaudio
 --  https://coindrop.to/tdspkaudio
@@ -16,7 +15,7 @@
 --  json/json.lua
 --  [main] .
 -- @changelog
---  
+--  TBA
 
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
