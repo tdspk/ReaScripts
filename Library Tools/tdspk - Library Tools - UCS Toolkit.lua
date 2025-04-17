@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 1.2.3
+--@version 1.2.4
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -20,6 +20,7 @@
 --  [main] .
 --  [main] tdspk - Library Tools - Focus UCS Toolkit.lua
 -- @changelog
+--  1.2.4 new button: copy generated UCS names to clipboard, setting to ignore open Media Explorer while renaming
 --  1.2.3 refresh Media Explorer after renaming files
 --  1.2.2 save FX when closing UCS Toolkit, introduce action to focus UCS toolkit and jump to the search box
 --  1.2 show UCS explanations and synonyms as tooltip in search box
@@ -179,7 +180,8 @@ local default_settings = {
   save_state = false,
   delimiter = "_",
   update_interval = 1,
-  tooltips = true
+  tooltips = true,
+  ignore_mx = false
 }
 
 local settings = {
@@ -501,6 +503,8 @@ function Settings()
 
     rv, settings.tooltips = reaper.ImGui_Checkbox(ctx, "Display Tooltips", settings.tooltips)
 
+    rv, settings.ignore_mx = reaper.ImGui_Checkbox(ctx, "Ignore Media Explorer when renaming", settings.ignore_mx)
+
     rv, settings.update_interval = reaper.ImGui_DragInt(ctx, "Poll Interval", settings.update_interval, 1, 1, 30,
       "%d ticks")
 
@@ -636,7 +640,7 @@ end
 
 function OperationMode()
   reaper.ImGui_SeparatorText(ctx, "Renaming\t")
-  if data.mx_open then
+  if data.mx_open and not settings.ignore_mx then
     reaper.ImGui_Text(ctx, "Operating on ")
     reaper.ImGui_SameLine(ctx)
     reaper.ImGui_TextColored(ctx, color.red, "Media Explorer Files")
@@ -916,7 +920,7 @@ end
 function Rename()
   reaper.Undo_BeginBlock()
 
-  if data.mx_open then
+  if data.mx_open and not settings.ignore_mx then
     local autoplay = reaper.GetToggleCommandStateEx(32063, 1011) --Autoplay: Toggle on/off
 
     -- disable autoplay, stop playback
@@ -1013,7 +1017,7 @@ function RenameButton()
     label = " Region"
   end
 
-  if data.mx_open then
+  if data.mx_open and not settings.ignore_mx then
     t = data.files
     label = " File"
     col = color.turquois
@@ -1096,14 +1100,14 @@ function CacheUCSData()
     t = data.selected_regions
   end
 
-  if data.mx_open then
+  if data.mx_open and not settings.ignore_mx then
     t = data.files
   end
 
   for i = 1, #t do
     local target_name
 
-    if data.mx_open then
+    if data.mx_open and not settings.ignore_mx then
       target_name = t[i]
     else
       if form.target == 0 then
@@ -1267,7 +1271,7 @@ end
 function CountTargets()
   local filecount = 0
 
-  if data.mx_open then
+  if data.mx_open and not settings.ignore_mx then
     CacheFiles(data.mx_handle)
     filecount = #data.files
   else
@@ -1395,7 +1399,7 @@ function NavigateMarker(isrgn, step)
 end
 
 function Navigate(next)
-  if data.mx_open then
+  if data.mx_open and not settings.ignore_mx then
     if next then
       reaper.JS_Window_OnCommand(data.mx_handle, 40030) -- Browser: Select next file in directory
     else
@@ -1644,7 +1648,7 @@ function Main()
 
   reaper.ImGui_SeparatorText(ctx, "Preview")
 
-  if data.mx_open then
+  if data.mx_open and not settings.ignore_mx then
     if data.files then
       reaper.ImGui_LabelText(ctx, "Directory", data.directory)
     end
@@ -1661,6 +1665,14 @@ function Main()
 
     reaper.ImGui_Combo(ctx, "Filenames", 0, filenames)
   end
+
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  if reaper.ImGui_SmallButton(ctx, "Copy") then
+    local clipboard = table.concat(data.ucs_names, "\n")
+    reaper.CF_SetClipboard(tostring(clipboard))
+  end
+
+  Tooltip(ctx, "Copy the filenames to the clipboard.")
 
   RenameButton()
 
