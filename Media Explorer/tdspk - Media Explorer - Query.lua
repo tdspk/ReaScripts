@@ -1,9 +1,37 @@
+--@description Media Explorer - Query
+--@version 0.1pre1
+--@author Tadej Supukovic (tdspk)
+--@about
+--  # Media Explorer - Query
+--  A small script to save search queries in the Media Explorer on a per-project basis. 
+--  # Requirements
+--  JS_ReaScriptAPI, SWS Extension, ReaImGui
+--@links
+--  Website https://www.tdspkaudio.com
+--  Forum Thread 
+--@donation
+--  https://ko-fi.com/tdspkaudio
+--  https://coindrop.to/tdspkaudio
+--@provides
+--  json/json.lua
+--  [main] .
+-- @changelog
+--  
+
+local info = debug.getinfo(1, 'S');
+script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
+json = dofile(script_path .. "/json/json.lua") -- import json library
+
 local version = reaper.GetAppVersion()
 version = tonumber(version:match("%d.%d+"))
 
 if version >= 7.03 then
   reaper.set_action_options(3) -- Terminate and restart the script if it's already running
 end
+
+-- TODO add settings table
+
+local ext_section = "tdspk_MXQuery"
 
 ui = {
   window_flags = reaper.ImGui_WindowFlags_NoDocking() | reaper.ImGui_WindowFlags_NoTitleBar(),
@@ -33,16 +61,25 @@ data = {
   --- idx
   --- term
   --- path
-  tabs = {
-    { idx = 1, term = "koll",  path = "C:\\Users\\Tadej\\Desktop" },
-    { idx = 2, term = "peaks", path = "C:\\Users\\Tadej\\Videos" },
-  },
+  tabs = {},
   selected_tab = -1
 }
 
 function Print(txt)
   reaper.ClearConsole()
   reaper.ShowConsoleMsg(txt)
+end
+
+function SaveTabs()
+  local tabs = json.encode(data.tabs)
+  reaper.SetProjExtState(0, ext_section, "tabs", tabs)
+end
+
+function LoadTabs()
+  local rv, tabs = reaper.GetProjExtState(0, ext_section, "tabs")
+  if rv > 0 then
+    data.tabs = json.decode(tabs)
+  end
 end
 
 function IsMxOpen()
@@ -148,9 +185,11 @@ function Loop()
 
       if reaper.ImGui_Button(ctx, "+") then
         local term = reaper.JS_Window_GetTitle(data.mx_search)
-        local path = reaper.JS_Window_GetTitle(data.mx_path)
-        table.insert(data.tabs, { term = term, path = "" })
-        data.selected_tab = #data.tabs
+        if string.len(term) > 0 then
+          local path = reaper.JS_Window_GetTitle(data.mx_path)
+          table.insert(data.tabs, { term = term, path = path })
+          data.selected_tab = #data.tabs
+        end
       end
 
       reaper.ImGui_SameLine(ctx, 0, 50)
@@ -170,6 +209,9 @@ function Loop()
       end
     end
 
+    -- local ret, pt, time, wparamlow, wparamhigh =false reaper.JS_WindowMessage_Peek(data.mx_search, "WM_TITLE")
+    -- reaper.ShowConsoleMsg(tostring(ret) .. " " .. tostring(pt))
+
     reaper.ImGui_End(ctx)
   end
   if open then
@@ -177,9 +219,14 @@ function Loop()
   end
 end
 
+LoadTabs()
 Loop()
 
+local function AtExit()
+  SaveTabs()
+end
 
+reaper.atexit(AtExit)
 
 
 
