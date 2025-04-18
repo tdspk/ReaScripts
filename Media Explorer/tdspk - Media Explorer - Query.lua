@@ -1,5 +1,5 @@
 --@description Media Explorer - Query
---@version 0.1
+--@version 0.2
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Media Explorer - Query
