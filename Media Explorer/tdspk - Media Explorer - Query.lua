@@ -1,9 +1,9 @@
 --@description Media Explorer - Query
---@version 0.2pre1
+--@version 0.3
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Media Explorer - Query
---  A small script to save search queries in the Media Explorer on a per-project basis. 
+--  A small script to save search queries in the Media Explorer on a per-project basis.
 --  # Requirements
 --  JS_ReaScriptAPI, SWS Extension, ReaImGui
 --@links
@@ -28,17 +28,18 @@ if version >= 7.03 then
   reaper.set_action_options(3) -- Terminate and restart the script if it's already running
 end
 
--- TODO add settings table
-
 local ext_section = "tdspk_MXQuery"
+local script_version = "0.3"
+
+settings = {
+  pinned = false
+}
 
 ui = {
   window_flags = reaper.ImGui_WindowFlags_NoDocking() | reaper.ImGui_WindowFlags_NoTitleBar(),
   pinned_flags = reaper.ImGui_WindowFlags_NoMove() | reaper.ImGui_WindowFlags_NoResize() |
       reaper.ImGui_WindowFlags_NoBackground(),
   hidden_flags = reaper.ImGui_WindowFlags_NoMove() | reaper.ImGui_WindowFlags_NoBackground(),
-
-  pinned = false,
   pinned_pos = { x = 0, y = 0 },
   hidden = false,
   color = {
@@ -69,14 +70,34 @@ function Print(txt)
   reaper.ShowConsoleMsg(txt)
 end
 
-function SaveTabs()
+function Save()
   local tabs = json.encode(data.tabs)
   reaper.SetProjExtState(0, ext_section, "tabs", tabs)
+
+  local settings = json.encode(settings)
+  reaper.SetProjExtState(0, ext_section, "settings", settings)
 end
 
-function LoadTabs()
+function SavePreset(slot)
+  local tabs = json.encode(data.tabs)
+  reaper.SetExtState(ext_section, ("preset_%d"):format(slot), tabs, true)
+end
+
+function Load()
   local rv, tabs = reaper.GetProjExtState(0, ext_section, "tabs")
   if rv > 0 then
+    data.tabs = json.decode(tabs)
+  end
+
+  local rv, sett = reaper.GetProjExtState(0, ext_section, "settings")
+  if rv > 0 then
+    settings = json.decode(sett)
+  end
+end
+
+function LoadPreset(slot)
+  local tabs = reaper.GetExtState(ext_section, ("preset_%d"):format(slot))
+  if tabs then
     data.tabs = json.decode(tabs)
   end
 end
@@ -144,7 +165,7 @@ function Loop()
 
   local dpi = reaper.ImGui_GetWindowDpiScale(ctx)
 
-  -- if ui.pinned then
+  -- if settings.pinned then
   --   rv, ui.mx_x, ui.mx_y = reaper.JS_Window_GetRect(data.mx_handle)
   --   -- set pinned position relative to media explorer position
   --   local x = ui.mx_x + ui.pinned_pos.x
@@ -154,22 +175,19 @@ function Loop()
 
   reaper.ImGui_SetNextWindowSize(ctx, 0, 0)
   local visible, open = reaper.ImGui_Begin(ctx, 'Media Explorer Tabs', false,
-    ui.window_flags | (ui.hidden and ui.hidden_flags or 0) | (ui.pinned and ui.pinned_flags or 0))
+    ui.window_flags | (ui.hidden and ui.hidden_flags or 0) | (settings.pinned and ui.pinned_flags or 0))
   if visible then
     if IsMxOpen() then
+      local btnctx = false
       for idx, tab in ipairs(data.tabs) do
+        local doremove = false
         local color = idx == data.selected_tab and ui.color.green or ui.color.white
-
-        -- reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color)
-        -- reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
-        -- reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color)
 
         local btn = reaper.ImGui_Button(ctx, string.format("%s##%d", tab.term, idx))
 
         if btn then
           if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Alt()) then
-            -- remove table entry
-            table.remove(data.tabs, idx)
+            doremove = true
           else
             data.selected_tab = idx
             -- Perform Search
@@ -177,7 +195,18 @@ function Loop()
           end
         end
 
-        -- reaper.ImGui_PopStyleColor(ctx, 3)
+        if reaper.ImGui_BeginPopupContextItem(ctx, nil) then
+          btnctx = true
+
+          if reaper.ImGui_MenuItem(ctx, "Remove", "Alt+Click") then
+            doremove = true
+          end
+          reaper.ImGui_EndPopup(ctx)
+        end
+
+        if doremove then
+          table.remove(data.tabs, idx)
+        end
 
         reaper.ImGui_SameLine(ctx)
       end
@@ -193,15 +222,59 @@ function Loop()
 
       reaper.ImGui_SameLine(ctx, 0, 50)
 
-      if reaper.ImGui_BeginPopupContextWindow(ctx) then
-        if reaper.ImGui_MenuItem(ctx, "Pinned", "", ui.pinned) then
-          ui.pinned = not ui.pinned
+      if not btnctx and reaper.ImGui_BeginPopupContextWindow(ctx) then
+        if reaper.ImGui_MenuItem(ctx, "Pinned", "", settings.pinned) then
+          settings.pinned = not settings.pinned
           -- rv, ui.mx_x, ui.mx_y = reaper.JS_Window_GetRect(data.mx_handle)
           -- -- local viewport = reaper.ImGui_GetWindowViewport(ctx)
           -- -- local vx, vy = reaper.ImGui_GetViewportPos(viewport)
           -- local x, y = reaper.ImGui_GetWindowPos(ctx)
           -- ui.pinned_pos.x = x - ui.mx_x
           -- ui.pinned_pos.y = y - ui.mx_y
+        end
+
+        reaper.ImGui_Separator(ctx)
+
+        if reaper.ImGui_BeginMenu(ctx, "Save") then
+          for i=1, 3 do
+            if reaper.ImGui_MenuItem(ctx, ("Preset %d"):format(i)) then
+              SavePreset(i)
+            end
+          end
+
+          reaper.ImGui_EndMenu(ctx)
+        end
+
+        if reaper.ImGui_BeginMenu(ctx, "Load") then
+          for i=1, 3 do
+            if reaper.ImGui_MenuItem(ctx, ("Preset %d"):format(i)) then
+              LoadPreset(i)
+            end
+          end
+
+          reaper.ImGui_EndMenu(ctx)
+        end
+        
+
+        if reaper.ImGui_BeginMenu(ctx, "Info") then
+          reaper.ImGui_MenuItem(ctx, ("Media Explorer Query - Version %s"):format(script_version))
+          reaper.ImGui_MenuItem(ctx, "A tool by tdspk")
+
+          reaper.ImGui_Separator(ctx)
+
+          if reaper.ImGui_MenuItem(ctx, "Website") then
+            reaper.CF_ShellExecute("https://www.tdspkaudio.com")
+          end
+
+          if reaper.ImGui_MenuItem(ctx, "Donate") then
+            reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
+          end
+
+          if reaper.ImGui_MenuItem(ctx, "GitHub Repository") then
+            reaper.CF_ShellExecute("https://github.com/tdspk/ReaScripts")
+          end
+
+          reaper.ImGui_EndMenu(ctx)
         end
 
         reaper.ImGui_EndPopup(ctx)
@@ -218,41 +291,11 @@ function Loop()
   end
 end
 
-LoadTabs()
+Load()
 Loop()
 
 local function AtExit()
-  SaveTabs()
+  Save()
 end
 
 reaper.atexit(AtExit)
-
-
-
-
--- -- get path content
--- path = reaper.JS_Window_GetTitle(edit)
-
--- local combo = reaper.JS_Window_FindChildByID(handle, 0x3F7)
--- count = reaper.JS_WindowMessage_Send(combo, "CB_GETCOUNT", 0, 0, 0, 0)
--- a = reaper.JS_WindowMessage_Send(combo, "CB_GETLBTEXT", 0, 0, 0, 0)
-
--- local edit = reaper.JS_Window_FindChildByID(combo, 0x3E9)
-
--- search = reaper.JS_Window_GetTitle(edit)
-
--- text = "koll"
--- chars = {}
-
--- for i = 1, string.len(text) do
---   local char = string.byte(string.sub(text, i, i))
---   table.insert(chars, char)
--- end
-
--- reaper.JS_Window_SetFocus(edit)
-
--- for i=1, #chars do
---   -- reaper.JS_WindowMessage_Send(edit, "WM_CHAR", chars[i], 0, 0, 0)
--- end
-
--- -- todo press enter
