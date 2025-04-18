@@ -36,7 +36,7 @@ settings = {
 }
 
 ui = {
-  window_flags = reaper.ImGui_WindowFlags_NoDocking() | reaper.ImGui_WindowFlags_NoTitleBar(),
+  window_flags = reaper.ImGui_WindowFlags_NoDocking() | reaper.ImGui_WindowFlags_NoTitleBar() | reaper.ImGui_WindowFlags_TopMost(),
   pinned_flags = reaper.ImGui_WindowFlags_NoMove() | reaper.ImGui_WindowFlags_NoResize() |
       reaper.ImGui_WindowFlags_NoBackground(),
   hidden_flags = reaper.ImGui_WindowFlags_NoMove() | reaper.ImGui_WindowFlags_NoBackground(),
@@ -136,8 +136,8 @@ function TypeChars(handle, text)
     reaper.JS_WindowMessage_Send(handle, "WM_CHAR", chars[i], 0, 0, 0)
   end
 
-  local parent = reaper.JS_Window_GetParent(handle)
-  reaper.JS_Window_SetFocus(parent)
+  -- local parent = reaper.JS_Window_GetParent(handle)
+  -- reaper.JS_Window_SetFocus(parent)
 
   reaper.JS_WindowMessage_Send(handle, "WM_KEYDOWN", 0x0D, 0, 0, 0)
 end
