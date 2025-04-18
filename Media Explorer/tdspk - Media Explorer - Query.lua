@@ -1,5 +1,5 @@
 --@description Media Explorer - Query
---@version 0.2
+--@version 0.2pre1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Media Explorer - Query
@@ -13,6 +13,7 @@
 --  https://coindrop.to/tdspkaudio
 --@provides
 --  json/json.lua
+--  [main] .
 -- @changelog
 --  TBA
 
