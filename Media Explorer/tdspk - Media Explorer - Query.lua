@@ -13,7 +13,6 @@
 --  https://coindrop.to/tdspkaudio
 --@provides
 --  json/json.lua
---  [main] .
 -- @changelog
 --  TBA
 
