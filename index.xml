@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="1def6643b237286bea710b2ec66d2affcabd6f18">
+<index version="1" name="tdspk" commit="7fa6ad386a774dfa91d92460b398029cc311a144">
   <category name="Automation">
     <reapack name="tdspk - Automation Tool.lua" type="script" desc="Automation Tool">
       <metadata>
@@ -426,6 +426,40 @@ Initial Release (v1.0)]]></changelog>
         <source file="data/soundly.png">https://github.com/tdspk/ReaScripts/raw/1def6643b237286bea710b2ec66d2affcabd6f18/Library%20Tools/data/soundly.png</source>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/1def6643b237286bea710b2ec66d2affcabd6f18/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20UCS%20Toolkit.lua</source>
         <source main="main" file="tdspk - Library Tools - Focus UCS Toolkit.lua">https://github.com/tdspk/ReaScripts/raw/1def6643b237286bea710b2ec66d2affcabd6f18/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20Focus%20UCS%20Toolkit.lua</source>
+      </version>
+    </reapack>
+  </category>
+  <category name="Media Explorer">
+    <reapack name="tdspk - Media Explorer - Query.lua" type="script" desc="Media Explorer - Query">
+      <metadata>
+        <description><![CDATA[{\rtf1\ansi\deff0{\fonttbl{\f0 \fswiss Helvetica;}{\f1 \fmodern Courier;}}
+{\colortbl;\red255\green0\blue0;\red0\green0\blue255;}
+\widowctrl\hyphauto
+
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel0 \b \fs36 Media Explorer - Query\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 A small script to save search queries in the Media Explorer on a per-project basis.\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 \outlinelevel0 \b \fs36 Requirements\par}
+{\pard \ql \f0 \sa180 \li0 \fi0 JS_ReaScriptAPI, SWS Extension, ReaImGui\par}
+}
+]]></description>
+        <link rel="website" href="https://www.tdspkaudio.com">Website</link>
+        <link rel="donation">https://ko-fi.com/tdspkaudio</link>
+        <link rel="donation">https://coindrop.to/tdspkaudio</link>
+      </metadata>
+      <version name="0.1" author="Tadej Supukovic (tdspk)" time="2025-04-17T13:03:41Z">
+        <changelog><![CDATA[TBA]]></changelog>
+        <source file="json/json.lua">https://github.com/tdspk/ReaScripts/raw/c04f714182b947b5206e7ec4f44edaa1da43f556/Media%20Explorer/json/json.lua</source>
+        <source main="mediaexplorer">https://github.com/tdspk/ReaScripts/raw/c04f714182b947b5206e7ec4f44edaa1da43f556/Media%20Explorer/tdspk%20-%20Media%20Explorer%20-%20Query.lua</source>
+      </version>
+      <version name="0.2" author="Tadej Supukovic (tdspk)" time="2025-04-18T07:52:16Z">
+        <changelog><![CDATA[TBA]]></changelog>
+        <source main="mediaexplorer">https://github.com/tdspk/ReaScripts/raw/4bab138561d7190ad318e109262567be40177baf/Media%20Explorer/tdspk%20-%20Media%20Explorer%20-%20Query.lua</source>
+        <source file="json/json.lua">https://github.com/tdspk/ReaScripts/raw/4bab138561d7190ad318e109262567be40177baf/Media%20Explorer/json/json.lua</source>
+      </version>
+      <version name="0.2pre1" author="Tadej Supukovic (tdspk)" time="2025-04-18T07:55:09Z">
+        <changelog><![CDATA[TBA]]></changelog>
+        <source file="json/json.lua">https://github.com/tdspk/ReaScripts/raw/7fa6ad386a774dfa91d92460b398029cc311a144/Media%20Explorer/json/json.lua</source>
+        <source main="mediaexplorer">https://github.com/tdspk/ReaScripts/raw/7fa6ad386a774dfa91d92460b398029cc311a144/Media%20Explorer/tdspk%20-%20Media%20Explorer%20-%20Query.lua</source>
       </version>
     </reapack>
   </category>
