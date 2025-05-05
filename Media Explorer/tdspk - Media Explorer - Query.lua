@@ -1,5 +1,5 @@
 --@description Media Explorer - Query
---@version 0.4
+--@version 0.41
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Media Explorer - Query
@@ -13,8 +13,8 @@
 --  https://coindrop.to/tdspkaudio
 --@provides
 --  json/json.lua
---  [main] .
--- @changelog
+--  [main=main,mediaexplorer] .
+--@changelog
 --  TBA
 
 local info = debug.getinfo(1, 'S');
