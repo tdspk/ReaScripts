@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="a817f92a3a9701b6140a77c99b8c4d17750db1d1">
+<index version="1" name="tdspk" commit="997ae551f9c306c8f33ad1d842862bb81dfc10c9">
   <category name="Automation">
     <reapack name="tdspk - Automation Tool.lua" type="script" desc="Automation Tool">
       <metadata>
@@ -470,6 +470,11 @@ Initial Release (v1.0)]]></changelog>
         <changelog><![CDATA[TBA]]></changelog>
         <source file="json/json.lua">https://github.com/tdspk/ReaScripts/raw/a817f92a3a9701b6140a77c99b8c4d17750db1d1/Media%20Explorer/json/json.lua</source>
         <source main="mediaexplorer">https://github.com/tdspk/ReaScripts/raw/a817f92a3a9701b6140a77c99b8c4d17750db1d1/Media%20Explorer/tdspk%20-%20Media%20Explorer%20-%20Query.lua</source>
+      </version>
+      <version name="0.41" author="Tadej Supukovic (tdspk)" time="2025-05-05T11:46:01Z">
+        <changelog><![CDATA[TBA]]></changelog>
+        <source file="json/json.lua">https://github.com/tdspk/ReaScripts/raw/997ae551f9c306c8f33ad1d842862bb81dfc10c9/Media%20Explorer/json/json.lua</source>
+        <source main="main mediaexplorer">https://github.com/tdspk/ReaScripts/raw/997ae551f9c306c8f33ad1d842862bb81dfc10c9/Media%20Explorer/tdspk%20-%20Media%20Explorer%20-%20Query.lua</source>
       </version>
     </reapack>
   </category>
