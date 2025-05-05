@@ -1,5 +1,5 @@
 --@description Media Explorer - Query
---@version 0.3
+--@version 0.4
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Media Explorer - Query
@@ -49,6 +49,12 @@ ui = {
     red = reaper.ImGui_ColorConvertDouble4ToU32(1, 0, 0, 1),
     blue = reaper.ImGui_ColorConvertDouble4ToU32(0, 0, 1, 1),
     yellow = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 0, 1),
+  },
+  color_palette = {
+    green = reaper.ImGui_ColorConvertDouble4ToU32(0, 1, 0, 1),
+    red = reaper.ImGui_ColorConvertDouble4ToU32(1, 0, 0, 1),
+    blue = reaper.ImGui_ColorConvertDouble4ToU32(0, 0, 1, 1),
+    yellow = reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 0, 1),
   }
 }
 
@@ -61,9 +67,19 @@ data = {
   --- idx
   --- term
   --- path
+  --- color
   tabs = {},
   selected_tab = -1
 }
+
+local function GetComplementaryColor(r, g, b)
+  local luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  if luminance > 0.6 then
+    return reaper.ImGui_ColorConvertDouble4ToU32(0, 0, 0, 1)
+  else
+    return reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, 1)
+  end
+end
 
 function Print(txt)
   reaper.ClearConsole()
@@ -181,9 +197,18 @@ function Loop()
       local btnctx = false
       for idx, tab in ipairs(data.tabs) do
         local doremove = false
-        local color = idx == data.selected_tab and ui.color.green or ui.color.white
+        
+        reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), tab.color)
+        reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), tab.color)
+        reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), tab.color)
+
+        -- convert tab color to rgb
+        local r, g, b = reaper.ImGui_ColorConvertU32ToDouble4(tab.color)
+        local text_color = GetComplementaryColor(r, g, b)
+        reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Text(), text_color)
 
         local btn = reaper.ImGui_Button(ctx, string.format("%s##%d", tab.term, idx))
+        reaper.ImGui_PopStyleColor(ctx, 4)
 
         if btn then
           if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Alt()) then
@@ -195,8 +220,20 @@ function Loop()
           end
         end
 
+        -- right click context menu
         if reaper.ImGui_BeginPopupContextItem(ctx, nil) then
           btnctx = true
+
+          local counter = 0
+          for k, v in pairs(ui.color_palette) do
+            if reaper.ImGui_ColorButton(ctx, ("##%s"):format(k), v, reaper.ImGui_ColorEditFlags_NoTooltip(), 20, 20) then
+              data.tabs[idx].color = v
+            end
+            counter = counter + 1
+
+            -- do a SameLine until 5 elements have been drawn
+            if counter % 5 ~= 0 then reaper.ImGui_SameLine(ctx) end
+          end
 
           if reaper.ImGui_MenuItem(ctx, "Remove", "Alt+Click") then
             doremove = true
@@ -215,7 +252,7 @@ function Loop()
         local term = reaper.JS_Window_GetTitle(data.mx_search)
         if string.len(term) > 0 then
           local path = reaper.JS_Window_GetTitle(data.mx_path)
-          table.insert(data.tabs, { term = term, path = path })
+          table.insert(data.tabs, { term = term, path = path, color = ui.color_palette.default })
           data.selected_tab = #data.tabs
         end
       end
@@ -290,6 +327,8 @@ function Loop()
     reaper.defer(Loop)
   end
 end
+
+ui.color_palette.default = reaper.ImGui_GetStyleColor(ctx, reaper.ImGui_Col_Button()),
 
 Load()
 Loop()
