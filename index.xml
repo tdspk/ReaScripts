@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="997ae551f9c306c8f33ad1d842862bb81dfc10c9">
+<index version="1" name="tdspk" commit="2917604e9637d4091bf9f6a28f161fe63d5632ea">
   <category name="Automation">
     <reapack name="tdspk - Automation Tool.lua" type="script" desc="Automation Tool">
       <metadata>
@@ -426,6 +426,20 @@ Initial Release (v1.0)]]></changelog>
         <source file="data/soundly.png">https://github.com/tdspk/ReaScripts/raw/1def6643b237286bea710b2ec66d2affcabd6f18/Library%20Tools/data/soundly.png</source>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/1def6643b237286bea710b2ec66d2affcabd6f18/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20UCS%20Toolkit.lua</source>
         <source main="main" file="tdspk - Library Tools - Focus UCS Toolkit.lua">https://github.com/tdspk/ReaScripts/raw/1def6643b237286bea710b2ec66d2affcabd6f18/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20Focus%20UCS%20Toolkit.lua</source>
+      </version>
+      <version name="1.2.5" author="Tadej Supukovic (tdspk)" time="2025-08-20T08:51:27Z">
+        <changelog><![CDATA[1.2.5 require ImGui Version 0.9.3.3 to avoid PushFont errors
+1.2.4 new button: copy generated UCS names to clipboard, setting to ignore open Media Explorer while renaming
+1.2.3 refresh Media Explorer after renaming files
+1.2.2 save FX when closing UCS Toolkit, introduce action to focus UCS toolkit and jump to the search box
+1.2 show UCS explanations and synonyms as tooltip in search box
+1.1 fixed typo in title
+Initial Release (v1.0)]]></changelog>
+        <source file="data/ucs.csv">https://github.com/tdspk/ReaScripts/raw/2917604e9637d4091bf9f6a28f161fe63d5632ea/Library%20Tools/data/ucs.csv</source>
+        <source file="data/OpenSans-Medium.ttf">https://github.com/tdspk/ReaScripts/raw/2917604e9637d4091bf9f6a28f161fe63d5632ea/Library%20Tools/data/OpenSans-Medium.ttf</source>
+        <source file="data/soundly.png">https://github.com/tdspk/ReaScripts/raw/2917604e9637d4091bf9f6a28f161fe63d5632ea/Library%20Tools/data/soundly.png</source>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/2917604e9637d4091bf9f6a28f161fe63d5632ea/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20UCS%20Toolkit.lua</source>
+        <source main="main" file="tdspk - Library Tools - Focus UCS Toolkit.lua">https://github.com/tdspk/ReaScripts/raw/2917604e9637d4091bf9f6a28f161fe63d5632ea/Library%20Tools/tdspk%20-%20Library%20Tools%20-%20Focus%20UCS%20Toolkit.lua</source>
       </version>
     </reapack>
   </category>
