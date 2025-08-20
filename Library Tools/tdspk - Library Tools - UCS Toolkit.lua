@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 1.2.4
+--@version 1.2.5
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -20,6 +20,7 @@
 --  [main] .
 --  [main] tdspk - Library Tools - Focus UCS Toolkit.lua
 -- @changelog
+--  1.2.5 require ImGui Version 0.9.3.3 to avoid PushFont errors
 --  1.2.4 new button: copy generated UCS names to clipboard, setting to ignore open Media Explorer while renaming
 --  1.2.3 refresh Media Explorer after renaming files
 --  1.2.2 save FX when closing UCS Toolkit, introduce action to focus UCS toolkit and jump to the search box
@@ -54,7 +55,7 @@ if not imgui_exists or not sws_exists or not js_exists then
   goto eof
 end
 
-dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')
+dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.9.3.3')
 
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
