@@ -55,7 +55,7 @@ if not imgui_exists or not sws_exists or not js_exists then
   goto eof
 end
 
-dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.9.3.3')
+dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')
 
 local info = debug.getinfo(1, 'S');
 script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
@@ -177,7 +177,7 @@ local ext_section = "tdspk_ucstoolkit"
 local version = "1.2"
 
 local default_settings = {
-  font_size = 16,
+  font_size = 12,
   save_state = false,
   delimiter = "_",
   update_interval = 1,
@@ -321,17 +321,7 @@ function Init()
 
   data.os = reaper.GetOS()
 
-  -- init fonts
-  local font_res = script_path .. "/data/OpenSans-Medium.ttf"
-
-  style.font = reaper.ImGui_CreateFont(font_res, settings.font_size)
-  reaper.ImGui_Attach(ctx, style.font)
-
-  style.font_info = reaper.ImGui_CreateFont(font_res, math.floor(settings.font_size * 0.8))
-  reaper.ImGui_Attach(ctx, style.font_info)
-
-  style.font_menu = reaper.ImGui_CreateFont(font_res, math.floor(settings.font_size * 1.5))
-  reaper.ImGui_Attach(ctx, style.font_menu)
+  style.font = reaper.ImGui_GetFont(ctx)
 
   style.logo_soundly = reaper.ImGui_CreateImage(script_path .. "/data/soundly.png")
   reaper.ImGui_Attach(ctx, style.logo_soundly)
@@ -458,7 +448,7 @@ end
 function Tooltip(ctx, text)
   if settings.tooltips then
     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x / 2)
-    reaper.ImGui_PushFont(ctx, style.font_info)
+    reaper.ImGui_PushFont(ctx, style.font, settings.font_size * 0.8)
     reaper.ImGui_TextColored(ctx, color.gray, "?")
     reaper.ImGui_PopFont(ctx)
 
@@ -906,7 +896,7 @@ function BigButton(ctx, label, divider, padding, color)
 end
 
 function SmallButton(ctx, label)
-  reaper.ImGui_PushFont(ctx, style.font_info)
+  reaper.ImGui_PushFont(ctx, style.font, settings.font_size * 0.8)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color.transparent)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color.transparent)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color.transparent)
@@ -1589,13 +1579,13 @@ function Main()
     data.ticks = 0
   end
 
-  reaper.ImGui_PushFont(ctx, style.font_menu)
+  reaper.ImGui_PushFont(ctx, style.font, settings.font_size)
   reaper.ImGui_Text(ctx, "UCS Toolkit")
   reaper.ImGui_PopFont(ctx)
 
   reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
 
-  reaper.ImGui_PushFont(ctx, style.font_info)
+  reaper.ImGui_PushFont(ctx, style.font, settings.font_size * 0.8)
   reaper.ImGui_Text(ctx, "UCS Version " .. ucs.version)
   reaper.ImGui_PopFont(ctx)
 
@@ -1603,7 +1593,7 @@ function Main()
   reaper.ImGui_Dummy(ctx, style.item_spacing_x, 0)
   reaper.ImGui_SameLine(ctx)
 
-  reaper.ImGui_PushFont(ctx, style.font)
+  reaper.ImGui_PushFont(ctx, style.font, settings.font_size)
 
   Info()
   reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
