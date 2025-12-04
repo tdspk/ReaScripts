@@ -74,7 +74,7 @@ local app = {
   dock_id = 0,
   docked = false,
   window_width = 450,
-  window_height = 720,
+  window_height = 680,
   focused = false
 }
 
