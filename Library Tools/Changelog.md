@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed font to default font provided by ReaImGui
 - Changed default font size to 12
 - Moved menu to menu bar
-- Set default window height to 650
+- Set default window height to 680px
 
 ### Removed
 
