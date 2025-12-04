@@ -1,5 +1,5 @@
 --@description UCS Toolkit
---@version 1.2.5
+--@version 1.3
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # UCS Tookit
@@ -20,7 +20,7 @@
 --  [main] .
 --  [main] tdspk - Library Tools - Focus UCS Toolkit.lua
 -- @changelog
--- TODO update changelog when done
+--  1.3 UI support new font API, UI refactoring and improvements
 --  1.2.5 require ImGui Version 0.9.3.3 to avoid PushFont errors
 --  1.2.4 new button: copy generated UCS names to clipboard, setting to ignore open Media Explorer while renaming
 --  1.2.3 refresh Media Explorer after renaming files
