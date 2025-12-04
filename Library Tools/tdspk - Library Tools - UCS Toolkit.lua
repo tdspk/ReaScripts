@@ -564,37 +564,6 @@ local function WildcardInfo()
   end
 end
 
-local function Support()
-  if SmallButton(ctx, "Support") then
-    reaper.ImGui_OpenPopup(ctx, "Support")
-  end
-
-  --if IconButton("Support", style.icon_support) then
-  --  reaper.ImGui_OpenPopup(ctx, "Support")
-  --end
-
-  local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetWindowViewport(ctx))
-  reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
-
-  if reaper.ImGui_BeginPopupModal(ctx, "Support", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
-    reaper.ImGui_Text(ctx, "This tool is free and open source. And it will always be.")
-    reaper.ImGui_Text(ctx, "However, I do appreciate your support via donation.")
-
-    if BigButton(ctx, "Donate on Ko-fi", nil, nil, color.green) then
-      reaper.CF_ShellExecute("https://ko-fi.com/tdspkaudio")
-    end
-
-    if BigButton(ctx, "Donate with PayPal and Co.", nil, nil, color.yellow) then
-      reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
-    end
-
-    if reaper.ImGui_Button(ctx, "Close") then
-      reaper.ImGui_CloseCurrentPopup(ctx)
-    end
-    reaper.ImGui_EndPopup(ctx)
-  end
-end
-
 local function IsWindowOpen(name)
   local is_open
   local handle
@@ -893,19 +862,6 @@ local function BigButton(ctx, label, divider, padding, color)
     reaper.ImGui_PopStyleColor(ctx)
   end
 
-  return btn
-end
-
-local function SmallButton(ctx, label)
-  reaper.ImGui_PushFont(ctx, style.font, settings.font_size * 0.8)
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color.transparent)
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color.transparent)
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color.transparent)
-
-  local btn = reaper.ImGui_Button(ctx, label)
-
-  reaper.ImGui_PopStyleColor(ctx, 3)
-  reaper.ImGui_PopFont(ctx)
   return btn
 end
 
@@ -1390,6 +1346,19 @@ local function NavigateMarker(isrgn, step)
   return nav_marker
 end
 
+local function UpdateLoopPoints()
+  if form.target == 1 then
+    reaper.Main_OnCommand(41039, 0) --Loop points: Set loop points to items
+  elseif form.target == 3 then
+    -- load start and end points from current navigated region
+    if data.nav_region then
+      local start_pos = data.regions[data.nav_region][2]
+      local end_pos = data.regions[data.nav_region][3]
+      reaper.GetSet_LoopTimeRange2(0, true, true, start_pos, end_pos, false)
+    end
+  end
+end
+
 local function Navigate(next)
   if data.mx_open and not settings.ignore_mx then
     if next then
@@ -1552,15 +1521,15 @@ local function Navigation()
   reaper.ImGui_PopStyleColor(ctx)
 end
 
-local function UpdateLoopPoints()
-  if form.target == 1 then
-    reaper.Main_OnCommand(41039, 0) --Loop points: Set loop points to items
-  elseif form.target == 3 then
-    -- load start and end points from current navigated region
-    if data.nav_region then
-      local start_pos = data.regions[data.nav_region][2]
-      local end_pos = data.regions[data.nav_region][3]
-      reaper.GetSet_LoopTimeRange2(0, true, true, start_pos, end_pos, false)
+local function Dock()
+  if app.dock_id ~= 0 then
+    if reaper.ImGui_Button(ctx, "Undock") then
+      app.dock_id = 0
+      app.has_undocked = true
+    end
+  else
+    if reaper.ImGui_Button(ctx, "Dock") then
+      app.dock_id = -1
     end
   end
 end
@@ -1612,6 +1581,7 @@ local function Menu()
     end
 
     Settings()
+    Dock()
 
     reaper.ImGui_EndMenuBar(ctx)
   end
@@ -1718,19 +1688,6 @@ local function Main()
 
   reaper.ImGui_PopStyleVar(ctx, style_pushes)
   reaper.ImGui_PopFont(ctx)
-end
-
-local function Dock()
-  if app.dock_id ~= 0 then
-    if SmallButton(ctx, "Undock") then
-      app.dock_id = 0
-      app.has_undocked = true
-    end
-  else
-    if SmallButton(ctx, "Dock") then
-      app.dock_id = -1
-    end
-  end
 end
 
 local function Loop()
