@@ -380,36 +380,6 @@ local function FilenameToUCS(filename)
   return words
 end
 
-local function ReverseLookup(cat_id)
-  if not form.lookup then
-    return
-  end
-
-  local cat = ""
-  local sub = ""
-  local found = false
-
-  -- iterate tables and look for id
-  for k, v in pairs(ucs.categories) do
-    for j, id in pairs(v) do
-      if (cat_id == id) then
-        cat = k
-        sub = j
-        found = true
-        break
-      end
-    end
-  end
-
-  if found then
-    form.cat_name = cat
-    form.sub_name = sub
-    combo.sub_items = PopulateSubCategories(form.cat_name)
-    form.cur_cat = combo.cat_idx[form.cat_name]
-    form.cur_sub = combo.sub_idx[form.sub_name]
-  end
-end
-
 local function PopulateSubCategories(cat_name)
   if not ucs.categories[cat_name] then
     return
@@ -438,6 +408,36 @@ local function PopulateSubCategories(cat_name)
   end
 
   return result
+end
+
+local function ReverseLookup(cat_id)
+  if not form.lookup then
+    return
+  end
+
+  local cat = ""
+  local sub = ""
+  local found = false
+
+  -- iterate tables and look for id
+  for k, v in pairs(ucs.categories) do
+    for j, id in pairs(v) do
+      if (cat_id == id) then
+        cat = k
+        sub = j
+        found = true
+        break
+      end
+    end
+  end
+
+  if found then
+    form.cat_name = cat
+    form.sub_name = sub
+    combo.sub_items = PopulateSubCategories(form.cat_name)
+    form.cur_cat = combo.cat_idx[form.cat_name]
+    form.cur_sub = combo.sub_idx[form.sub_name]
+  end
 end
 
 local function CreateUCSFilename(d, cat_id, ...)
