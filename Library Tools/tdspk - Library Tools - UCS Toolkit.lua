@@ -29,30 +29,44 @@
 --  1.1 fixed typo in title
 --  Initial Release (v1.0)
 
-local imgui_exists = reaper.APIExists("ImGui_GetVersion")
-local sws_exists = reaper.APIExists("CF_GetSWSVersion")
-local js_exists = reaper.APIExists("JS_ReaScriptAPI_Version")
-
-if not imgui_exists or not sws_exists or not js_exists then
-  local open_reapack = false
-
-  local msg = "UCS Toolkit requires the following extensions/packages to work:\n"
-  if not sws_exists then
-    msg = msg .. "SWS Extension - please visit https://www.sws-extension.org\n"
+local function InsertState(state)
+  if state then
+    return "(installed)"
   end
-  if not js_exists then
-    msg = msg .. "js_ReaScriptAPI: API functions for ReaScripts - please install via ReaPack\n"
-    open_reapack = true
+  return "(missing)"
+end
+
+-- Common Functions for Launcher and Settings
+local function CheckDependencies()
+  -- Check if required extensions/packages are installed
+  local reapack_exists = reaper.APIExists("ReaPack_AboutRepository")
+  local imgui_exists = reaper.APIExists("ImGui_GetVersion")
+  local sws_exists = reaper.APIExists("CF_GetSWSVersion")
+  local js_exists = reaper.APIExists("JS_ReaScriptAPI_Version")
+
+  if not sws_exists or not reapack_exists then
+    local message = "UCS Toolkit requires the following extensions:\n"
+    message = message .. "SWS Extension " .. InsertState(sws_exists) .. " - Please install it from https://www.sws-extension.org/\n"
+    message = message .. "ReaPack " .. InsertState(reapack_exists) .. " - Please install it from https://reapack.com/\n"
+    reaper.ShowMessageBox(message, "UCS Toolkit - Missing Dependencies", 0)
+    return false
   end
-  if not imgui_exists then
-    msg = msg .. "ReaImGui: ReaScript binding for Dear ImGui - please install via ReaPack\n"
-    open_reapack = true
+
+  if not imgui_exists or not js_exists then
+    local message = "UCS Toolkit requires the following packages:\n"
+    message = message .. "ReaImGui " .. InsertState(imgui_exists) .. "\n"
+    message = message .. "JS ReaScript Api " .. InsertState(js_exists) .. "\n"
+    message = message .. "\nDo you want to install them now via ReaPack?"
+    if reaper.ShowMessageBox(message, "UCS Toolkit - Missing Packages", 4) == 6 then
+      reaper.ReaPack_BrowsePackages("reascript api")
+    end
+    return false
   end
 
-  if open_reapack then reaper.ReaPack_BrowsePackages("") end
+  return true
+end
 
-  reaper.ShowMessageBox(msg, "Missing extensions/packages", 0)
-
+if not CheckDependencies() then
   goto eof
 end
 

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Startup: improve missing package behaviour, search automatically for ReaImGui and JS_ReaScript API when dependencies are missing
+
 ### Changed
 
 - Used new ImGui font API
