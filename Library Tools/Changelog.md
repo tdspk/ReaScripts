@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Moved menu to menu bar
 - Set default window height to 680px
 - Settings: remove start prompt for font size change
+- Use Project State Count instead of poll interval for gui updates
 
 ### Removed
 

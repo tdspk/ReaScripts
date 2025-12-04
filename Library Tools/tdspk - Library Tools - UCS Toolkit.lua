@@ -179,6 +179,7 @@ data = {
   selected_regions = {},
   ticks = 0,
   update = false,
+  update_interval = -1,
   nav_marker = 0,
   nav_region = 0,
   state_count = 0,
@@ -195,7 +196,6 @@ local default_settings = {
   font_size = 12,
   save_state = false,
   delimiter = "_",
-  update_interval = 1,
   tooltips = true,
   ignore_mx = false
 }
@@ -504,9 +504,6 @@ local function Settings()
     rv, settings.tooltips = reaper.ImGui_Checkbox(ctx, "Display Tooltips", settings.tooltips)
 
     rv, settings.ignore_mx = reaper.ImGui_Checkbox(ctx, "Ignore Media Explorer when renaming", settings.ignore_mx)
-
-    rv, settings.update_interval = reaper.ImGui_DragInt(ctx, "Poll Interval", settings.update_interval, 1, 1, 30,
-      "%d ticks")
 
     if reaper.ImGui_Button(ctx, "Save Settings and Close") then
       SaveSettings()
@@ -1594,11 +1591,10 @@ local function Main()
   end
 
   data.update = false
-  data.ticks = data.ticks + 1
+  data.ticks = reaper.GetProjectStateChangeCount(0)
 
-  if data.ticks >= settings.update_interval then
+  if data.ticks >= data.update_interval then
     data.update = true
-    data.ticks = 0
   end
 
   Menu()
@@ -1618,7 +1614,6 @@ local function Main()
 
   data.mx_open, data.mx_handle = IsWindowOpen("Media Explorer")
 
-  --TODO optimize cache behaviour - ticks vs changed state
   if data.update then
     data.rename_count = CountTargets()
   end
