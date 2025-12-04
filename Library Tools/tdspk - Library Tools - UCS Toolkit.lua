@@ -187,7 +187,6 @@ local default_settings = {
 }
 
 local settings = {
-  changed = false,
 }
 
 local wildcards = {
@@ -484,11 +483,6 @@ local function Settings()
 
   if reaper.ImGui_BeginPopupModal(ctx, "Settings", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
     rv, settings.font_size = reaper.ImGui_SliderInt(ctx, "Font Size", settings.font_size, 10, 18)
-    settings.changed = rv or settings.changed
-
-    if settings.changed then
-      reaper.ImGui_Text(ctx, "Restart the script to apply font size change!")
-    end
 
     rv, settings.delimiter = reaper.ImGui_InputText(ctx, "Delimiter", settings.delimiter)
     settings.delimiter = string.sub(settings.delimiter, 1, 1)
