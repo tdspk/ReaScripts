@@ -20,6 +20,7 @@
 --  [main] .
 --  [main] tdspk - Library Tools - Focus UCS Toolkit.lua
 -- @changelog
+-- TODO update changelog when done
 --  1.2.5 require ImGui Version 0.9.3.3 to avoid PushFont errors
 --  1.2.4 new button: copy generated UCS names to clipboard, setting to ignore open Media Explorer while renaming
 --  1.2.3 refresh Media Explorer after renaming files
@@ -174,7 +175,7 @@ data = {
 }
 
 local ext_section = "tdspk_ucstoolkit"
-local version = "1.2"
+local version = "1.2" -- TODO: update version
 
 local default_settings = {
   font_size = 12,
@@ -250,7 +251,7 @@ local wildcards = {
     end)
 }
 
-function ReadUcsData()
+local function ReadUcsData()
   local prev_cat = ""
   local got_version = false
   local i = 0
@@ -285,7 +286,7 @@ function ReadUcsData()
   end
 end
 
-function MapExtStateValues(ext_value)
+local function MapExtStateValues(ext_value)
   if tonumber(ext_value) then
     ext_value = tonumber(ext_value)
   end
@@ -297,7 +298,7 @@ function MapExtStateValues(ext_value)
   return ext_value
 end
 
-function LoadSettings()
+local function LoadSettings()
   for k, v in pairs(default_settings) do
     if reaper.HasExtState(ext_section, k) then
       settings[k] = MapExtStateValues(reaper.GetExtState(ext_section, k))
@@ -307,7 +308,7 @@ function LoadSettings()
   end
 end
 
-function LoadFormConfig()
+local function LoadFormConfig()
   for _, v in ipairs(form_config_keys) do
     if reaper.HasExtState(ext_section, v) then
       form[v] = MapExtStateValues(reaper.GetExtState(ext_section, v))
@@ -315,7 +316,7 @@ function LoadFormConfig()
   end
 end
 
-function Init()
+local function Init()
   LoadSettings()
   LoadFormConfig()
 
@@ -350,13 +351,13 @@ function table.contains(table, value)
   return false
 end
 
-function clamp(v, min, max)
+local function clamp(v, min, max)
   if v > max then return max end
   if v < min then return min end
   return v
 end
 
-function FilenameToUCS(filename)
+local function FilenameToUCS(filename)
   local words = {}
 
   for word in string.gmatch(filename, "([^_]+)") do
@@ -366,7 +367,7 @@ function FilenameToUCS(filename)
   return words
 end
 
-function ReverseLookup(cat_id)
+local function ReverseLookup(cat_id)
   if not form.lookup then
     return
   end
@@ -396,7 +397,7 @@ function ReverseLookup(cat_id)
   end
 end
 
-function PopulateSubCategories(cat_name)
+local function PopulateSubCategories(cat_name)
   if not ucs.categories[cat_name] then
     return
   end
@@ -426,7 +427,7 @@ function PopulateSubCategories(cat_name)
   return result
 end
 
-function CreateUCSFilename(d, cat_id, ...)
+local function CreateUCSFilename(d, cat_id, ...)
   local fname = cat_id
   local arg = { ... }
 
@@ -445,7 +446,7 @@ function CreateUCSFilename(d, cat_id, ...)
   return fname
 end
 
-function Tooltip(ctx, text)
+local function Tooltip(ctx, text)
   if settings.tooltips then
     reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x / 2)
     reaper.ImGui_PushFont(ctx, style.font, settings.font_size * 0.8)
@@ -461,19 +462,19 @@ function Tooltip(ctx, text)
   end
 end
 
-function SaveSettings()
+local function SaveSettings()
   for k, v in pairs(default_settings) do
     reaper.SetExtState(ext_section, k, tostring(settings[k]), true)
   end
 end
 
-function SaveFormConfig()
+local function SaveFormConfig()
   for _, v in ipairs(form_config_keys) do
     reaper.SetExtState(ext_section, v, tostring(form[v]), true)
   end
 end
 
-function Settings()
+local function Settings()
   if reaper.ImGui_Button(ctx, "Settings...") then
     reaper.ImGui_OpenPopup(ctx, "Settings")
   end
@@ -517,7 +518,7 @@ function Settings()
   end
 end
 
-function WildcardInfo()
+local function WildcardInfo()
   if reaper.ImGui_Button(ctx, "Wildcard Info") then
     reaper.ImGui_OpenPopup(ctx, "Wildcard Info")
   end
@@ -563,7 +564,7 @@ function WildcardInfo()
   end
 end
 
-function Support()
+local function Support()
   if SmallButton(ctx, "Support") then
     reaper.ImGui_OpenPopup(ctx, "Support")
   end
@@ -594,7 +595,7 @@ function Support()
   end
 end
 
-function IsWindowOpen(name)
+local function IsWindowOpen(name)
   local is_open
   local handle
 
@@ -617,7 +618,7 @@ function IsWindowOpen(name)
   end
 end
 
-function ToggleTarget()
+local function ToggleTarget()
   if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_F1(), false) then
     form.target = 0
   elseif reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_F2(), false) then
@@ -629,7 +630,7 @@ function ToggleTarget()
   end
 end
 
-function OperationMode()
+local function OperationMode()
   reaper.ImGui_SeparatorText(ctx, "Renaming\t")
   if data.mx_open and not settings.ignore_mx then
     reaper.ImGui_Text(ctx, "Operating on ")
@@ -673,7 +674,7 @@ function OperationMode()
   end
 end
 
-function CategoryFields()
+local function CategoryFields()
   local cat_changed, sub_changed, id_changed
   cat_changed, form.cur_cat = reaper.ImGui_Combo(ctx, "Category", form.cur_cat, combo.cat_items)
 
@@ -697,7 +698,7 @@ function CategoryFields()
   end
 end
 
-function CategorySearch()
+local function CategorySearch()
   local rv
 
   if (form.applied and not form.name_focused) or form.search_sc then
@@ -833,14 +834,14 @@ function CategorySearch()
   end
 end
 
-function Apply()
+local function Apply()
   local rv = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl())
       and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Enter(), false)
   form.applied = rv
   return rv
 end
 
-function SubstituteIdx(filename, index)
+local function SubstituteIdx(filename, index)
   local idx
   if index < 10 then
     idx = 0 .. tostring(index)
@@ -858,7 +859,7 @@ function SubstituteIdx(filename, index)
   return filename .. " " .. idx
 end
 
-function SubstituteSelf(filename, name)
+local function SubstituteSelf(filename, name)
   local self = string.find(filename, "$self")
 
   if self then
@@ -876,7 +877,7 @@ function SubstituteSelf(filename, name)
   return filename
 end
 
-function BigButton(ctx, label, divider, padding, color)
+local function BigButton(ctx, label, divider, padding, color)
   divider = divider or 1
   padding = padding or 40
 
@@ -895,7 +896,7 @@ function BigButton(ctx, label, divider, padding, color)
   return btn
 end
 
-function SmallButton(ctx, label)
+local function SmallButton(ctx, label)
   reaper.ImGui_PushFont(ctx, style.font, settings.font_size * 0.8)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color.transparent)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color.transparent)
@@ -908,7 +909,7 @@ function SmallButton(ctx, label)
   return btn
 end
 
-function Rename()
+local function Rename()
   reaper.Undo_BeginBlock()
 
   if data.mx_open and not settings.ignore_mx then
@@ -987,7 +988,7 @@ end
 
 -- Only use one button for all targets
 
-function RenameButton()
+local function RenameButton()
   local t
   local label
   local col
@@ -1021,7 +1022,7 @@ function RenameButton()
   end
 end
 
-function CacheMarkers(cacheregions)
+local function CacheMarkers(cacheregions)
   data.markers = {}
   data.regions = {}
 
@@ -1039,7 +1040,7 @@ function CacheMarkers(cacheregions)
   end
 end
 
-function CacheSelectedTracks()
+local function CacheSelectedTracks()
   data.tracks = {}
   for i = 0, reaper.CountSelectedTracks(0) do
     local track = reaper.GetSelectedTrack(0, i)
@@ -1047,7 +1048,7 @@ function CacheSelectedTracks()
   end
 end
 
-function CacheSelectedItems()
+local function CacheSelectedItems()
   data.items = {}
   for i = 0, reaper.CountSelectedMediaItems(0) do
     local item = reaper.GetSelectedMediaItem(0, i)
@@ -1055,7 +1056,7 @@ function CacheSelectedItems()
   end
 end
 
-function CacheFiles()
+local function CacheFiles()
   data.files = {}
 
   local file_LV = reaper.JS_Window_FindChildByID(data.mx_handle, 0x3E9)
@@ -1076,7 +1077,7 @@ function CacheFiles()
   end
 end
 
-function CacheUCSData()
+local function CacheUCSData()
   data.ucs_names = {}
 
   local t
@@ -1165,7 +1166,7 @@ function CacheUCSData()
   end
 end
 
-function GetSelectedMarkers(getregions)
+local function GetSelectedMarkers(getregions)
   local selected_markers = {}
   local loop_start, loop_end = reaper.GetSet_LoopTimeRange2(0, false, false, 0, 10, false)
 
@@ -1218,7 +1219,7 @@ function GetSelectedMarkers(getregions)
   return selected_markers
 end
 
-function CountManagerMarkers(countregions)
+local function CountManagerMarkers(countregions)
   local manager = reaper.JS_Window_FindChildByID(data.rm_handle, 0x42F)
   local sel_count, sel_indexes = reaper.JS_ListView_ListAllSelItems(manager)
   local selected_markers = {}
@@ -1259,7 +1260,7 @@ function CountManagerMarkers(countregions)
   return selected_markers
 end
 
-function CountTargets()
+local function CountTargets()
   local filecount = 0
 
   if data.mx_open and not settings.ignore_mx then
@@ -1308,27 +1309,27 @@ function CountTargets()
   return filecount
 end
 
-function NameShortcut()
+local function NameShortcut()
   return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl())
       and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_N(), false)
 end
 
-function SearchShortcut()
+local function SearchShortcut()
   return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Ctrl())
       and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_F(), false)
 end
 
-function NavigateNext()
+local function NavigateNext()
   return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Alt())
       and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_RightArrow(), false)
 end
 
-function NavigatePrevious()
+local function NavigatePrevious()
   return reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Mod_Alt())
       and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_LeftArrow(), false)
 end
 
-function GetNearestMarker(isrgn, step)
+local function GetNearestMarker(isrgn, step)
   local t = {}
   if isrgn then t = data.regions else t = data.markers end
 
@@ -1351,7 +1352,7 @@ function GetNearestMarker(isrgn, step)
   return nearest_marker
 end
 
-function NavigateMarker(isrgn, step)
+local function NavigateMarker(isrgn, step)
   local t = {}
   if isrgn then t = data.regions else t = data.markers end
 
@@ -1389,7 +1390,7 @@ function NavigateMarker(isrgn, step)
   return nav_marker
 end
 
-function Navigate(next)
+local function Navigate(next)
   if data.mx_open and not settings.ignore_mx then
     if next then
       reaper.JS_Window_OnCommand(data.mx_handle, 40030) -- Browser: Select next file in directory
@@ -1440,7 +1441,7 @@ function Navigate(next)
   form.navigation_offset = (next and -1 or 1)
 end
 
-function MainFields()
+local function MainFields()
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), color.mainfields)
 
   if (form.applied and form.name_focused) or form.search_apply or form.name_sc then
@@ -1486,7 +1487,7 @@ function MainFields()
   rv, form.clear_fx = reaper.ImGui_Checkbox(ctx, "Clear FXName on rename", form.clear_fx)
 end
 
-function OptionalFields()
+local function OptionalFields()
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Header(), color.transparent)
   if reaper.ImGui_CollapsingHeader(ctx, "Optional Fields", nil) then
     rv, form.user_cat = reaper.ImGui_InputText(ctx, "UserCategory", form.user_cat)
@@ -1504,7 +1505,7 @@ function OptionalFields()
   reaper.ImGui_PopStyleColor(ctx)
 end
 
-function PushMainStyleVars()
+local function PushMainStyleVars()
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 1, style.item_spacing_y)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_SeparatorTextPadding(), 0, 0)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_SeparatorTextBorderSize(), 1)
@@ -1514,7 +1515,7 @@ function PushMainStyleVars()
   return 5
 end
 
-function Navigation()
+local function Navigation()
   reaper.ImGui_SeparatorText(ctx, "Navigation\t")
 
   if reaper.ImGui_ArrowButton(ctx, "Previous", reaper.ImGui_Dir_Left())
@@ -1551,7 +1552,7 @@ function Navigation()
   reaper.ImGui_PopStyleColor(ctx)
 end
 
-function UpdateLoopPoints()
+local function UpdateLoopPoints()
   if form.target == 1 then
     reaper.Main_OnCommand(41039, 0) --Loop points: Set loop points to items
   elseif form.target == 3 then
@@ -1616,7 +1617,16 @@ local function Menu()
   end
 end
 
-function Main()
+local function SoundlyLink()
+  reaper.ImGui_Text(ctx, "In collaboration with")
+  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+  reaper.ImGui_Image(ctx, style.logo_soundly, 94, 19)
+  if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
+    reaper.CF_ShellExecute("https://getsoundly.com/")
+  end
+end
+
+local function Main()
   -- Check if Focus UCS Toolkit script has been called
   if reaper.GetExtState(ext_section, "focus") == "1" then
     form.search_sc = true
@@ -1632,22 +1642,6 @@ function Main()
   end
 
   Menu()
-
-
-  -- Info()
-  -- reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-
-  -- Support()
-  -- reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-
-  -- Settings()
-
-  -- reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-
-  -- WebsiteLink()
-
-  -- reaper.ImGui_Separator(ctx)
-  -- reaper.ImGui_Dummy(ctx, 0, style.item_spacing_y)
 
   reaper.ImGui_PushFont(ctx, style.font, settings.font_size)
 
@@ -1726,16 +1720,7 @@ function Main()
   reaper.ImGui_PopFont(ctx)
 end
 
-function SoundlyLink()
-  reaper.ImGui_Text(ctx, "In collaboration with")
-  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-  reaper.ImGui_Image(ctx, style.logo_soundly, 94, 19)
-  if reaper.ImGui_IsItemClicked(ctx, reaper.ImGui_MouseButton_Left()) then
-    reaper.CF_ShellExecute("https://getsoundly.com/")
-  end
-end
-
-function Dock()
+local function Dock()
   if app.dock_id ~= 0 then
     if SmallButton(ctx, "Undock") then
       app.dock_id = 0
@@ -1748,13 +1733,7 @@ function Dock()
   end
 end
 
-function WebsiteLink()
-  if SmallButton(ctx, "tdspkaudio.com") then
-    reaper.CF_ShellExecute("https://www.tdspkaudio.com")
-  end
-end
-
-function Loop()
+local function Loop()
   if app.has_undocked then
     reaper.ImGui_SetNextWindowSize(ctx, app.window_width, app.window_height)
   end
