@@ -20,6 +20,7 @@
 --  [main] .
 --  [main] tdspk - Library Tools - Focus UCS Toolkit.lua
 -- @changelog
+--  1.3.1 fix crash when navigating targets with navigation buttons
 --  1.3 UI support new font API, UI refactoring and improvements
 --  1.2.5 require ImGui Version 0.9.3.3 to avoid PushFont errors
 --  1.2.4 new button: copy generated UCS names to clipboard, setting to ignore open Media Explorer while renaming
