@@ -474,7 +474,7 @@ function SaveFormConfig()
 end
 
 function Settings()
-  if SmallButton(ctx, "Settings") then
+  if reaper.ImGui_Button(ctx, "Settings...") then
     reaper.ImGui_OpenPopup(ctx, "Settings")
   end
 
@@ -1564,6 +1564,58 @@ function UpdateLoopPoints()
   end
 end
 
+local function Menu()
+  if reaper.ImGui_BeginMenuBar(ctx) then
+    if reaper.ImGui_BeginMenu(ctx, "Info", true) then
+      local info = {
+        "UCS Toolkit",
+        "UCS Version " .. ucs.version,
+        "A tool by Tadej Supukovic"
+      }
+
+      for _, v in ipairs(info) do
+        reaper.ImGui_MenuItem(ctx, v, "", false, false)
+      end
+
+      reaper.ImGui_Separator(ctx)
+
+      if reaper.ImGui_MenuItem(ctx, "Website") then
+        reaper.CF_ShellExecute("https://www.tdspkaudio.com")
+      end
+
+      if reaper.ImGui_MenuItem(ctx, "Donate") then
+        reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
+      end
+
+      if reaper.ImGui_MenuItem(ctx, "GitHub Repository") then
+        reaper.CF_ShellExecute("https://github.com/tdspk/ReaScripts")
+      end
+
+      reaper.ImGui_Separator(ctx)
+      
+      local thanks = {
+        "Special thanks to:",
+        "Hans Ekevi and Soundly AS",
+        "Cockos Inc. for REAPER",
+        "cfillion for ReaImGui",
+        "The REAPER Community",
+        "The Airwiggles Community",
+        "Tim Nielsen and the team behind UCS"
+      }
+
+      for _, v in ipairs(thanks) do
+        reaper.ImGui_MenuItem(ctx, v, "", false, false)
+      end
+
+      reaper.ImGui_EndMenu(ctx)
+    end
+
+    Settings()
+
+    reaper.ImGui_EndMenuBar(ctx)
+  end
+end
+
 function Main()
   -- Check if Focus UCS Toolkit script has been called
   if reaper.GetExtState(ext_section, "focus") == "1" then
@@ -1579,36 +1631,25 @@ function Main()
     data.ticks = 0
   end
 
+  Menu()
+
+
+  -- Info()
+  -- reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+
+  -- Support()
+  -- reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+
+  -- Settings()
+
+  -- reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
+
+  -- WebsiteLink()
+
+  -- reaper.ImGui_Separator(ctx)
+  -- reaper.ImGui_Dummy(ctx, 0, style.item_spacing_y)
+
   reaper.ImGui_PushFont(ctx, style.font, settings.font_size)
-  reaper.ImGui_Text(ctx, "UCS Toolkit")
-  reaper.ImGui_PopFont(ctx)
-
-  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-
-  reaper.ImGui_PushFont(ctx, style.font, settings.font_size * 0.8)
-  reaper.ImGui_Text(ctx, "UCS Version " .. ucs.version)
-  reaper.ImGui_PopFont(ctx)
-
-  reaper.ImGui_SameLine(ctx)
-  reaper.ImGui_Dummy(ctx, style.item_spacing_x, 0)
-  reaper.ImGui_SameLine(ctx)
-
-  reaper.ImGui_PushFont(ctx, style.font, settings.font_size)
-
-  Info()
-  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-
-  Support()
-  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-
-  Settings()
-
-  reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
-
-  WebsiteLink()
-
-  reaper.ImGui_Separator(ctx)
-  reaper.ImGui_Dummy(ctx, 0, style.item_spacing_y)
 
   local style_pushes = PushMainStyleVars()
 
@@ -1694,49 +1735,6 @@ function SoundlyLink()
   end
 end
 
-function Info()
-  if SmallButton(ctx, "Info") then
-    reaper.ImGui_OpenPopup(ctx, "Info")
-  end
-
-  local x, y = reaper.ImGui_Viewport_GetCenter(reaper.ImGui_GetWindowViewport(ctx))
-  reaper.ImGui_SetNextWindowPos(ctx, x, y, reaper.ImGui_Cond_Appearing(), 0.5, 0.5)
-  reaper.ImGui_SetNextWindowSize(ctx, 300, 0)
-
-  if reaper.ImGui_BeginPopupModal(ctx, "Info", nil, reaper.ImGui_WindowFlags_AlwaysAutoResize()) then
-    local info = {
-      "UCS Toolkit " .. version,
-      "UCS Version " .. ucs.version,
-      "A tool by tdspk"
-    }
-
-    for _, v in ipairs(info) do
-      reaper.ImGui_Text(ctx, v)
-    end
-
-    reaper.ImGui_SeparatorText(ctx, "Special Thanks to:")
-
-    local thanks = {
-      "Hans Ekevi and Soundly AS",
-      "Cockos Inc. for REAPER",
-      "cfillion for ReaImGui",
-      "The REAPER Community",
-      "The Airwiggles Community",
-      "Tim Nielsen and the team behind UCS"
-    }
-
-    for _, v in ipairs(thanks) do
-      reaper.ImGui_Text(ctx, v)
-    end
-
-    if reaper.ImGui_Button(ctx, "Close") then
-      reaper.ImGui_CloseCurrentPopup(ctx)
-    end
-
-    reaper.ImGui_EndPopup(ctx)
-  end
-end
-
 function Dock()
   if app.dock_id ~= 0 then
     if SmallButton(ctx, "Undock") then
@@ -1764,7 +1762,7 @@ function Loop()
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_WindowRounding(), 10)
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_WindowTitleAlign(), 0.5, 0.5)
 
-  local visible, open = reaper.ImGui_Begin(ctx, "tdspk - UCS Toolkit", true)
+  local visible, open = reaper.ImGui_Begin(ctx, "tdspk - UCS Toolkit", true, reaper.ImGui_WindowFlags_MenuBar())
 
   if visible then
     app.focused = reaper.ImGui_IsWindowFocused(ctx)
