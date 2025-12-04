@@ -1517,19 +1517,6 @@ local function Navigation()
   reaper.ImGui_PopStyleColor(ctx)
 end
 
-local function Dock()
-  if app.dock_id ~= 0 then
-    if reaper.ImGui_Button(ctx, "Undock") then
-      app.dock_id = 0
-      app.has_undocked = true
-    end
-  else
-    if reaper.ImGui_Button(ctx, "Dock") then
-      app.dock_id = -1
-    end
-  end
-end
-
 local function Menu()
   if reaper.ImGui_BeginMenuBar(ctx) then
     if reaper.ImGui_BeginMenu(ctx, "Info", true) then
@@ -1577,7 +1564,6 @@ local function Menu()
     end
 
     Settings()
-    Dock()
 
     reaper.ImGui_EndMenuBar(ctx)
   end
