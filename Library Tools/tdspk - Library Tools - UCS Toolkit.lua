@@ -625,8 +625,6 @@ local function OperationMode()
     Tooltip(ctx, "Open the Media Explorer to rename local files")
 
     if form.target == 2 or form.target == 3 then
-      local btn_text
-      --reaper.ImGui_SameLine(ctx, 0, style.item_spacing_x)
       if data.rm_open then
         reaper.ImGui_Text(ctx, "Renaming selections from ")
         reaper.ImGui_SameLine(ctx)
@@ -637,8 +635,6 @@ local function OperationMode()
         reaper.ImGui_TextColored(ctx, color.blue, "Arrange View")
       end
       Tooltip(ctx, "Toggle the Marker/Region Manager to change the mode")
-    else
-      reaper.ImGui_Text(ctx, "")
     end
   end
 end
