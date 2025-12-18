@@ -60,7 +60,7 @@ local function Loop()
     for i = 1, #col_table - 1 do
       local color = colors[i]
       local colstr = tostring(color)
-      local btn = ColorButton(("##%d"):format(color, i), color)
+      local btn = ColorButton(("##%d"):format(i), color)
       
       if btn then
         cmd = reaper.NamedCommandLookup("_SWS_TRACKCUSTCOL" .. i)
