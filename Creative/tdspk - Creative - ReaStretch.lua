@@ -503,9 +503,6 @@ reastretch = {
 local can_space = true
 ctx = reaper.ImGui_CreateContext(reastretch.window_title)
 
-local font = reaper.ImGui_CreateFont("sans-serif", 16)
-reaper.ImGui_Attach(ctx, font)
-
 function Main()
   item_count = reaper.CountSelectedMediaItems(0)
   
@@ -685,11 +682,9 @@ function Loop()
     local visible, open = reaper.ImGui_Begin(ctx, reastretch.window_title, true, reaper.ImGui_WindowFlags_MenuBar())
     if visible then
       Menu()
-      reaper.ImGui_PushFont(ctx, font)
       reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 10, 10)
       Main()
       reaper.ImGui_PopStyleVar(ctx)
-      reaper.ImGui_PopFont(ctx)
       reaper.ImGui_End(ctx)
     end
 
