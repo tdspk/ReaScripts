@@ -522,6 +522,8 @@ function Main()
     end
     
     changed = false
+
+    reaper.ImGui_Text(ctx, ("%d items selected"):format(item_count))
     
     rv, reastretch.mode = reaper.ImGui_RadioButtonEx(ctx, "Off", reastretch.mode, -1)
     changed = changed or rv
