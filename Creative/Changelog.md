@@ -9,4 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### 
+### Added
+
+- Autoresize window based on content
+- Display selected item name at top
+- Display selected item count at top (if more than 1 item is selected)
+
+### Changed
+
+- Use default ReaImGui Font
