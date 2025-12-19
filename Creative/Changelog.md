@@ -26,3 +26,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Use default ReaImGui font
+- Remove item spacing for more compact UI
+- Re-Launch script after terminating
