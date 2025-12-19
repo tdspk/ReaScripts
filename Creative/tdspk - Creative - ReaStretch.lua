@@ -678,7 +678,7 @@ function Menu()
 end
 
 function Loop()
-    reaper.ImGui_SetNextWindowSize(ctx, 400, 400, reaper.ImGui_Cond_FirstUseEver())
+    reaper.ImGui_SetNextWindowSize(ctx, 400, 0)
     local visible, open = reaper.ImGui_Begin(ctx, reastretch.window_title, true, reaper.ImGui_WindowFlags_MenuBar())
     if visible then
       Menu()
