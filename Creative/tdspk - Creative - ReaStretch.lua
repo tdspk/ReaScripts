@@ -30,8 +30,8 @@ bitmask = {
   syw = 1536, -- 0110 0000 0000
   -- ReaReaRea
   rnd = 15,   -- 0000 0000 1111
-  fdm = 1008,  -- 0011 1111 0000
-  shp = 3072,  -- 1100 0000 0000
+  fdm = 1008, -- 0011 1111 0000
+  shp = 3072, -- 1100 0000 0000
   snc = 8192, -- 0010 0000 0000 0000
 }
 
@@ -505,33 +505,43 @@ ctx = reaper.ImGui_CreateContext(reastretch.window_title)
 
 function Main()
   item_count = reaper.CountSelectedMediaItems(0)
-  
+
   if item_count > 0 then
     -- Get settings for media item take
     item = reaper.GetSelectedMediaItem(0, 0)
     take = reaper.GetTake(item, 0)
     source = reaper.GetMediaItemTake_Source(take)
     source_length = reaper.GetMediaSourceLength(source)
-    
+
     -- Read pitchmode and extract relevant high and low bytes
     pitchmode = reaper.GetMediaItemTakeInfo_Value(take, "I_PITCHMODE")
     reastretch.mode = (pitchmode >> 16) & 0xFFFF
-    
+
     if reastretch.mode ~= 14 and reastretch.mode ~= 15 then
       reastretch.mode = -1
     end
-    
+
     changed = false
 
-    reaper.ImGui_Text(ctx, ("%d items selected"):format(item_count))
-    
+    if item_count > 1 then
+      reaper.ImGui_Text(ctx, ("%d items selected"):format(item_count))
+    else
+      reaper.ImGui_Text(ctx, ("%s"):format(reaper.GetTakeName(take)))
+    end
+    if reaper.GetPlayStateEx(0) == 1 then
+      reaper.ImGui_SameLine(ctx, 0, 10)
+      reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
+      reaper.ImGui_Text(ctx, "Playing - please restart playback to hear the changes") -- Todo colored text
+      reaper.ImGui_PopFont(ctx)
+    end
+
     rv, reastretch.mode = reaper.ImGui_RadioButtonEx(ctx, "Off", reastretch.mode, -1)
     changed = changed or rv
-    
+
     reaper.ImGui_SameLine(ctx)
     rv, reastretch.mode = reaper.ImGui_RadioButtonEx(ctx, "Rrreeeaaa", reastretch.mode, 14)
     changed = changed or rv
-    
+
     reaper.ImGui_SameLine(ctx)
     rv, reastretch.mode = reaper.ImGui_RadioButtonEx(ctx, "ReaReaRea", reastretch.mode, 15)
     changed = changed or rv
@@ -545,20 +555,19 @@ function Main()
     else
       md = -1
     end
-    
+
     if changed then
       reaper.SetMediaItemTakeInfo_Value(take, "I_PITCHMODE", md)
     end
-    
+
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Space()) and can_space then
       can_space = false
       reaper.Main_OnCommand(40044, 0) -- Transport: Play/stop
     end
-    
+
     if reaper.ImGui_IsKeyReleased(ctx, reaper.ImGui_Key_Space()) then
       can_space = true
     end
-    
   else
     reaper.ImGui_Text(ctx, "Please select a Media Item to stretch!")
   end
@@ -571,41 +580,41 @@ function RenderRrreeeaaa()
   reastretch.fft = parms & bitmask.fft
   reastretch.anw = parms & bitmask.anw
   reastretch.syw = parms & bitmask.syw
-  
+
   syn_slider = syn_to_slider[reastretch.syn]
   rv, syn_slider = reaper.ImGui_SliderInt(ctx, "Synthesis", syn_slider, 3, 10, "%dx")
   reastretch.syn = slider_to_syn[syn_slider]
   changed = changed or rv
-  
+
   reaper.ImGui_Text(ctx, "")
-  
-  fft_slider = fft_to_slider[reastretch.fft]
-  rv, fft_slider  = reaper.ImGui_SliderInt(ctx, "FFT", fft_slider, 0, 3, fft_names[fft_slider])
+
+  fft_slider     = fft_to_slider[reastretch.fft]
+  rv, fft_slider = reaper.ImGui_SliderInt(ctx, "FFT", fft_slider, 0, 3, fft_names[fft_slider])
   reastretch.fft = slider_to_fft[fft_slider]
-  changed = changed or rv
-  
-  ano_slider = ano_to_slider[reastretch.ano]
+  changed        = changed or rv
+
+  ano_slider     = ano_to_slider[reastretch.ano]
   rv, ano_slider = reaper.ImGui_SliderInt(ctx, "Analysis Offset", ano_slider, 0, 3, ano_names[ano_slider])
   reastretch.ano = slider_to_ano[ano_slider]
-  changed = changed or rv
-  
-  anw_slider = anw_to_slider[reastretch.anw]
+  changed        = changed or rv
+
+  anw_slider     = anw_to_slider[reastretch.anw]
   rv, anw_slider = reaper.ImGui_SliderInt(ctx, "Analysis Window", anw_slider, 0, 3, anw_names[anw_slider])
   reastretch.anw = slider_to_anw[anw_slider]
-  changed = changed or rv
-  
-  syw_slider = syw_to_slider[reastretch.syw]
+  changed        = changed or rv
+
+  syw_slider     = syw_to_slider[reastretch.syw]
   rv, syw_slider = reaper.ImGui_SliderInt(ctx, "Synthesis Window", syw_slider, 0, 3, syw_names[syw_slider])
   reastretch.syw = slider_to_syw[syw_slider]
-  changed = changed or rv
-  
+  changed        = changed or rv
+
   -- Collect all shifter data and write at end of loop
-  md = 14 << 16
-  md = md + reastretch.syn
-  md = md + reastretch.ano
-  md = md + reastretch.fft
-  md = md + reastretch.anw
-  md = md + reastretch.syw
+  md             = 14 << 16
+  md             = md + reastretch.syn
+  md             = md + reastretch.ano
+  md             = md + reastretch.fft
+  md             = md + reastretch.anw
+  md             = md + reastretch.syw
 end
 
 function RenderReaReaRea()
@@ -613,12 +622,12 @@ function RenderReaReaRea()
   reastretch.fdm = parms & bitmask.fdm
   reastretch.shp = parms & bitmask.shp
   reastretch.snc = parms & bitmask.snc
-  
+
   snc_checkbox = snc_to_checkbox[reastretch.snc]
   rv, snc_checkbox = reaper.ImGui_Checkbox(ctx, "Tempo Synced", snc_checkbox)
   reastretch.snc = checkbox_to_snc[snc_checkbox]
   changed = changed or rv
-  
+
   if snc_checkbox then
     fds_slider = fds_to_slider[reastretch.fdm]
     rv, fds_slider = reaper.ImGui_SliderInt(ctx, "Fade", fds_slider, 0, 23, fds_names[fds_slider])
@@ -628,17 +637,17 @@ function RenderReaReaRea()
     rv, fdm_slider = reaper.ImGui_SliderInt(ctx, "Fade", fdm_slider, 0, 63, fdm_names[fdm_slider])
     reastretch.fdm = slider_to_fdm[fdm_slider]
   end
-  
+
   changed = changed or rv
-  
+
   rv, reastretch.rnd = reaper.ImGui_SliderInt(ctx, "Randomize", reastretch.rnd, 0, 15, rnd_names[reastretch.rnd])
   changed = changed or rv
-  
+
   shp_slider = shp_to_slider[reastretch.shp]
   rv, shp_slider = reaper.ImGui_SliderInt(ctx, "Shape", shp_slider, 0, 2, shp_names[shp_slider])
   reastretch.shp = slider_to_shp[shp_slider]
   changed = changed or rv
-  
+
   md = 15 << 16
   md = md + reastretch.rnd
   md = md + reastretch.shp
@@ -647,51 +656,50 @@ function RenderReaReaRea()
 end
 
 function Menu()
-  if reaper.ImGui_BeginMenuBar(ctx) then 
+  if reaper.ImGui_BeginMenuBar(ctx) then
     if reaper.ImGui_BeginMenu(ctx, "Info", true) then
       local info = {
         "ReaStretch",
         "A tool by tdspk"
       }
-      
+
       for _, v in ipairs(info) do
         reaper.ImGui_MenuItem(ctx, v, "", false, false)
       end
-      
+
       reaper.ImGui_Separator(ctx)
-      
+
       if reaper.ImGui_MenuItem(ctx, "Website") then
         reaper.CF_ShellExecute("https://www.tdspkaudio.com")
       end
-      
+
       if reaper.ImGui_MenuItem(ctx, "Donate") then
         reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
       end
-      
+
       if reaper.ImGui_MenuItem(ctx, "GitHub Repository") then
         reaper.CF_ShellExecute("https://github.com/tdspk/ReaScripts")
       end
-      
+
       reaper.ImGui_EndMenu(ctx)
     end
-    
+
     reaper.ImGui_EndMenuBar(ctx)
   end
 end
 
 function Loop()
-    reaper.ImGui_SetNextWindowSize(ctx, 400, 0)
-    local visible, open = reaper.ImGui_Begin(ctx, reastretch.window_title, true, reaper.ImGui_WindowFlags_MenuBar())
-    if visible then
-      Menu()
-      reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 10, 10)
-      Main()
-      reaper.ImGui_PopStyleVar(ctx)
-      reaper.ImGui_End(ctx)
-    end
+  reaper.ImGui_SetNextWindowSize(ctx, 400, 0)
+  local visible, open = reaper.ImGui_Begin(ctx, reastretch.window_title, true, reaper.ImGui_WindowFlags_MenuBar())
+  if visible then
+    Menu()
+    reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 10, 10)
+    Main()
+    reaper.ImGui_PopStyleVar(ctx)
+    reaper.ImGui_End(ctx)
+  end
 
-    if open then reaper.defer(Loop) end
+  if open then reaper.defer(Loop) end
 end
 
 reaper.defer(Loop)
-
