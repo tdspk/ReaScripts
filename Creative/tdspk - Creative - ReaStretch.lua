@@ -16,6 +16,10 @@
 --  Changed font to sans serif
 --  First version
 
+if reaper.APIExists("reaper.set_action_options") then
+  reaper.set_action_options(3)
+end
+
 dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')
 
 local info = debug.getinfo(1, 'S');
