@@ -710,7 +710,6 @@ function Loop()
     Menu()
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 10, 10)
     Main()
-    reaper.ImGui_PopStyleVar(ctx)
     reaper.ImGui_End(ctx)
   end
 
