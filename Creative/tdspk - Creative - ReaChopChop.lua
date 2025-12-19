@@ -15,7 +15,7 @@
 --  Added Randomize option
 --  First version
 
-dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')('0.8')
+dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')
 
 window_title = "tdspk - ReaChopChop"
 
@@ -52,11 +52,9 @@ end
 -- Precise vs Sloppy (nudge)
 
 local ctx = reaper.ImGui_CreateContext(window_title)
-local font = reaper.ImGui_CreateFont("sans-serif", 16)
-reaper.ImGui_Attach(ctx, font)
 
 function Main()
-  reaper.ImGui_PushFont(ctx, font)
+  reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx))
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 10, 10)
   
   item_count = reaper.CountSelectedMediaItems(0)
