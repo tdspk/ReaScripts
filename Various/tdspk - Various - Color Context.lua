@@ -1,8 +1,13 @@
 local version = reaper.GetAppVersion()
 version = tonumber(version:match("%d.%d"))
 
+-- local _, _, section_id, cmd_id = reaper.get_action_context()
+-- local _, info = reaper.GetActionShortcutDesc(section_id, cmd_id, 0)
+
+-- reaper.ShowConsoleMsg(info)
+
 if version >= 7.0 then
-  reaper.set_action_options(3) -- Terminate and restart the script if it's already running
+  reaper.set_action_options(1) -- Terminate and restart the script if it's already running
 end
 
 rv, col_string = reaper.BR_Win32_GetPrivateProfileString("reaper", "custcolors", "", reaper.get_ini_file())
@@ -17,6 +22,30 @@ colors = {
 
 }
 
+data = {
+  update = false,
+  last_segment = 0,
+  last_clicked = 0
+}
+
+settings = {
+
+}
+
+default_settings = {
+  button_size = 15,
+  item_spacing = 2,
+  window_padding = 0,
+  orientation = 0,
+  close_on_click = false
+}
+
+local orientation_names = {
+  [0] = "Square",
+  [1] = "Horizontal",
+  [2] = "Vertical"
+}
+
 local function HexToRgb(hex_color)
   local r = tonumber(hex_color:sub(1, 2), 16) / 255
   local g = tonumber(hex_color:sub(3, 4), 16) / 255
@@ -25,57 +54,109 @@ local function HexToRgb(hex_color)
 end
 
 for i = 1, #col_table - 1 do
-    local r, g, b = HexToRgb(col_table[i])
-    table.insert(colors, reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, 1))
+  local r, g, b = HexToRgb(col_table[i])
+  table.insert(colors, reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, 1))
 end
 
--- output color table with reaper.ShowConsoleMsg
-for i = 1, #colors do
-  reaper.ShowConsoleMsg(("%s\n"):format(colors[i]))
-end
+-- -- output color table with reaper.ShowConsoleMsg
+-- for i = 1, #colors do
+--   reaper.ShowConsoleMsg(("%s\n"):format(colors[i]))
+-- end
 
-local ctx = reaper.ImGui_CreateContext('tdspk - Color Context')
+local ctx = reaper.ImGui_CreateContext('tdspk - SWS Custom Color Picker')
 
 local focus_once = true
+
+local function ResetSettings()
+  for k, v in pairs(default_settings) do
+    settings[k] = v
+  end
+end
 
 local function ColorButton(text, color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color)
-  local btn = reaper.ImGui_Button(ctx, text, 20, 20)
+  local btn = reaper.ImGui_Button(ctx, text, settings.button_size, settings.button_size)
   reaper.ImGui_PopStyleColor(ctx, 3)
   return btn
 end
 
 local function Loop()
-  if focus_once then
-    reaper.ImGui_SetNextWindowFocus(ctx)
-    focus_once = false
+  if reaper.JS_Mouse_GetState(1) == 1 or reaper.JS_Mouse_GetState(2) == 2 then
+    local window, segment, details = reaper.BR_GetMouseCursorContext()
+
+    if window == "tcp" and segment == "track" then
+      data.last_segment = 0 -- track
+    elseif window == "arrange" and segment == "track" and details == "item" then
+      data.last_segment = 1 -- item
+    end
   end
 
-  local is_focused = reaper.ImGui_IsWindowFocused(ctx)
-  local visible, open = reaper.ImGui_Begin(ctx, 'Color Context', true)
+  local mouse_x, mouse_y = reaper.GetMousePosition()
+  local dpi = reaper.ImGui_GetWindowDpiScale(ctx)
+  reaper.ImGui_SetNextWindowPos(ctx, mouse_x / dpi, mouse_y / dpi, reaper.ImGui_Cond_Once())
+  reaper.ImGui_SetNextWindowSize(ctx, 0, 0, reaper.ImGui_Cond_Always())
+  local visible, open = reaper.ImGui_Begin(ctx, "SWS Colors", true, reaper.ImGui_WindowFlags_NoResize() | reaper.ImGui_WindowFlags_NoFocusOnAppearing() | reaper.ImGui_WindowFlags_NoTitleBar())
 
   if visible then
+    reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
+    -- reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_WindowPadding(), settings.window_padding, settings.window_padding)
+
+    -- reaper.ImGui_Text(ctx, "Last Segment: " .. (data.last_segment == 0 and "Track" or "Item"))
     for i = 1, #col_table - 1 do
       local color = colors[i]
       local colstr = tostring(color)
       local btn = ColorButton(("##%d"):format(i), color)
-      
+
       if btn then
-        cmd = reaper.NamedCommandLookup("_SWS_TRACKCUSTCOL" .. i)
+        local cmd
+        if data.last_segment == 0 then
+          cmd = reaper.NamedCommandLookup("_SWS_TRACKCUSTCOL" .. i)
+        elseif data.last_segment == 1 then
+          cmd = reaper.NamedCommandLookup("_SWS_ITEMCUSTCOL" .. i)
+        end
         reaper.Main_OnCommand(cmd, 0)
+        if settings.close_on_click then open = false end
       end
 
-      if i % 4 ~= 0 then
+      if settings.orientation == 0 then
+        if i % 4 ~= 0 then
+          reaper.ImGui_SameLine(ctx)
+        end
+      elseif settings.orientation == 1 then
         reaper.ImGui_SameLine(ctx)
       end
     end
+
+    if reaper.ImGui_BeginPopupContextWindow(ctx, "Settings") then
+      reaper.ImGui_Text(ctx, "Settings")
+
+      reaper.ImGui_SetNextItemWidth(ctx, 100)
+      rv, settings.orientation = reaper.ImGui_SliderInt(ctx, "Orientation", settings.orientation, 0, 2,
+        orientation_names[settings.orientation])
+
+      reaper.ImGui_SetNextItemWidth(ctx, 100)
+      rv, settings.button_size = reaper.ImGui_SliderInt(ctx, "Button Size", settings.button_size, 10, 30)
+
+      reaper.ImGui_SetNextItemWidth(ctx, 100)
+      rv, settings.item_spacing = reaper.ImGui_SliderInt(ctx, "Button Spacing", settings.item_spacing, 0, 10)
+
+      rv, settings.close_on_click = reaper.ImGui_Checkbox(ctx, "Close Window on Click", settings.close_on_click)
+      if reaper.ImGui_Button(ctx, "Reset") then
+        ResetSettings()
+      end
+      reaper.ImGui_EndPopup(ctx)
+    end
+
+    reaper.ImGui_PopStyleVar(ctx, 1)
     reaper.ImGui_End(ctx)
   end
   if open then
     reaper.defer(Loop)
   end
 end
+
+ResetSettings()
 
 reaper.defer(Loop)
