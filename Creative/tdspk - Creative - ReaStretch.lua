@@ -22,9 +22,6 @@ end
 
 dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')
 
-local info = debug.getinfo(1, 'S');
-script_path = info.source:match [[^@?(.*[\/])[^\/]-$]]
-
 bitmask = {
   -- Rrreeeaaa
   syn = 7,    -- 0000 0000 0111
@@ -508,30 +505,30 @@ local can_space = true
 ctx = reaper.ImGui_CreateContext(reastretch.window_title)
 
 function Main()
-  item_count = reaper.CountSelectedMediaItems(0)
+  local item_count = reaper.CountSelectedMediaItems(0)
 
   if item_count > 0 then
     -- Get settings for media item take
-    item = reaper.GetSelectedMediaItem(0, 0)
-    take = reaper.GetTake(item, 0)
-    source = reaper.GetMediaItemTake_Source(take)
-    source_length = reaper.GetMediaSourceLength(source)
+    local item = reaper.GetSelectedMediaItem(0, 0)
+    local take = reaper.GetTake(item, 0)
+    local source = reaper.GetMediaItemTake_Source(take)
 
     -- Read pitchmode and extract relevant high and low bytes
-    pitchmode = reaper.GetMediaItemTakeInfo_Value(take, "I_PITCHMODE")
+    local pitchmode = reaper.GetMediaItemTakeInfo_Value(take, "I_PITCHMODE")
     reastretch.mode = (pitchmode >> 16) & 0xFFFF
 
     if reastretch.mode ~= 14 and reastretch.mode ~= 15 then
       reastretch.mode = -1
     end
 
-    changed = false
+    local changed = false
 
     if item_count > 1 then
       reaper.ImGui_Text(ctx, ("%d items selected"):format(item_count))
     else
       reaper.ImGui_Text(ctx, ("%s"):format(reaper.GetTakeName(take)))
     end
+
     if reaper.GetPlayStateEx(0) == 1 then
       reaper.ImGui_SameLine(ctx, 0, 10)
       reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
@@ -550,18 +547,27 @@ function Main()
     rv, reastretch.mode = reaper.ImGui_RadioButtonEx(ctx, "ReaReaRea", reastretch.mode, 15)
     changed = changed or rv
 
-    parms = pitchmode & 0xFFFF
-
-    if reastretch.mode == 14 then
-      RenderRrreeeaaa()
-    elseif reastretch.mode == 15 then
-      RenderReaReaRea()
-    else
-      md = -1
+    local btn = false
+    if item_count > 1 then
+      reaper.ImGui_SameLine(ctx)
+      btn = reaper.ImGui_Button(ctx, ("Apply to %d items"):format(item_count))
     end
 
-    if changed then
-      reaper.SetMediaItemTakeInfo_Value(take, "I_PITCHMODE", md)
+    local mode = -1
+    if reastretch.mode == 14 then
+      changed, mode = RenderRrreeeaaa(pitchmode & 0xFFFF, changed)
+    elseif reastretch.mode == 15 then
+      changed, mode = RenderReaReaRea(pitchmode & 0xFFFF, changed)
+    end
+
+    if item_count > 1 and btn then
+      for i = 0, item_count - 1 do
+        local item = reaper.GetSelectedMediaItem(0, i)
+        local take = reaper.GetTake(item, 0)
+        reaper.SetMediaItemTakeInfo_Value(take, "I_PITCHMODE", mode)
+      end
+    elseif item_count == 1 and changed then -- Apply to single item
+      reaper.SetMediaItemTakeInfo_Value(take, "I_PITCHMODE", mode)
     end
 
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Space()) and can_space then
@@ -577,7 +583,7 @@ function Main()
   end
 end
 
-function RenderRrreeeaaa()
+function RenderRrreeeaaa(parms, mode_changed)
   -- Get values from &ing with bitmask
   reastretch.syn = parms & bitmask.syn
   reastretch.ano = parms & bitmask.ano
@@ -585,43 +591,46 @@ function RenderRrreeeaaa()
   reastretch.anw = parms & bitmask.anw
   reastretch.syw = parms & bitmask.syw
 
-  syn_slider = syn_to_slider[reastretch.syn]
+  local changed = mode_changed
+
+  local syn_slider = syn_to_slider[reastretch.syn]
   rv, syn_slider = reaper.ImGui_SliderInt(ctx, "Synthesis", syn_slider, 3, 10, "%dx")
   reastretch.syn = slider_to_syn[syn_slider]
   changed = changed or rv
 
-  reaper.ImGui_Text(ctx, "")
-
-  fft_slider     = fft_to_slider[reastretch.fft]
+  local fft_slider     = fft_to_slider[reastretch.fft]
   rv, fft_slider = reaper.ImGui_SliderInt(ctx, "FFT", fft_slider, 0, 3, fft_names[fft_slider])
   reastretch.fft = slider_to_fft[fft_slider]
   changed        = changed or rv
 
-  ano_slider     = ano_to_slider[reastretch.ano]
+  local ano_slider     = ano_to_slider[reastretch.ano]
   rv, ano_slider = reaper.ImGui_SliderInt(ctx, "Analysis Offset", ano_slider, 0, 3, ano_names[ano_slider])
   reastretch.ano = slider_to_ano[ano_slider]
   changed        = changed or rv
 
-  anw_slider     = anw_to_slider[reastretch.anw]
+  local anw_slider     = anw_to_slider[reastretch.anw]
   rv, anw_slider = reaper.ImGui_SliderInt(ctx, "Analysis Window", anw_slider, 0, 3, anw_names[anw_slider])
   reastretch.anw = slider_to_anw[anw_slider]
   changed        = changed or rv
 
-  syw_slider     = syw_to_slider[reastretch.syw]
+  local syw_slider     = syw_to_slider[reastretch.syw]
   rv, syw_slider = reaper.ImGui_SliderInt(ctx, "Synthesis Window", syw_slider, 0, 3, syw_names[syw_slider])
   reastretch.syw = slider_to_syw[syw_slider]
   changed        = changed or rv
 
+  local mode
   -- Collect all shifter data and write at end of loop
-  md             = 14 << 16
-  md             = md + reastretch.syn
-  md             = md + reastretch.ano
-  md             = md + reastretch.fft
-  md             = md + reastretch.anw
-  md             = md + reastretch.syw
+  mode             = 14 << 16
+  mode             = mode + reastretch.syn
+  mode             = mode + reastretch.ano
+  mode             = mode + reastretch.fft
+  mode             = mode + reastretch.anw
+  mode             = mode + reastretch.syw
+
+  return changed, mode
 end
 
-function RenderReaReaRea()
+function RenderReaReaRea(parms, mode_changed)
   reastretch.rnd = parms & bitmask.rnd
   reastretch.fdm = parms & bitmask.fdm
   reastretch.shp = parms & bitmask.shp
@@ -630,7 +639,7 @@ function RenderReaReaRea()
   snc_checkbox = snc_to_checkbox[reastretch.snc]
   rv, snc_checkbox = reaper.ImGui_Checkbox(ctx, "Tempo Synced", snc_checkbox)
   reastretch.snc = checkbox_to_snc[snc_checkbox]
-  changed = changed or rv
+  local changed = mode_changed or rv
 
   if snc_checkbox then
     fds_slider = fds_to_slider[reastretch.fdm]
@@ -652,11 +661,13 @@ function RenderReaReaRea()
   reastretch.shp = slider_to_shp[shp_slider]
   changed = changed or rv
 
-  md = 15 << 16
-  md = md + reastretch.rnd
-  md = md + reastretch.shp
-  md = md + reastretch.snc
-  md = md + reastretch.fdm
+  local mode = 15 << 16
+  mode = mode + reastretch.rnd
+  mode = mode + reastretch.shp
+  mode = mode + reastretch.snc
+  mode = mode + reastretch.fdm
+
+  return changed, mode
 end
 
 function Menu()
