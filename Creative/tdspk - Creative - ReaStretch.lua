@@ -1,5 +1,5 @@
 --@description ReaStretch
---@version 1.0.2
+--@version 1.1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # ReaStretch
@@ -497,6 +497,7 @@ local slider_to_fds = {
 
 reastretch = {
   window_title = "tdspk - ReaStretch",
+  version = "1.1",
   mode = -1,
   enabled = false
 }
@@ -675,6 +676,7 @@ function Menu()
     if reaper.ImGui_BeginMenu(ctx, "Info", true) then
       local info = {
         "ReaStretch",
+        "Version " .. reastretch.version,
         "A tool by tdspk"
       }
 
@@ -708,7 +710,6 @@ function Loop()
   local visible, open = reaper.ImGui_Begin(ctx, reastretch.window_title, true, reaper.ImGui_WindowFlags_MenuBar())
   if visible then
     Menu()
-    reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 10, 10)
     Main()
     reaper.ImGui_End(ctx)
   end
