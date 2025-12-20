@@ -1,3 +1,5 @@
+-- TODO Spawn at mouse center
+
 local version = reaper.GetAppVersion()
 version = tonumber(version:match("%d.%d"))
 
@@ -10,19 +12,8 @@ if version >= 7.0 then
   reaper.set_action_options(1) -- Terminate and restart the script if it's already running
 end
 
-rv, col_string = reaper.BR_Win32_GetPrivateProfileString("reaper", "custcolors", "", reaper.get_ini_file())
-
--- col_string contains a long string with hex values of colors. divide the string in chunks for 6 and save it to table
-col_table = {}
-for i = 1, #col_string, 8 do
-  table.insert(col_table, col_string:sub(i, i + 7))
-end
-
-colors = {
-
-}
-
 data = {
+  ext_section = "tdspk - Yet Another Color Picker",
   update = false,
   last_segment = 0,
   last_clicked = 0
@@ -36,7 +27,7 @@ default_settings = {
   button_size = 15,
   item_spacing = 2,
   window_padding = 0,
-  orientation = 0,
+  orientation = 3,
   close_on_click = false
 }
 
@@ -93,7 +84,7 @@ end
 --   reaper.ShowConsoleMsg(("%s\n"):format(colors[i]))
 -- end
 
-local ctx = reaper.ImGui_CreateContext('tdspk - SWS Custom Color Picker')
+local ctx = reaper.ImGui_CreateContext('tdspk - Yet Another Color Picker')
 
 local focus_once = true
 
@@ -123,18 +114,25 @@ local function Loop()
     end
   end
 
+  reaper.ImGui_SetNextWindowSize(ctx, 0, 0, reaper.ImGui_Cond_Always())
+  local width, height = reaper.ImGui_GetWindowSize(ctx)
+
   local mouse_x, mouse_y = reaper.GetMousePosition()
   local dpi = reaper.ImGui_GetWindowDpiScale(ctx)
-  reaper.ImGui_SetNextWindowPos(ctx, mouse_x / dpi, mouse_y / dpi, reaper.ImGui_Cond_Once())
-  reaper.ImGui_SetNextWindowSize(ctx, 0, 0, reaper.ImGui_Cond_Always())
-  local visible, open = reaper.ImGui_Begin(ctx, "SWS Colors", true, reaper.ImGui_WindowFlags_NoResize() | reaper.ImGui_WindowFlags_NoFocusOnAppearing() | reaper.ImGui_WindowFlags_NoTitleBar())
+  mouse_x = mouse_x * dpi
+  mouse_y = mouse_y * dpi
+
+  reaper.ImGui_SetNextWindowPos(ctx, mouse_x, mouse_y, reaper.ImGui_Cond_Once())
+  local visible, open = reaper.ImGui_Begin(ctx, "tdspk - YACP", true,
+    reaper.ImGui_WindowFlags_NoResize() | reaper.ImGui_WindowFlags_NoFocusOnAppearing() |
+    reaper.ImGui_WindowFlags_NoTitleBar())
 
   if visible then
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
     -- reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_WindowPadding(), settings.window_padding, settings.window_padding)
 
     -- reaper.ImGui_Text(ctx, "Last Segment: " .. (data.last_segment == 0 and "Track" or "Item"))
-    for i = 1, #col_table - 1 do
+    for i = 1, 16 do
       local color = colors[i]
       local colstr = tostring(color)
       local btn = ColorButton(("##%d"):format(i), color)
@@ -154,8 +152,6 @@ local function Loop()
         if i % orientation_mod[settings.orientation] ~= 0 then
           reaper.ImGui_SameLine(ctx)
         end
-      elseif settings.orientation == 1 then
-        reaper.ImGui_SameLine(ctx)
       end
     end
 
@@ -208,3 +204,7 @@ end
 LoadSettings()
 
 reaper.defer(Loop)
+
+reaper.atexit(SaveSettings)
+
+::eof::
