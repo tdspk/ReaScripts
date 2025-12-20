@@ -63,9 +63,29 @@ local function HexToRgb(hex_color)
   return r, g, b
 end
 
-for i = 1, #col_table - 1 do
-  local r, g, b = HexToRgb(col_table[i])
-  table.insert(colors, reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, 1))
+-- Initialize Custom Colors
+
+local _, col_string = reaper.BR_Win32_GetPrivateProfileString("reaper", "custcolors", "", reaper.get_ini_file())
+
+col_table = {}
+colors = {}
+
+if col_string == "" then
+  if reaper.ShowMessageBox("It appears there are no custom colors defined. Do you want to open SWS Color Managment?", "No Custom Colors", 1) == 1 then
+    local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
+    reaper.Main_OnCommand(cmd, 0)
+  end
+  goto eof
+else
+  -- col_string contains a long string with hex values of colors. Divide the string in chunks by 6 and save it to table
+  for i = 1, #col_string, 8 do
+    table.insert(col_table, col_string:sub(i, i + 7))
+  end
+
+  for i = 1, 16 do
+    local r, g, b = HexToRgb(col_table[i])
+    table.insert(colors, reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, 1))
+  end
 end
 
 -- -- output color table with reaper.ShowConsoleMsg
@@ -141,6 +161,11 @@ local function Loop()
 
     if reaper.ImGui_BeginPopupContextWindow(ctx, "Settings") then
       reaper.ImGui_Text(ctx, "Settings")
+
+      if reaper.ImGui_Button(ctx, "Manage Colors...") then
+        local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
+        reaper.Main_OnCommand(cmd, 0)
+      end
 
       reaper.ImGui_SetNextItemWidth(ctx, 100)
       rv, settings.orientation = reaper.ImGui_SliderInt(ctx, "Orientation", settings.orientation, 1,
