@@ -191,7 +191,7 @@ end
 
 local function SaveSettings()
   for k, v in pairs(settings) do
-    reaper.SetExtState(data.ext_section, k, tostring(settings[k]), false) -- TODO set to true
+    reaper.SetExtState(data.ext_section, k, tostring(settings[k]), true)
   end
 end
 
