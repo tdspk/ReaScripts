@@ -193,6 +193,18 @@ local function Loop()
   end
 end
 
-ResetSettings()
+local function SaveSettings()
+  for k, v in pairs(settings) do
+    reaper.SetExtState(data.ext_section, k, tostring(settings[k]), false) -- TODO set to true
+  end
+end
+
+local function LoadSettings()
+  for k, v in pairs(default_settings) do
+    settings[k] = tonumber(reaper.GetExtState(data.ext_section, k)) or v
+  end
+end
+
+LoadSettings()
 
 reaper.defer(Loop)
