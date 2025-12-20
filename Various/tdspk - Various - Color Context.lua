@@ -41,9 +41,19 @@ default_settings = {
 }
 
 local orientation_names = {
-  [0] = "Square",
-  [1] = "Horizontal",
-  [2] = "Vertical"
+  [1] = "1x16",
+  [2] = "2x8",
+  [3] = "4x4",
+  [4] = "8x2",
+  [5] = "16x1"
+}
+
+local orientation_mod = {
+  [1] = 1,
+  [2] = 2,
+  [3] = 4,
+  [4] = 8,
+  [5] = 16
 }
 
 local function HexToRgb(hex_color)
@@ -120,8 +130,8 @@ local function Loop()
         if settings.close_on_click then open = false end
       end
 
-      if settings.orientation == 0 then
-        if i % 4 ~= 0 then
+      if settings.orientation > 0 then
+        if i % orientation_mod[settings.orientation] ~= 0 then
           reaper.ImGui_SameLine(ctx)
         end
       elseif settings.orientation == 1 then
@@ -133,7 +143,8 @@ local function Loop()
       reaper.ImGui_Text(ctx, "Settings")
 
       reaper.ImGui_SetNextItemWidth(ctx, 100)
-      rv, settings.orientation = reaper.ImGui_SliderInt(ctx, "Orientation", settings.orientation, 0, 2,
+      rv, settings.orientation = reaper.ImGui_SliderInt(ctx, "Orientation", settings.orientation, 1,
+        #orientation_names,
         orientation_names[settings.orientation])
 
       reaper.ImGui_SetNextItemWidth(ctx, 100)
