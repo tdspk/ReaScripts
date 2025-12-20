@@ -16,7 +16,8 @@ data = {
   ext_section = "tdspk - Yet Another Color Picker",
   update = false,
   last_segment = 0,
-  last_clicked = 0
+  last_clicked = 0,
+  is_focused = false
 }
 
 settings = {
@@ -79,11 +80,6 @@ else
   end
 end
 
--- -- output color table with reaper.ShowConsoleMsg
--- for i = 1, #colors do
---   reaper.ShowConsoleMsg(("%s\n"):format(colors[i]))
--- end
-
 local ctx = reaper.ImGui_CreateContext('tdspk - Yet Another Color Picker')
 
 local focus_once = true
@@ -98,19 +94,22 @@ local function ColorButton(text, color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color)
+
   local btn = reaper.ImGui_Button(ctx, text, settings.button_size, settings.button_size)
   reaper.ImGui_PopStyleColor(ctx, 3)
   return btn
 end
 
 local function Loop()
-  if reaper.JS_Mouse_GetState(1) == 1 or reaper.JS_Mouse_GetState(2) == 2 then
-    local window, segment, details = reaper.BR_GetMouseCursorContext()
+  if not data.is_focused then
+    if reaper.JS_Mouse_GetState(1) == 1 or reaper.JS_Mouse_GetState(2) == 2 then
+      local window, segment, details = reaper.BR_GetMouseCursorContext()
 
-    if window == "tcp" and segment == "track" then
-      data.last_segment = 0 -- track
-    elseif window == "arrange" and segment == "track" and details == "item" then
-      data.last_segment = 1 -- item
+      if window == "tcp" and segment == "track" then
+        data.last_segment = 0 -- track
+      elseif window == "arrange" and segment == "track" and details == "item" then
+        data.last_segment = 1 -- item
+      end
     end
   end
 
@@ -122,16 +121,16 @@ local function Loop()
   mouse_x = mouse_x * dpi
   mouse_y = mouse_y * dpi
 
+  data.is_focused = reaper.ImGui_IsWindowFocused(ctx)
+
   reaper.ImGui_SetNextWindowPos(ctx, mouse_x, mouse_y, reaper.ImGui_Cond_Once())
+
   local visible, open = reaper.ImGui_Begin(ctx, "tdspk - YACP", true,
     reaper.ImGui_WindowFlags_NoResize() | reaper.ImGui_WindowFlags_NoFocusOnAppearing() |
     reaper.ImGui_WindowFlags_NoTitleBar())
 
   if visible then
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
-    -- reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_WindowPadding(), settings.window_padding, settings.window_padding)
-
-    -- reaper.ImGui_Text(ctx, "Last Segment: " .. (data.last_segment == 0 and "Track" or "Item"))
     for i = 1, 16 do
       local color = colors[i]
       local colstr = tostring(color)
