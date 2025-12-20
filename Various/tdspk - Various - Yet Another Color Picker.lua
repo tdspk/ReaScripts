@@ -13,7 +13,7 @@ if version >= 7.0 then
 end
 
 data = {
-  ext_section = "tdspk - Yet Another Color Picker",
+  ext_section = "tdspk_YACP",
   update = false,
   last_segment = 0,
   last_clicked = 0,
@@ -29,7 +29,9 @@ default_settings = {
   item_spacing = 2,
   window_padding = 0,
   orientation = 3,
-  close_on_click = false
+  close_on_click = false,
+  open_at_mousepos = true,
+  show_selection_info = false
 }
 
 local orientation_names = {
@@ -100,30 +102,37 @@ local function ColorButton(text, color)
   return btn
 end
 
+local function GetMouseCursorContext()
+  local window, segment, details = reaper.BR_GetMouseCursorContext()
+
+  if window == "tcp" and segment == "track" then
+    data.last_segment = 0   -- track
+  elseif window == "arrange" and segment == "track" and details == "item" then
+    data.last_segment = 1   -- item
+  end
+end
+
 local function Loop()
   if not data.is_focused then
     if reaper.JS_Mouse_GetState(1) == 1 or reaper.JS_Mouse_GetState(2) == 2 then
-      local window, segment, details = reaper.BR_GetMouseCursorContext()
-
-      if window == "tcp" and segment == "track" then
-        data.last_segment = 0 -- track
-      elseif window == "arrange" and segment == "track" and details == "item" then
-        data.last_segment = 1 -- item
-      end
+      GetMouseCursorContext()
     end
   end
 
   reaper.ImGui_SetNextWindowSize(ctx, 0, 0, reaper.ImGui_Cond_Always())
   local width, height = reaper.ImGui_GetWindowSize(ctx)
 
-  local mouse_x, mouse_y = reaper.GetMousePosition()
-  local dpi = reaper.ImGui_GetWindowDpiScale(ctx)
-  mouse_x = mouse_x * dpi
-  mouse_y = mouse_y * dpi
+  if settings.open_at_mousepos then
+    local mouse_x, mouse_y = reaper.GetMousePosition()
+    local dpi = reaper.ImGui_GetWindowDpiScale(ctx)
+    mouse_x = mouse_x * dpi
+    mouse_y = mouse_y * dpi
+
+
+    reaper.ImGui_SetNextWindowPos(ctx, mouse_x, mouse_y, reaper.ImGui_Cond_Once())
+  end
 
   data.is_focused = reaper.ImGui_IsWindowFocused(ctx)
-
-  reaper.ImGui_SetNextWindowPos(ctx, mouse_x, mouse_y, reaper.ImGui_Cond_Once())
 
   local visible, open = reaper.ImGui_Begin(ctx, "tdspk - YACP", true,
     reaper.ImGui_WindowFlags_NoResize() | reaper.ImGui_WindowFlags_NoFocusOnAppearing() |
@@ -131,6 +140,11 @@ local function Loop()
 
   if visible then
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
+
+    if settings.show_selection_info then
+      reaper.ImGui_Text(ctx, string.format("Coloring: %s", data.last_segment == 0 and "Tracks" or "Items"))
+    end
+
     for i = 1, 16 do
       local color = colors[i]
       local colstr = tostring(color)
@@ -174,6 +188,11 @@ local function Loop()
       rv, settings.item_spacing = reaper.ImGui_SliderInt(ctx, "Button Spacing", settings.item_spacing, 0, 10)
 
       rv, settings.close_on_click = reaper.ImGui_Checkbox(ctx, "Close Window on Click", settings.close_on_click)
+
+      rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at Mouse Position", settings.open_at_mousepos)
+
+      rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings.show_selection_info)
+
       if reaper.ImGui_Button(ctx, "Reset") then
         ResetSettings()
       end
@@ -190,20 +209,38 @@ end
 
 local function SaveSettings()
   for k, v in pairs(settings) do
-    reaper.SetExtState(data.ext_section, k, tostring(settings[k]), true)
+    reaper.SetExtState(data.ext_section, k, tostring(v), true)
   end
+end
+
+local function MapExtStateValues(ext_value)
+  if tonumber(ext_value) then
+    ext_value = tonumber(ext_value)
+  end
+
+  if ext_value == "true" then ext_value = true end
+  if ext_value == "false" then ext_value = false end
+  if ext_value == "nil" then ext_value = nil end
+
+  return ext_value
 end
 
 local function LoadSettings()
   for k, v in pairs(default_settings) do
-    settings[k] = tonumber(reaper.GetExtState(data.ext_section, k)) or v
+    if reaper.HasExtState(data.ext_section, k) then
+      settings[k] = MapExtStateValues(reaper.GetExtState(data.ext_section, k))
+    else
+      settings[k] = v
+    end
   end
 end
 
 LoadSettings()
 
-reaper.defer(Loop)
+-- Get Mouse context to indicate which segment is selected
+GetMouseCursorContext()
 
+reaper.defer(Loop)
 reaper.atexit(SaveSettings)
 
 ::eof::
