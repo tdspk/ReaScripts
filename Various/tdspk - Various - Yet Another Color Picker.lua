@@ -1,4 +1,20 @@
-
+--@description Yet Another Color Picker
+--@version 1.0
+--@author Tadej Supukovic (tdspk)
+--@about
+--  # Yet Another Color Picker
+--  A simple color picker with no fancy features. It uses the SWS custom color palette.
+--  # Requirements
+--  JS_ReaScriptAPI, SWS Extension, ReaImGui
+--@links
+--  Website https://www.tdspkaudio.com
+--@donation
+--  https://ko-fi.com/tdspkaudio
+--  https://coindrop.to/tdspkaudio
+--@provides
+--  [main] .
+-- @changelog
+--  1.0 Initial Release
 
 local extensions = {
   [1] = {
