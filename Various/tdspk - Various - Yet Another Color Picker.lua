@@ -1,12 +1,8 @@
 -- TODO Spawn at mouse center
+-- TODO check if sws exists
 
 local version = reaper.GetAppVersion()
 version = tonumber(version:match("%d.%d"))
-
--- local _, _, section_id, cmd_id = reaper.get_action_context()
--- local _, info = reaper.GetActionShortcutDesc(section_id, cmd_id, 0)
-
--- reaper.ShowConsoleMsg(info)
 
 if version >= 7.0 then
   reaper.set_action_options(1) -- Terminate and restart the script if it's already running
@@ -17,7 +13,7 @@ data = {
   ext_section = "tdspk_YACP",
   last_segment = 0,
   is_focused = false,
-  hovered_idx = -1
+  hovered_idx = -1,
 }
 
 settings = {
@@ -107,6 +103,50 @@ local function ResetSettings()
   end
 end
 
+local function SaveSettings()
+  for k, v in pairs(settings) do
+    reaper.SetExtState(data.ext_section, k, tostring(v), true)
+  end
+end
+
+local function MapExtStateValues(ext_value)
+  if tonumber(ext_value) then
+    ext_value = tonumber(ext_value)
+  end
+
+  if ext_value == "true" then ext_value = true end
+  if ext_value == "false" then ext_value = false end
+  if ext_value == "nil" then ext_value = nil end
+
+  return ext_value
+end
+
+local function LoadSettings()
+  for k, v in pairs(default_settings) do
+    if reaper.HasExtState(data.ext_section, k) then
+      settings[k] = MapExtStateValues(reaper.GetExtState(data.ext_section, k))
+    else
+      settings[k] = v
+    end
+  end
+end
+
+local function GetMouseCursorContext()
+  -- Get Mouse context to indicate which segment is selected
+  local window, segment, details = reaper.BR_GetMouseCursorContext()
+
+  if window == "tcp" and segment == "track" then
+    data.last_segment = 0 -- track
+  elseif window == "arrange" and segment == "track" and details == "item" then
+    data.last_segment = 1 -- item
+  end
+end
+
+local function Init()
+  LoadSettings()
+  GetMouseCursorContext()
+end
+
 local function ColorButton(text, color, idx)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
@@ -126,16 +166,6 @@ local function ColorButton(text, color, idx)
   reaper.ImGui_PopStyleColor(ctx, 4)
 
   return btn
-end
-
-local function GetMouseCursorContext()
-  local window, segment, details = reaper.BR_GetMouseCursorContext()
-
-  if window == "tcp" and segment == "track" then
-    data.last_segment = 0 -- track
-  elseif window == "arrange" and segment == "track" and details == "item" then
-    data.last_segment = 1 -- item
-  end
 end
 
 local function Loop()
@@ -290,38 +320,7 @@ local function Loop()
   end
 end
 
-local function SaveSettings()
-  for k, v in pairs(settings) do
-    reaper.SetExtState(data.ext_section, k, tostring(v), true)
-  end
-end
-
-local function MapExtStateValues(ext_value)
-  if tonumber(ext_value) then
-    ext_value = tonumber(ext_value)
-  end
-
-  if ext_value == "true" then ext_value = true end
-  if ext_value == "false" then ext_value = false end
-  if ext_value == "nil" then ext_value = nil end
-
-  return ext_value
-end
-
-local function LoadSettings()
-  for k, v in pairs(default_settings) do
-    if reaper.HasExtState(data.ext_section, k) then
-      settings[k] = MapExtStateValues(reaper.GetExtState(data.ext_section, k))
-    else
-      settings[k] = v
-    end
-  end
-end
-
-LoadSettings()
-
--- Get Mouse context to indicate which segment is selected
-GetMouseCursorContext()
+Init()
 
 reaper.defer(Loop)
 reaper.atexit(SaveSettings)
