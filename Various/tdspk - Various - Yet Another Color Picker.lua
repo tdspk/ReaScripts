@@ -1,4 +1,3 @@
--- TODO Spawn at mouse center
 -- TODO check if sws exists
 
 local version = reaper.GetAppVersion()
@@ -147,6 +146,7 @@ end
 local function Init()
   LoadSettings()
   GetMouseCursorContext()
+  reaper.ImGui_SetConfigVar(ctx, reaper.ImGui_ConfigVar_HoverDelayNormal(), 1)
 end
 
 local function ColorButton(text, color, idx)
@@ -164,6 +164,11 @@ local function ColorButton(text, color, idx)
   if data.hovered_idx == idx then reaper.ImGui_PopStyleVar(ctx) end
 
   if reaper.ImGui_IsItemHovered(ctx) then data.hovered_idx = idx end
+
+  if reaper.ImGui_IsItemHovered(ctx, reaper.ImGui_HoveredFlags_DelayNormal() | reaper.ImGui_HoveredFlags_NoSharedDelay()) and reaper.ImGui_BeginTooltip(ctx) then
+    reaper.ImGui_Text(ctx, "Right-click for settings")
+    reaper.ImGui_EndTooltip(ctx)
+  end
 
   reaper.ImGui_PopStyleColor(ctx, 4)
 
