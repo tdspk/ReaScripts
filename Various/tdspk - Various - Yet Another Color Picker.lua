@@ -324,11 +324,11 @@ local function Loop()
         reaper.ImGui_SetNextItemWidth(ctx, 100)
         rv, settings.item_spacing = reaper.ImGui_SliderInt(ctx, "Button Spacing", settings.item_spacing, 0, 10)
 
-        rv, settings.close_on_click = reaper.ImGui_Checkbox(ctx, "Close Window on Click", settings.close_on_click)
+        rv, settings.close_on_click = reaper.ImGui_Checkbox(ctx, "Close window on click", settings.close_on_click)
 
-        rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at mouse position", settings.open_at_mousepos)
+        rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor position", settings.open_at_mousepos)
 
-        rv, settings.open_at_center = reaper.ImGui_Checkbox(ctx, "Open at center", settings
+        rv, settings.open_at_center = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor center", settings
           .open_at_center)
 
         reaper.ImGui_SeparatorText(ctx, "Debug")
