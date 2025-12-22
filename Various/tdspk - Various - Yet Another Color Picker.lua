@@ -146,7 +146,6 @@ local function Loop()
   end
 
   reaper.ImGui_SetNextWindowSize(ctx, 0, 0, reaper.ImGui_Cond_Always())
-  local width, height = reaper.ImGui_GetWindowSize(ctx)
 
   if settings.open_at_mousepos then
     local mouse_x, mouse_y = reaper.GetMousePosition()
@@ -167,10 +166,10 @@ local function Loop()
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
 
     if settings.show_selection_info then
+      reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
       reaper.ImGui_Text(ctx, string.format("Coloring: %s", data.last_segment == 0 and "Tracks" or "Items"))
+      reaper.ImGui_PopFont(ctx)
     end
-
-    reaper.ImGui_Text(ctx, tostring(data.hovered_idx))
 
     for i = 1, 16 do
       local color = colors[i]
@@ -226,6 +225,8 @@ local function Loop()
         rv, settings.close_on_click = reaper.ImGui_Checkbox(ctx, "Close Window on Click", settings.close_on_click)
 
         rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at Mouse Position", settings.open_at_mousepos)
+
+        reaper.ImGui_SeparatorText(ctx, "Debug")
 
         rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
           .show_selection_info)
