@@ -1,5 +1,5 @@
 --@description Yet Another Color Picker
---@version 1.0
+--@version 1.0.1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Yet Another Color Picker
@@ -14,6 +14,7 @@
 --@provides
 --  [main] .
 -- @changelog
+--  1.0.1 Auto-Close window, add modifiers to reset color
 --  1.0 Initial Release
 
 local extensions = {

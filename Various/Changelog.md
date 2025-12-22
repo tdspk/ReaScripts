@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Yet Another Color Picker
 
+## [1.0.1]
+
+### Added
+
+- Added Left Alt Modifier to reset to default color
+
+### Changed
+
+- A simple mouse click now closes the window
+- Shift now applies a color without closing the window
+
+### Removed
+
+- Settings: removed close-on-click checkbox (use modifiers instead!)
+
 ## [1.0]
 
 ### Added
