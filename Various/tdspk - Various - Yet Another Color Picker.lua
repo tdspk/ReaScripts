@@ -130,7 +130,7 @@ local choice = -1
 
 if col_string == "" then
   choice = reaper.ShowMessageBox(
-    "It appears there are no custom colors defined.\nDo you want to open SWS Color Managment?\nOtherwise, the tdspk Color Palette will be used.",
+    "It appears there are no custom colors defined.\nDo you want to open SWS Color Managment?\nOtherwise, the REAPER 7.0 Color Palette will be used.",
     "No Custom Colors", 4)
 end
 
