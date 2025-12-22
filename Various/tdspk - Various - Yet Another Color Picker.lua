@@ -101,7 +101,6 @@ default_settings = {
   button_size = 16,
   item_spacing = 2,
   orientation = 3,
-  close_on_click = false,
   open_at_mousepos = true,
   show_selection_info = false,
   open_at_center = false
@@ -294,9 +293,13 @@ local function Loop()
       local btn = ColorButton(("##%d"):format(i), color, i)
 
       local cmd
+      local close_on_apply = true
 
       if btn then
         if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift()) then
+          close_on_apply = false
+        end
+        if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl()) then
           cmd = reaper.NamedCommandLookup(("_SWS_%sRANDCOL"):format(segment_map[data.last_segment]))
         elseif reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt()) then
           cmd = data.last_segment == 0 and 40359 or 40707 -- set either to track or item default color
@@ -307,7 +310,7 @@ local function Loop()
 
       if cmd then
         reaper.Main_OnCommand(cmd, 0)
-        if settings.close_on_click then open = false end
+        if close_on_apply then open = false end
       end
 
       if settings.orientation > 0 then
@@ -342,9 +345,8 @@ local function Loop()
         reaper.ImGui_SetNextItemWidth(ctx, 100)
         rv, settings.item_spacing = reaper.ImGui_SliderInt(ctx, "Button Spacing", settings.item_spacing, 0, 10)
 
-        rv, settings.close_on_click = reaper.ImGui_Checkbox(ctx, "Close window on click", settings.close_on_click)
-
-        rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor position", settings.open_at_mousepos)
+        rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor position",
+          settings.open_at_mousepos)
 
         rv, settings.open_at_center = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor center", settings
           .open_at_center)
@@ -363,7 +365,7 @@ local function Loop()
 
       if reaper.ImGui_CollapsingHeader(ctx, "Manual", false) then
         reaper.ImGui_Text(ctx, "Left-Click to apply color")
-        reaper.ImGui_Text(ctx, "Shift-Click to apply random color")
+        reaper.ImGui_Text(ctx, "Shift-Click to apply color without closing window")
         reaper.ImGui_Text(ctx, "Alt-Shift to reset color (default color)")
         reaper.ImGui_Text(ctx, "Right-Click to open settings and info")
         reaper.ImGui_Text(ctx, "Close with ESC")
