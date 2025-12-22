@@ -1,11 +1,4 @@
--- TODO check if sws exists
 
-local function InsertState(state)
-  if state then
-    return "(installed)"
-  end
-  return "(missing)"
-end
 
 local extensions = {
   [1] = {
