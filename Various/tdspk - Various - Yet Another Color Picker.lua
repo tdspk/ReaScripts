@@ -51,6 +51,11 @@ local orientation_mod = {
   [5] = 16
 }
 
+local segment_map = {
+  [0] = "TRACK",
+  [1] = "ITEM"
+}
+
 local function HexToRgb(hex_color)
   local r = tonumber(hex_color:sub(1, 2), 16) / 255
   local g = tonumber(hex_color:sub(3, 4), 16) / 255
@@ -161,13 +166,17 @@ local function Loop()
       local colstr = tostring(color)
       local btn = ColorButton(("##%d"):format(i), color)
 
+      local cmd
+
       if btn then
-        local cmd
-        if data.last_segment == 0 then
-          cmd = reaper.NamedCommandLookup("_SWS_TRACKCUSTCOL" .. i)
-        elseif data.last_segment == 1 then
-          cmd = reaper.NamedCommandLookup("_SWS_ITEMCUSTCOL" .. i)
+        if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift()) then
+          cmd = reaper.NamedCommandLookup(("_SWS_%sRANDCOL"):format(segment_map[data.last_segment]))
+        else
+          cmd = reaper.NamedCommandLookup(("_SWS_%sCUSTCOL%d"):format(segment_map[data.last_segment], i))
         end
+      end
+
+      if cmd then
         reaper.Main_OnCommand(cmd, 0)
         if settings.close_on_click then open = false end
       end
@@ -178,6 +187,8 @@ local function Loop()
         end
       end
     end
+
+    reaper.ImGui_SetNextWindowSize(ctx, 200, 0)
 
     if reaper.ImGui_BeginPopupContextWindow(ctx, "Settings") then
       reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
@@ -207,7 +218,7 @@ local function Loop()
         rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at Mouse Position", settings.open_at_mousepos)
 
         rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
-        .show_selection_info)
+          .show_selection_info)
 
         reaper.ImGui_Separator(ctx)
 
@@ -216,6 +227,12 @@ local function Loop()
         end
       end
 
+      if reaper.ImGui_CollapsingHeader(ctx, "Manual", false) then
+        reaper.ImGui_Text(ctx, "Left-Click to apply color")
+        reaper.ImGui_Text(ctx, "Shift-Click to apply random color")
+        reaper.ImGui_Text(ctx, "Right-Click to open settings and info")
+        reaper.ImGui_Text(ctx, "Close with ESC")
+      end
 
       if reaper.ImGui_CollapsingHeader(ctx, "Info", false) then
         local info = {
