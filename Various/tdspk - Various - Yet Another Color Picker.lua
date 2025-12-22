@@ -1,5 +1,73 @@
 -- TODO check if sws exists
 
+local function InsertState(state)
+  if state then
+    return "(installed)"
+  end
+  return "(missing)"
+end
+
+local extensions = {
+  [1] = {
+    name = "ReaPack",
+    url = "https://reapack.com/",
+    installed = reaper.APIExists("ReaPack_AboutRepository")
+  },
+  [2] = {
+    name = "SWS Extension",
+    url = "https://www.sws-extension.org/",
+    installed = reaper.APIExists("CF_GetSWSVersion")
+  }
+}
+
+local packages = {
+  [1] = {
+    name = "ReaImGui",
+    installed = reaper.APIExists("ImGui_GetVersion")
+  },
+  [2] = {
+    name = "JS_ReaScriptAPI",
+    installed = reaper.APIExists("JS_ReaScriptAPI_Version")
+  }
+}
+
+local function CheckDependencies()
+  local message
+  for i = 1, #extensions do
+    if not extensions[i].installed then
+      if not message then message = "Yet Another Color Picker requires the following extensions:\n\n" end
+      message = message .. extensions[i].name .. " - Please install it from " .. extensions[i].url .. "\n"
+    end
+  end
+
+  if message then
+    reaper.ShowMessageBox(message, "Yet Another Color Picker - Missing Dependencies", 0)
+    return false
+  end
+
+  local message
+
+  for i = 1, #packages do
+    if not packages[i].installed then
+      if not message then message = "Yet Another Color Picker requires the following packages:\n\n" end
+      message = message .. packages[i].name .. "\n"
+    end
+  end
+
+  if message then
+    if reaper.ShowMessageBox(message, "Yet Another Color Picker - Missing Packages", 4) == 6 then
+      reaper.ReaPack_BrowsePackages("reascript api")
+    end
+    return false
+  end
+
+  return true
+end
+
+if not CheckDependencies() then
+  goto eof
+end
+
 local version = reaper.GetAppVersion()
 version = tonumber(version:match("%d.%d"))
 
