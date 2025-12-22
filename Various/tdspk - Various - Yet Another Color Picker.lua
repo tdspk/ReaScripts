@@ -13,6 +13,7 @@ if version >= 7.0 then
 end
 
 data = {
+  version = "1.0",
   ext_section = "tdspk_YACP",
   update = false,
   last_segment = 0,
@@ -68,7 +69,7 @@ local choice = -1
 
 if col_string == "" then
   choice = reaper.ShowMessageBox(
-  "It appears there are no custom colors defined.\nDo you want to open SWS Color Managment?\nOtherwise, the tdspk Color Palette will be used.",
+    "It appears there are no custom colors defined.\nDo you want to open SWS Color Managment?\nOtherwise, the tdspk Color Palette will be used.",
     "No Custom Colors", 4)
 end
 
@@ -179,33 +180,72 @@ local function Loop()
     end
 
     if reaper.ImGui_BeginPopupContextWindow(ctx, "Settings") then
-      reaper.ImGui_Text(ctx, "Settings")
+      reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
+      reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 5, 5)
 
-      if reaper.ImGui_Button(ctx, "Manage Colors...") then
-        local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
-        reaper.Main_OnCommand(cmd, 0)
+      if reaper.ImGui_CollapsingHeader(ctx, "Settings", false, reaper.ImGui_TreeNodeFlags_DefaultOpen()) then
+        if reaper.ImGui_Button(ctx, "Open SWS Color Manager...") then
+          local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
+          reaper.Main_OnCommand(cmd, 0)
+        end
+
+        reaper.ImGui_Separator(ctx)
+
+        reaper.ImGui_SetNextItemWidth(ctx, 100)
+        rv, settings.orientation = reaper.ImGui_SliderInt(ctx, "Orientation", settings.orientation, 1,
+          #orientation_names,
+          orientation_names[settings.orientation])
+
+        reaper.ImGui_SetNextItemWidth(ctx, 100)
+        rv, settings.button_size = reaper.ImGui_SliderInt(ctx, "Button Size", settings.button_size, 10, 30)
+
+        reaper.ImGui_SetNextItemWidth(ctx, 100)
+        rv, settings.item_spacing = reaper.ImGui_SliderInt(ctx, "Button Spacing", settings.item_spacing, 0, 10)
+
+        rv, settings.close_on_click = reaper.ImGui_Checkbox(ctx, "Close Window on Click", settings.close_on_click)
+
+        rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at Mouse Position", settings.open_at_mousepos)
+
+        rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
+        .show_selection_info)
+
+        reaper.ImGui_Separator(ctx)
+
+        if reaper.ImGui_Button(ctx, "Reset") then
+          ResetSettings()
+        end
       end
 
-      reaper.ImGui_SetNextItemWidth(ctx, 100)
-      rv, settings.orientation = reaper.ImGui_SliderInt(ctx, "Orientation", settings.orientation, 1,
-        #orientation_names,
-        orientation_names[settings.orientation])
 
-      reaper.ImGui_SetNextItemWidth(ctx, 100)
-      rv, settings.button_size = reaper.ImGui_SliderInt(ctx, "Button Size", settings.button_size, 10, 30)
+      if reaper.ImGui_CollapsingHeader(ctx, "Info", false) then
+        local info = {
+          "Yet Another Color Picker",
+          "Version " .. data.version,
+          "A tool by tdspk"
+        }
 
-      reaper.ImGui_SetNextItemWidth(ctx, 100)
-      rv, settings.item_spacing = reaper.ImGui_SliderInt(ctx, "Button Spacing", settings.item_spacing, 0, 10)
+        for i = 1, #info do
+          reaper.ImGui_Text(ctx, info[i])
+        end
 
-      rv, settings.close_on_click = reaper.ImGui_Checkbox(ctx, "Close Window on Click", settings.close_on_click)
+        reaper.ImGui_Separator(ctx)
 
-      rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at Mouse Position", settings.open_at_mousepos)
+        if reaper.ImGui_Button(ctx, "Website") then
+          reaper.CF_ShellExecute("https://www.tdspkaudio.com")
+        end
 
-      rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings.show_selection_info)
+        if reaper.ImGui_Button(ctx, "Donate") then
+          reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
+        end
 
-      if reaper.ImGui_Button(ctx, "Reset") then
-        ResetSettings()
+        if reaper.ImGui_Button(ctx, "GitHub Repository") then
+          reaper.CF_ShellExecute("https://github.com/tdspk/ReaScripts")
+        end
       end
+
+      reaper.ImGui_PopStyleVar(ctx, 1)
+      reaper.ImGui_PopFont(ctx)
+
       reaper.ImGui_EndPopup(ctx)
     end
 
