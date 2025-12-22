@@ -71,7 +71,7 @@ end
 local version = reaper.GetAppVersion()
 version = tonumber(version:match("%d.%d"))
 
-if version >= 7.0 then
+if version >= 7.31 then
   reaper.set_action_options(1) -- Terminate and restart the script if it's already running
 end
 
