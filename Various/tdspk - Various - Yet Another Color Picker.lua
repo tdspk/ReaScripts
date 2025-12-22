@@ -82,9 +82,8 @@ settings = {
 }
 
 default_settings = {
-  button_size = 15,
+  button_size = 16,
   item_spacing = 2,
-  window_padding = 0,
   orientation = 3,
   close_on_click = false,
   open_at_mousepos = true,
