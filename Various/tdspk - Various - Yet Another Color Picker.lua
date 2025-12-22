@@ -298,6 +298,8 @@ local function Loop()
       if btn then
         if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift()) then
           cmd = reaper.NamedCommandLookup(("_SWS_%sRANDCOL"):format(segment_map[data.last_segment]))
+        elseif reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt()) then
+          cmd = data.last_segment == 0 and 40359 or 40707 -- set either to track or item default color
         else
           cmd = reaper.NamedCommandLookup(("_SWS_%sCUSTCOL%d"):format(segment_map[data.last_segment], i))
         end
@@ -362,6 +364,7 @@ local function Loop()
       if reaper.ImGui_CollapsingHeader(ctx, "Manual", false) then
         reaper.ImGui_Text(ctx, "Left-Click to apply color")
         reaper.ImGui_Text(ctx, "Shift-Click to apply random color")
+        reaper.ImGui_Text(ctx, "Alt-Shift to reset color (default color)")
         reaper.ImGui_Text(ctx, "Right-Click to open settings and info")
         reaper.ImGui_Text(ctx, "Close with ESC")
       end
