@@ -14,6 +14,7 @@ data = {
   last_segment = 0,
   is_focused = false,
   hovered_idx = -1,
+  post_init = false
 }
 
 settings = {
@@ -27,7 +28,8 @@ default_settings = {
   orientation = 3,
   close_on_click = false,
   open_at_mousepos = true,
-  show_selection_info = false
+  show_selection_info = false,
+  open_at_center = false
 }
 
 local orientation_names = {
@@ -177,13 +179,16 @@ local function Loop()
 
   reaper.ImGui_SetNextWindowSize(ctx, 0, 0, reaper.ImGui_Cond_Always())
 
-  if settings.open_at_mousepos then
+  if settings.open_at_mousepos and not data.post_init then
     local mouse_x, mouse_y = reaper.GetMousePosition()
     local dpi = reaper.ImGui_GetWindowDpiScale(ctx)
+
     mouse_x = mouse_x / dpi
     mouse_y = mouse_y / dpi
 
-    reaper.ImGui_SetNextWindowPos(ctx, mouse_x, mouse_y, reaper.ImGui_Cond_Once())
+    local pivot = settings.open_at_center and 0.5 or 0
+
+    reaper.ImGui_SetNextWindowPos(ctx, mouse_x, mouse_y, reaper.ImGui_Cond_Once(), pivot, pivot)
   end
 
   data.is_focused = reaper.ImGui_IsWindowFocused(ctx)
@@ -191,6 +196,8 @@ local function Loop()
   local visible, open = reaper.ImGui_Begin(ctx, "tdspk - YACP", true,
     reaper.ImGui_WindowFlags_NoResize() | reaper.ImGui_WindowFlags_NoFocusOnAppearing() |
     reaper.ImGui_WindowFlags_NoTitleBar())
+
+  data.post_init = true
 
   if visible then
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
@@ -254,7 +261,10 @@ local function Loop()
 
         rv, settings.close_on_click = reaper.ImGui_Checkbox(ctx, "Close Window on Click", settings.close_on_click)
 
-        rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at Mouse Position", settings.open_at_mousepos)
+        rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at mouse position", settings.open_at_mousepos)
+
+        rv, settings.open_at_center = reaper.ImGui_Checkbox(ctx, "Open at center", settings
+          .open_at_center)
 
         reaper.ImGui_SeparatorText(ctx, "Debug")
 
