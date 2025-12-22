@@ -151,8 +151,8 @@ local function Loop()
   if settings.open_at_mousepos then
     local mouse_x, mouse_y = reaper.GetMousePosition()
     local dpi = reaper.ImGui_GetWindowDpiScale(ctx)
-    mouse_x = mouse_x * dpi
-    mouse_y = mouse_y * dpi
+    mouse_x = mouse_x / dpi
+    mouse_y = mouse_y / dpi
 
     reaper.ImGui_SetNextWindowPos(ctx, mouse_x, mouse_y, reaper.ImGui_Cond_Once())
   end
