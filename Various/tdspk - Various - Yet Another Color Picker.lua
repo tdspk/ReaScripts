@@ -112,18 +112,16 @@ local function ColorButton(text, color, idx)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, 1))
-  
-  -- if data.hovered_idx == idx then
-  --   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), 1)
-  -- end
+
+  if data.hovered_idx == idx then
+    reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), 1)
+  end
 
   local btn = reaper.ImGui_Button(ctx, text, settings.button_size, settings.button_size)
 
-  -- if reaper.ImGui_IsItemHovered(ctx) then
-  --   data.hovered_idx =  idx
-  -- end
+  if data.hovered_idx == idx then reaper.ImGui_PopStyleVar(ctx) end
 
-  -- if data.hovered_idx == idx then reaper.ImGui_PopStyleVar(ctx) end
+  if reaper.ImGui_IsItemHovered(ctx) then data.hovered_idx = idx end
 
   reaper.ImGui_PopStyleColor(ctx, 4)
 
