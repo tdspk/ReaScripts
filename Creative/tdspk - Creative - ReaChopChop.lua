@@ -15,9 +15,13 @@
 --  Added Randomize option
 --  First version
 
-if reaper.APIExists("reaper.set_action_options") then
-  reaper.set_action_options(3)
+local version = reaper.GetAppVersion()
+version = tonumber(version:match("%d.%d"))
+
+if version >= 7.31 then
+  reaper.set_action_options(1) -- Terminate and restart the script if it's already running
 end
+
 
 dofile(reaper.GetResourcePath() .. '/Scripts/ReaTeam Extensions/API/imgui.lua')
 
