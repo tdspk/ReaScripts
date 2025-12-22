@@ -22,19 +22,19 @@ These require the package: *ReaImGui: ReaScript binding for Dear ImGui*
 
 ## Editing
 
-tdspk - Editing - Align item positions to first selected item.lua
-tdspk - Editing - Align item positions to project markers.lua
-tdspk - Editing - Batch-Undo last action.lua
-tdspk - Editing - Enclose Track Items with Razor Edit Area.lua
-tdspk - Editing - Glue individual items.lua
-tdspk - Editing - Move next take marker to snap offset.lua
-tdspk - Editing - Move selected items to next available empty track.lua
-tdspk - Editing - Reset snap offset for selected items.lua
-tdspk - Editing - Set item length of all selected item to first item length.lua
-tdspk - Editing - Set snap offset at first transient per selected item.lua
-tdspk - Editing - Set take marker per transient.lua
-tdspk - Editing - Split Item under cursor and trim shorter side.lua
-tdspk - Editing - Split selected items under cursor.lua
+- tdspk - Editing - Align item positions to first selected item.lua
+- tdspk - Editing - Align item positions to project markers.lua
+- tdspk - Editing - Batch-Undo last action.lua
+- tdspk - Editing - Enclose Track Items with Razor Edit Area.lua
+- tdspk - Editing - Glue individual items.lua
+- tdspk - Editing - Move next take marker to snap offset.lua
+- tdspk - Editing - Move selected items to next available empty track.lua
+- tdspk - Editing - Reset snap offset for selected items.lua
+- tdspk - Editing - Set item length of all selected item to first item length.lua
+- tdspk - Editing - Set snap offset at first transient per selected item.lua
+- tdspk - Editing - Set take marker per transient.lua
+- tdspk - Editing - Split Item under cursor and trim shorter side.lua
+- tdspk - Editing - Split selected items under cursor.lua
 
 ## Library Tools
 
@@ -75,11 +75,11 @@ These scripts are designed to be as modular as possible, so feel free to make sh
 - Unlink last touched parameter
 
 ## Various
-tdspk - Show selected item in Media Explorer.lua
-tdspk - Toggle Global Sampler.lua
-tdspk - Various - Color Context.lua
-tdspk - Various - Remove stem suffix from selected tracks name.lua
-tdspk - Various - Toggle solo for tracks of selected items.lua
+- tdspk - Show selected item in Media Explorer.lua
+- tdspk - Toggle Global Sampler.lua
+- tdspk - Various - Remove stem suffix from selected tracks name.lua
+- tdspk - Various - Toggle solo for tracks of selected items.lua
+- tdspk - Various - Yet Another Color Picker.lua
 
 ## Video Tools
 tdspk - Video Tools - Export Markers as YouTube Captions.lua
