@@ -64,23 +64,33 @@ local _, col_string = reaper.BR_Win32_GetPrivateProfileString("reaper", "custcol
 col_table = {}
 colors = {}
 
+local choice = -1
+
 if col_string == "" then
-  if reaper.ShowMessageBox("It appears there are no custom colors defined. Do you want to open SWS Color Managment?", "No Custom Colors", 1) == 1 then
-    local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
-    reaper.Main_OnCommand(cmd, 0)
-  end
+  choice = reaper.ShowMessageBox(
+  "It appears there are no custom colors defined.\nDo you want to open SWS Color Managment?\nOtherwise, the tdspk Color Palette will be used.",
+    "No Custom Colors", 4)
+end
+
+if choice == 6 then
+  reaper.Main_OnCommand(reaper.NamedCommandLookup("_SWSCOLORWND"), 0)
   goto eof
 else
-  -- col_string contains a long string with hex values of colors. Divide the string in chunks by 6 and save it to table
-  for i = 1, #col_string, 8 do
-    table.insert(col_table, col_string:sub(i, i + 7))
-  end
-
-  for i = 1, 16 do
-    local r, g, b = HexToRgb(col_table[i])
-    table.insert(colors, reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, 1))
-  end
+  col_string =
+  "2E3A46003F5568004A6B8A003FB3C9001E9A8F009AE6C300C7E86A008EA33E00E7D8B500F2B15900F07C6700D6617300B99EE8007C5AE0001B1F2300FBFCFE0058"
+  reaper.BR_Win32_WritePrivateProfileString("reaper", "custcolors", col_string, reaper.get_ini_file())
 end
+
+-- col_string contains a long string with hex values of colors. Divide the string in chunks by 6 and save it to table
+for i = 1, #col_string, 8 do
+  table.insert(col_table, col_string:sub(i, i + 7))
+end
+
+for i = 1, 16 do
+  local r, g, b = HexToRgb(col_table[i])
+  table.insert(colors, reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, 1))
+end
+
 
 local ctx = reaper.ImGui_CreateContext('tdspk - Yet Another Color Picker')
 
@@ -106,9 +116,9 @@ local function GetMouseCursorContext()
   local window, segment, details = reaper.BR_GetMouseCursorContext()
 
   if window == "tcp" and segment == "track" then
-    data.last_segment = 0   -- track
+    data.last_segment = 0 -- track
   elseif window == "arrange" and segment == "track" and details == "item" then
-    data.last_segment = 1   -- item
+    data.last_segment = 1 -- item
   end
 end
 
