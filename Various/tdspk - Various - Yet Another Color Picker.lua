@@ -15,10 +15,9 @@ end
 data = {
   version = "1.0",
   ext_section = "tdspk_YACP",
-  update = false,
   last_segment = 0,
-  last_clicked = 0,
-  is_focused = false
+  is_focused = false,
+  hovered_idx = -1
 }
 
 settings = {
@@ -108,13 +107,26 @@ local function ResetSettings()
   end
 end
 
-local function ColorButton(text, color)
+local function ColorButton(text, color, idx)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, 1))
+  
+  -- if data.hovered_idx == idx then
+  --   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), 1)
+  -- end
 
   local btn = reaper.ImGui_Button(ctx, text, settings.button_size, settings.button_size)
-  reaper.ImGui_PopStyleColor(ctx, 3)
+
+  -- if reaper.ImGui_IsItemHovered(ctx) then
+  --   data.hovered_idx =  idx
+  -- end
+
+  -- if data.hovered_idx == idx then reaper.ImGui_PopStyleVar(ctx) end
+
+  reaper.ImGui_PopStyleColor(ctx, 4)
+
   return btn
 end
 
@@ -144,7 +156,6 @@ local function Loop()
     mouse_x = mouse_x * dpi
     mouse_y = mouse_y * dpi
 
-
     reaper.ImGui_SetNextWindowPos(ctx, mouse_x, mouse_y, reaper.ImGui_Cond_Once())
   end
 
@@ -161,10 +172,11 @@ local function Loop()
       reaper.ImGui_Text(ctx, string.format("Coloring: %s", data.last_segment == 0 and "Tracks" or "Items"))
     end
 
+    reaper.ImGui_Text(ctx, tostring(data.hovered_idx))
+
     for i = 1, 16 do
       local color = colors[i]
-      local colstr = tostring(color)
-      local btn = ColorButton(("##%d"):format(i), color)
+      local btn = ColorButton(("##%d"):format(i), color, i)
 
       local cmd
 
