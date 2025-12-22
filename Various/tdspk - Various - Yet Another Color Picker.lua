@@ -200,6 +200,11 @@ local function Loop()
     end
 
     reaper.ImGui_PopStyleVar(ctx, 1)
+
+    if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape(), false) then
+      open = false
+    end
+
     reaper.ImGui_End(ctx)
   end
   if open then
