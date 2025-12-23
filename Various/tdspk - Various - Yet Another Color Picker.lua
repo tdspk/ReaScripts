@@ -141,8 +141,8 @@ end
 
 local _, col_string = reaper.BR_Win32_GetPrivateProfileString("reaper", "custcolors", "", reaper.get_ini_file())
 
-col_table = {}
-colors = {}
+local col_table = {}
+local colors = {}
 
 local choice = -1
 
@@ -171,10 +171,7 @@ for i = 1, 16 do
   table.insert(colors, reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, 1))
 end
 
-
 local ctx = reaper.ImGui_CreateContext('tdspk - Yet Another Color Picker')
-
-local focus_once = true
 
 local function ResetSettings()
   for k, v in pairs(default_settings) do
@@ -295,7 +292,7 @@ local function Loop()
     end
 
     local close_on_apply = not reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift())
-      and not data.is_docked
+        and not data.is_docked
     local apply_random = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl())
     local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt())
 
