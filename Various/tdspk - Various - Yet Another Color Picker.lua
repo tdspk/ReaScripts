@@ -285,6 +285,10 @@ local function Loop()
     data.is_focused = reaper.ImGui_IsWindowFocused(ctx)
     data.is_docked = reaper.ImGui_IsWindowDocked(ctx)
 
+    if reaper.ImGui_IsWindowHovered(ctx) and not data.is_focused then
+      data.focus_ticks = 0
+    end
+
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
 
     if settings.show_selection_info then
