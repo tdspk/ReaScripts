@@ -1,0 +1,6 @@
+{
+    "Lua.workspace.preloadFileSize": 1024,
+    "Lua.workspace.library": [
+        ".vscode/reaper-types.lua"
+    ]
+}
