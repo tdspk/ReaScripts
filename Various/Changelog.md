@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Yet Another Color Picker
 
-## [Unreleased]
+## [1.1]
 
 ### Added
 

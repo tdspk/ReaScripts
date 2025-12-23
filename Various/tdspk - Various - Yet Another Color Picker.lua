@@ -1,5 +1,5 @@
 --@description Yet Another Color Picker
---@version 1.0.1
+--@version 1.1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Yet Another Color Picker
@@ -14,6 +14,7 @@
 --@provides
 --  [main] .
 -- @changelog
+--  1.1 Add action debug setting, auto-focus on open and hover
 --  1.0.1 Auto-Close window, add modifiers to reset color
 --  1.0 Initial Release
 
@@ -86,7 +87,7 @@ if version >= 7.31 then
 end
 
 data = {
-  version = "1.0",
+  version = "1.1",
   ext_section = "tdspk_YACP",
   last_segment = 0,
   is_focused = false,
@@ -305,7 +306,13 @@ local function Loop()
     local apply_random = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl())
     local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt())
 
-    reaper.ImGui_BeginDisabled(ctx, not data.is_focused)
+    local is_disabled
+    if data.is_docked then
+      is_disabled = false
+    else
+      is_disabled = not data.is_focused
+    end
+    reaper.ImGui_BeginDisabled(ctx, is_disabled)
 
     for i = 1, 16 do
       local color = colors[i]
