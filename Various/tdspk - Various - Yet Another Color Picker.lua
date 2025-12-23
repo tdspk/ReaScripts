@@ -104,7 +104,8 @@ default_settings = {
   orientation = 3,
   open_at_mousepos = true,
   show_selection_info = false,
-  open_at_center = false
+  open_at_center = false,
+  show_action_info = false
 }
 
 local orientation_names = {
@@ -251,6 +252,11 @@ local function ColorButton(text, color, idx)
   return btn
 end
 
+local function SmallText(text)
+  reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
+  reaper.ImGui_Text(ctx, text)
+  reaper.ImGui_PopFont(ctx)
+end
 local function Loop()
   if not data.is_focused then
     if reaper.JS_Mouse_GetState(1) == 1 or reaper.JS_Mouse_GetState(2) == 2 then
@@ -272,8 +278,6 @@ local function Loop()
     reaper.ImGui_SetNextWindowPos(ctx, mouse_x, mouse_y, reaper.ImGui_Cond_Once(), pivot, pivot)
   end
 
-  data.is_focused = reaper.ImGui_IsWindowFocused(ctx)
-
   local visible, open = reaper.ImGui_Begin(ctx, "tdspk - YACP", true,
     reaper.ImGui_WindowFlags_NoResize() | reaper.ImGui_WindowFlags_NoFocusOnAppearing() |
     reaper.ImGui_WindowFlags_NoTitleBar())
@@ -281,28 +285,30 @@ local function Loop()
   data.post_init = true
 
   if visible then
+    data.is_focused = reaper.ImGui_IsWindowFocused(ctx)
+
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
 
     if settings.show_selection_info then
-      reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
-      reaper.ImGui_Text(ctx, string.format("Coloring: %s", data.last_segment == 0 and "Tracks" or "Items"))
-      reaper.ImGui_PopFont(ctx)
+      SmallText(string.format("Coloring: %s", data.last_segment == 0 and "Tracks" or "Items"))
     end
+
+    local close_on_apply = not reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift())
+    local apply_random = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl())
+    local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt())
+
+    reaper.ImGui_BeginDisabled(ctx, not data.is_focused)
 
     for i = 1, 16 do
       local color = colors[i]
       local btn = ColorButton(("##%d"):format(i), color, i)
 
       local cmd
-      local close_on_apply = true
 
       if btn then
-        if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift()) then
-          close_on_apply = false
-        end
-        if reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl()) then
+        if apply_random then
           cmd = reaper.NamedCommandLookup(("_SWS_%sRANDCOL"):format(segment_map[data.last_segment]))
-        elseif reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt()) then
+        elseif apply_default then
           cmd = data.last_segment == 0 and 40359 or 40707 -- set either to track or item default color
         else
           cmd = reaper.NamedCommandLookup(("_SWS_%sCUSTCOL%d"):format(segment_map[data.last_segment], i))
@@ -321,6 +327,17 @@ local function Loop()
       end
     end
 
+    reaper.ImGui_EndDisabled(ctx)
+
+    local action_text = ("%sapply\n%scolor"):format(
+      not close_on_apply and "multi-" or "",
+      apply_random and "random " or apply_default and "default " or ""
+    )
+
+    if settings.show_action_info then
+      SmallText(action_text)
+    end
+    
     reaper.ImGui_SetNextWindowSize(ctx, 200, 0)
 
     if reaper.ImGui_BeginPopupContextWindow(ctx, "Settings") then
@@ -356,6 +373,8 @@ local function Loop()
 
         rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
           .show_selection_info)
+
+        rv, settings.show_action_info = reaper.ImGui_Checkbox(ctx, "Show Action Info", settings.show_action_info)
 
         reaper.ImGui_Separator(ctx)
 
