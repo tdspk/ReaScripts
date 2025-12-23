@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Yet Another Color Picker
 
+## [Unreleased]
+
+### Added
+
+- Added debug setting to show which action will be applied
+
+### Fixed
+
+- Window does not close when docked now
+
 ## [1.0.1]
 
 ### Added
