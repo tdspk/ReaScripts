@@ -92,7 +92,8 @@ data = {
   is_focused = false,
   hovered_idx = -1,
   post_init = false,
-  is_docked = false
+  is_docked = false,
+  focus_ticks = 0
 }
 
 settings = {
@@ -280,8 +281,6 @@ local function Loop()
     reaper.ImGui_WindowFlags_NoResize() | reaper.ImGui_WindowFlags_NoFocusOnAppearing() |
     reaper.ImGui_WindowFlags_NoTitleBar())
 
-  data.post_init = true
-
   if visible then
     data.is_focused = reaper.ImGui_IsWindowFocused(ctx)
 
@@ -290,6 +289,8 @@ local function Loop()
     if settings.show_selection_info then
       SmallText(string.format("Coloring: %s", data.last_segment == 0 and "Tracks" or "Items"))
     end
+
+    SmallText(tostring(reaper.ImGui_IsWindowFocused(ctx)))
 
     local close_on_apply = not reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift())
         and not data.is_docked
@@ -433,6 +434,17 @@ local function Loop()
   if open then
     reaper.defer(Loop)
   end
+
+  if data.focus_ticks < 3 then
+    local title = reaper.JS_Localize("tdspk - YACP", "common")
+    local handle = reaper.JS_Window_Find(title, true)
+    if handle then
+      reaper.JS_Window_SetFocus(handle)
+    end
+    data.focus_ticks = data.focus_ticks + 1
+  end
+
+  data.post_init = true
 end
 
 Init()
