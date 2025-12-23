@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added debug setting to show which action will be applied
+- Auto-focus window on open and hover
 
 ### Fixed
 
