@@ -91,7 +91,8 @@ data = {
   last_segment = 0,
   is_focused = false,
   hovered_idx = -1,
-  post_init = false
+  post_init = false,
+  is_docked = false
 }
 
 settings = {
@@ -294,6 +295,7 @@ local function Loop()
     end
 
     local close_on_apply = not reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift())
+      and not data.is_docked
     local apply_random = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl())
     local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt())
 
@@ -337,7 +339,7 @@ local function Loop()
     if settings.show_action_info then
       SmallText(action_text)
     end
-    
+
     reaper.ImGui_SetNextWindowSize(ctx, 200, 0)
 
     if reaper.ImGui_BeginPopupContextWindow(ctx, "Settings") then
