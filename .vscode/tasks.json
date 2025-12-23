@@ -9,6 +9,7 @@
                 "-nonewinst",
                 "${file}"
             ],
+            "problemMatcher": []
         }
     ]
 }
