@@ -283,6 +283,7 @@ local function Loop()
 
   if visible then
     data.is_focused = reaper.ImGui_IsWindowFocused(ctx)
+    data.is_docked = reaper.ImGui_IsWindowDocked(ctx)
 
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
 
@@ -290,10 +291,13 @@ local function Loop()
       SmallText(string.format("Coloring: %s", data.last_segment == 0 and "Tracks" or "Items"))
     end
 
-    SmallText(tostring(reaper.ImGui_IsWindowFocused(ctx)))
+    local close_on_apply
+    if data.is_docked then
+      close_on_apply = false
+    else
+      close_on_apply = not reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift())
+    end
 
-    local close_on_apply = not reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift())
-        and not data.is_docked
     local apply_random = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl())
     local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt())
 
