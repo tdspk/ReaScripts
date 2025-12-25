@@ -98,7 +98,8 @@ data = {
   hovered_idx = -1,
   post_init = false,
   is_docked = false,
-  focus_ticks = 0
+  focus_ticks = 0,
+  update_colors = false
 }
 
 settings = {
@@ -296,6 +297,12 @@ local function GetMouseCursorContext()
   end
 end
 
+local function UpdateColors()
+  for i = 1, 16 do
+    colors[i] = reaper.CF_GetCustomColor(i - 1)
+  end
+end
+
 local function Init()
   -- Initialize Custom Colors
   local _, col_string = reaper.BR_Win32_GetPrivateProfileString("reaper", "custcolors", "", reaper.get_ini_file())
@@ -314,10 +321,7 @@ local function Init()
     ResetColors()
   end
 
-  -- fill table with SWS colors
-  for i = 0, 15 do
-    table.insert(colors, reaper.CF_GetCustomColor(i))
-  end
+  UpdateColors()
 
   LoadSettings()
   GetMouseCursorContext()
@@ -362,6 +366,11 @@ local function SmallText(text)
 end
 
 local function Loop()
+  if data.update_colors then
+    UpdateColors()
+    data.update_colors = false
+  end
+
   if not data.is_focused then
     if reaper.JS_Mouse_GetState(1) == 1 or reaper.JS_Mouse_GetState(2) == 2 then
       GetMouseCursorContext()
@@ -475,10 +484,20 @@ local function Loop()
         if reaper.ImGui_Button(ctx, "Open SWS Color Manager...") then
           local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
           reaper.Main_OnCommand(cmd, 0)
+          data.update_colors = true
+        end
+
+        if reaper.ImGui_Button(ctx, "Assign random colors...") then
+          for i = 0, 15 do
+            local r, g, b = math.random(0, 255), math.random(0, 255), math.random(0, 255)
+            reaper.CF_SetCustomColor(i, reaper.ColorToNative(r, g, b))
+          end
+          data.update_colors = true
         end
 
         if reaper.ImGui_Button(ctx, "Reset custom Colors") then
           ResetColors()
+          data.update_colors = true
         end
 
         reaper.ImGui_Separator(ctx)
