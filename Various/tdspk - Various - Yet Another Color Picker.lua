@@ -132,48 +132,100 @@ local segment_map = {
   [1] = "ITEM"
 }
 
-local function HexToRgb(hex_color)
-  local r = tonumber(hex_color:sub(1, 2), 16) / 255
-  local g = tonumber(hex_color:sub(3, 4), 16) / 255
-  local b = tonumber(hex_color:sub(5, 6), 16) / 255
-  return r, g, b
-end
-
--- Initialize Custom Colors
-
-local _, col_string = reaper.BR_Win32_GetPrivateProfileString("reaper", "custcolors", "", reaper.get_ini_file())
+local default_colors = {
+  [1] = {
+    [1] = 118,
+    [2] = 118,
+    [3] = 118
+  },
+  [2] = {
+    [1] = 137,
+    [2] = 137,
+    [3] = 105
+  },
+  [3] = {
+    [1] = 137,
+    [2] = 137,
+    [3] = 129
+  },
+  [4] = {
+    [1] = 168,
+    [2] = 168,
+    [3] = 168
+  },
+  [5] = {
+    [1] = 153,
+    [2] = 189,
+    [3] = 19
+  },
+  [6] = {
+    [1] = 135,
+    [2] = 152,
+    [3] = 51
+  },
+  [7] = {
+    [1] = 63,
+    [2] = 143,
+    [3] = 184
+  },
+  [8] = {
+    [1] = 148,
+    [2] = 156,
+    [3] = 187
+  },
+  [9] = {
+    [1] = 82,
+    [2] = 94,
+    [3] = 134
+  },
+  [10] = {
+    [1] = 42,
+    [2] = 59,
+    [3] = 130
+  },
+  [11] = {
+    [1] = 128,
+    [2] = 128,
+    [3] = 255
+  },
+  [12] = {
+    [1] = 128,
+    [2] = 255,
+    [3] = 128
+  },
+  [13] = {
+    [1] = 255,
+    [2] = 128,
+    [3] = 0
+  },
+  [14] = {
+    [1] = 128,
+    [2] = 255,
+    [3] = 255
+  },
+  [15] = {
+    [1] = 35,
+    [2] = 31,
+    [3] = 27
+  },
+  [16] = {
+    [1] = 254,
+    [2] = 252,
+    [3] = 251
+  }
+}
 
 local col_table = {}
 local colors = {}
 
-local choice = -1
-
-if col_string == "" then
-  choice = reaper.ShowMessageBox(
-    "It appears there are no custom colors defined.\nDo you want to open SWS Color Managment?\nOtherwise, the REAPER 7.0 Color Palette will be used.",
-    "No Custom Colors", 4)
-end
-
-if choice == 6 then
-  reaper.Main_OnCommand(reaper.NamedCommandLookup("_SWSCOLORWND"), 0)
-  goto eof
-elseif choice == 7 then
-  col_string =
-  "767676006989890081898900A8A8A80013BD990033988700B88F3F00BB9C9400865E5200823B2A00FF80800080FF80000080FF00FFFF80001B1F2300FBFCFE00FE"
-  reaper.BR_Win32_WritePrivateProfileString("reaper", "custcolors", col_string, reaper.get_ini_file())
-end
-
--- col_string contains a long string with hex values of colors. Divide the string in chunks by 6 and save it to table
-for i = 1, #col_string, 8 do
-  table.insert(col_table, col_string:sub(i, i + 7))
-end
-
-for i = 1, 16 do
-  local r, g, b = HexToRgb(col_table[i])
-  table.insert(colors, reaper.ImGui_ColorConvertDouble4ToU32(r, g, b, 1))
-end
-
 local ctx = reaper.ImGui_CreateContext('tdspk - Yet Another Color Picker')
+
+local function ResetColors()
+  for i = 1, 16 do
+    local r, g, b = table.unpack(default_colors[i])
+    reaper.CF_SetCustomColor(i - 1, reaper.ColorToNative(r, g, b))
+  end
+end
 
 local function ResetSettings()
   for k, v in pairs(default_settings) do
@@ -221,9 +273,38 @@ local function GetMouseCursorContext()
 end
 
 local function Init()
+  -- Initialize Custom Colors
+  local _, col_string = reaper.BR_Win32_GetPrivateProfileString("reaper", "custcolors", "", reaper.get_ini_file())
+  local choice = -1
+
+  if col_string == "" then
+    choice = reaper.ShowMessageBox(
+      "It appears there are no custom colors defined.\nDo you want to open SWS Color Managment?\nOtherwise, the REAPER 7.0 Color Palette will be used.",
+      "No Custom Colors", 4)
+  end
+
+  if choice == 6 then
+    reaper.Main_OnCommand(reaper.NamedCommandLookup("_SWSCOLORWND"), 0)
+    return false
+  elseif choice == 7 then
+    ResetColors()
+  end
+
+  -- fill table with SWS colors
+  for i = 0, 15 do
+    table.insert(col_table, reaper.CF_GetCustomColor(i))
+  end
+
+  for i = 1, 16 do
+    local r, g, b = reaper.ColorFromNative(col_table[i])
+    table.insert(colors, reaper.ImGui_ColorConvertDouble4ToU32(r / 255, g / 255, b / 255, 1))
+  end
+
   LoadSettings()
   GetMouseCursorContext()
   reaper.ImGui_SetConfigVar(ctx, reaper.ImGui_ConfigVar_HoverDelayNormal(), 1)
+
+  return true
 end
 
 local function ColorButton(text, color, idx)
@@ -365,6 +446,10 @@ local function Loop()
           reaper.Main_OnCommand(cmd, 0)
         end
 
+        if reaper.ImGui_Button(ctx, "Reset custom Colors") then
+          ResetColors()
+        end
+
         reaper.ImGui_Separator(ctx)
 
         reaper.ImGui_SetNextItemWidth(ctx, 100)
@@ -462,9 +547,9 @@ local function Loop()
   data.post_init = true
 end
 
-Init()
-
-reaper.defer(Loop)
+if Init() then
+  reaper.defer(Loop)
+end
 reaper.atexit(SaveSettings)
 
 ::eof::
