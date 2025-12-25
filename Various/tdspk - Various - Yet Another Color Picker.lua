@@ -447,9 +447,17 @@ local function Loop()
             reaper.Main_OnCommand(cmd, 0)
           end
         else
+          local clr = color| 0x1000000
+
+          if apply_random then
+            clr = colors[math.random(1, #colors)]| 0x1000000
+          elseif apply_default then
+            clr = 1 & ~0x10000000
+          end
+
           -- color either markers or regions
           reaper.SetProjectMarker3(0, data.mrk_rgn_idx, data.is_region, data.mrk_rgn_pos, data.rgn_end, "",
-            color | 0x1000000)
+            clr)
         end
 
         if close_on_apply then open = false end
