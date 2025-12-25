@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Yet Another Color Picker
 
+## [Unreleased]
+
+### Added
+
+- Added coloring of markers and regions
+- Added button to reset colors to default (REAPER Color Theme)
+- Added button to assign random colors to palette
+
+### Fixed
+
+- Fixed issue where colors were not updated correctly
+
 ## [1.1]
 
 ### Added
