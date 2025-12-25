@@ -90,6 +90,10 @@ data = {
   version = "1.1",
   ext_section = "tdspk_YACP",
   last_segment = 0,
+  mrk_rgn_idx = -1,
+  mrk_rgn_pos = -1,
+  rgn_end = -1,
+  is_region = false,
   is_focused = false,
   hovered_idx = -1,
   post_init = false,
@@ -129,7 +133,9 @@ local orientation_mod = {
 
 local segment_map = {
   [0] = "TRACK",
-  [1] = "ITEM"
+  [1] = "ITEM",
+  [2] = "MARKER",
+  [3] = "REGION"
 }
 
 local default_colors = {
@@ -215,7 +221,6 @@ local default_colors = {
   }
 }
 
-local col_table = {}
 local colors = {}
 
 local ctx = reaper.ImGui_CreateContext('tdspk - Yet Another Color Picker')
@@ -269,6 +274,25 @@ local function GetMouseCursorContext()
     data.last_segment = 0 -- track
   elseif window == "arrange" and segment == "track" and details == "item" then
     data.last_segment = 1 -- item
+  elseif window == "ruler" and segment == "marker_lane" then
+    data.last_segment = 2 -- marker
+  elseif window == "ruler" and segment == "region_lane" then
+    data.last_segment = 3 -- region
+  end
+
+  -- reset marker / region index
+  data.mrk_rgn_idx = -1
+  data.mrk_rgn_pos = -1
+  data.is_region = false
+
+  -- if the context returns markers or regions, get the index and cache it
+  if data.last_segment > 1 then
+    local time = reaper.BR_GetMouseCursorContext_Position()
+    local marker_idx, region_idx = reaper.GetLastMarkerAndCurRegion(0, time)
+    local idx = data.last_segment == 2 and marker_idx or region_idx
+
+    local rv
+    rv, data.is_region, data.mrk_rgn_pos, data.rgn_end, _, data.mrk_rgn_idx = reaper.EnumProjectMarkers2(0, idx)
   end
 end
 
@@ -292,12 +316,7 @@ local function Init()
 
   -- fill table with SWS colors
   for i = 0, 15 do
-    table.insert(col_table, reaper.CF_GetCustomColor(i))
-  end
-
-  for i = 1, 16 do
-    local r, g, b = reaper.ColorFromNative(col_table[i])
-    table.insert(colors, reaper.ImGui_ColorConvertDouble4ToU32(r / 255, g / 255, b / 255, 1))
+    table.insert(colors, reaper.CF_GetCustomColor(i))
   end
 
   LoadSettings()
@@ -308,6 +327,9 @@ local function Init()
 end
 
 local function ColorButton(text, color, idx)
+  local r, g, b = reaper.ColorFromNative(color)
+  color = reaper.ImGui_ColorConvertDouble4ToU32(r / 255, g / 255, b / 255, 1)
+
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color)
@@ -338,6 +360,7 @@ local function SmallText(text)
   reaper.ImGui_Text(ctx, text)
   reaper.ImGui_PopFont(ctx)
 end
+
 local function Loop()
   if not data.is_focused then
     if reaper.JS_Mouse_GetState(1) == 1 or reaper.JS_Mouse_GetState(2) == 2 then
@@ -374,7 +397,7 @@ local function Loop()
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
 
     if settings.show_selection_info then
-      SmallText(string.format("Coloring: %s", data.last_segment == 0 and "Tracks" or "Items"))
+      SmallText(string.format("Coloring: %s", segment_map[data.last_segment]))
     end
 
     local close_on_apply
@@ -402,19 +425,27 @@ local function Loop()
       local cmd
 
       if btn then
-        if apply_random then
-          cmd = reaper.NamedCommandLookup(("_SWS_%sRANDCOL"):format(segment_map[data.last_segment]))
-        elseif apply_default then
-          cmd = data.last_segment == 0 and 40359 or 40707 -- set either to track or item default color
-        else
-          cmd = reaper.NamedCommandLookup(("_SWS_%sCUSTCOL%d"):format(segment_map[data.last_segment], i))
-        end
-      end
+        if data.last_segment < 2 then -- color tracks or items
+          if apply_random then
+            cmd = reaper.NamedCommandLookup(("_SWS_%sRANDCOL"):format(segment_map[data.last_segment]))
+          elseif apply_default then
+            cmd = data.last_segment == 0 and 40359 or 40707 -- set either to track or item default color
+          else
+            cmd = reaper.NamedCommandLookup(("_SWS_%sCUSTCOL%d"):format(segment_map[data.last_segment], i))
+          end
 
-      if cmd then
-        reaper.Main_OnCommand(cmd, 0)
+          if cmd then
+            reaper.Main_OnCommand(cmd, 0)
+          end
+        else
+          -- color either markers or regions
+          reaper.SetProjectMarker3(0, data.mrk_rgn_idx, data.is_region, data.mrk_rgn_pos, data.rgn_end, "",
+            color | 0x1000000)
+        end
+
         if close_on_apply then open = false end
       end
+
 
       if settings.orientation > 0 then
         if i % orientation_mod[settings.orientation] ~= 0 then
