@@ -17,10 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added button to assign random colors to palette
 - Added slider to adjust button count from 1 to 16
 - Added setting to display rounded buttons
+- Added shortcut to apply random colors on selection (Ctrl+Alt+Click)
 
 ### Changed
 
 - Changed default background color to REAPER Theme background color
+- Changed descriptions in manual
 
 ### Fixed
 

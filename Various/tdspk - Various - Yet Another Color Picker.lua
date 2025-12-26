@@ -584,11 +584,11 @@ local function Loop()
       end
 
       if reaper.ImGui_CollapsingHeader(ctx, "Manual", false) then
-        reaper.ImGui_Text(ctx, "Left-Click to apply color")
-        reaper.ImGui_Text(ctx, "Shift-Click to apply color without closing window")
-        reaper.ImGui_Text(ctx, "Alt-Click to reset color (default color)")
-        reaper.ImGui_Text(ctx, "Shift-Alt-Click to apply random colors on selection")
-        reaper.ImGui_Text(ctx, "Right-Click to open settings and info")
+        reaper.ImGui_Text(ctx, "LMB to apply color")
+        reaper.ImGui_Text(ctx, "Shift + LMB to apply color without closing window")
+        reaper.ImGui_Text(ctx, "Alt + LMB to reset color (default color)")
+        reaper.ImGui_Text(ctx, "Ctrl + Alt + LMB to apply random colors on selection")
+        reaper.ImGui_Text(ctx, "RMB to open settings and info")
         reaper.ImGui_Text(ctx, "Close with ESC")
       end
 
