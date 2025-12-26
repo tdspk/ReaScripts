@@ -44,7 +44,9 @@ local function Loop()
           local item = data.items[i]
           local rv, notes = reaper.GetSetMediaItemInfo_String(item, "P_NOTES", "", false)
 
-          if rv then
+          if rv and notes ~= "" then
+            reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), 1)
+
             local sel = reaper.ImGui_Selectable(ctx, ("%s##%d"):format(notes, i), false)
             if sel then
               UnselectMediaItems()
