@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added coloring of markers and regions
 - Added button to reset colors to default (REAPER Color Theme)
 - Added button to assign random colors to palette
+- Added slider to adjust button count from 1 to 16
+
+### Changed
+
+- Changed default background color to REAPER Theme background color
 
 ### Fixed
 

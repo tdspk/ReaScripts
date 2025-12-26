@@ -107,6 +107,7 @@ settings = {
 }
 
 default_settings = {
+  button_count = 16,
   button_size = 16,
   item_spacing = 2,
   orientation = 3,
@@ -433,7 +434,7 @@ local function Loop()
     end
     reaper.ImGui_BeginDisabled(ctx, is_disabled)
 
-    for i = 1, 16 do
+    for i = 1, settings.button_count do
       local color = colors[i]
       local btn = ColorButton(("##%d"):format(i), color, i)
 
@@ -495,6 +496,8 @@ local function Loop()
       reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 5, 5)
 
       if reaper.ImGui_CollapsingHeader(ctx, "Settings", false, reaper.ImGui_TreeNodeFlags_DefaultOpen()) then
+        reaper.ImGui_SeparatorText(ctx, "Color Settings")
+
         if reaper.ImGui_Button(ctx, "Open SWS Color Manager...") then
           local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
           reaper.Main_OnCommand(cmd, 0)
@@ -514,12 +517,17 @@ local function Loop()
           data.update_colors = true
         end
 
-        reaper.ImGui_Separator(ctx)
+        reaper.ImGui_SeparatorText(ctx, "UI Settings")
+
+        local rv
 
         reaper.ImGui_SetNextItemWidth(ctx, 100)
         rv, settings.orientation = reaper.ImGui_SliderInt(ctx, "Orientation", settings.orientation, 1,
           #orientation_names,
           orientation_names[settings.orientation])
+
+        reaper.ImGui_SetNextItemWidth(ctx, 100)
+        rv, settings.button_count = reaper.ImGui_SliderInt(ctx, "Button Count", settings.button_count, 1, 16)
 
         reaper.ImGui_SetNextItemWidth(ctx, 100)
         rv, settings.button_size = reaper.ImGui_SliderInt(ctx, "Button Size", settings.button_size, 10, 30)
