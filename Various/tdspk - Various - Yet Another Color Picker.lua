@@ -391,6 +391,14 @@ local function Loop()
     reaper.ImGui_SetNextWindowPos(ctx, mouse_x, mouse_y, reaper.ImGui_Cond_Once(), pivot, pivot)
   end
 
+  -- Push Styles
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
+
+  local bg_color = reaper.GetThemeColor("col_main_bg2", 0)
+  local r, g, b = reaper.ColorFromNative(bg_color)
+  local col = reaper.ImGui_ColorConvertDouble4ToU32(r / 255, g / 255, b / 255, 1)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_WindowBg(), col)
+
   local visible, open = reaper.ImGui_Begin(ctx, "tdspk - YACP", true,
     reaper.ImGui_WindowFlags_NoResize() | reaper.ImGui_WindowFlags_NoFocusOnAppearing() |
     reaper.ImGui_WindowFlags_NoTitleBar())
@@ -402,8 +410,6 @@ local function Loop()
     if reaper.ImGui_IsWindowHovered(ctx) and not data.is_focused then
       data.focus_ticks = 0
     end
-
-    reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), settings.item_spacing, settings.item_spacing)
 
     if settings.show_selection_info then
       SmallText(string.format("Coloring: %s", segment_map[data.last_segment]))
@@ -581,14 +587,16 @@ local function Loop()
       reaper.ImGui_EndPopup(ctx)
     end
 
-    reaper.ImGui_PopStyleVar(ctx, 1)
-
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape(), false) then
       open = false
     end
 
     reaper.ImGui_End(ctx)
   end
+
+  reaper.ImGui_PopStyleVar(ctx, 1)
+  reaper.ImGui_PopStyleColor(ctx, 1)
+
   if open then
     reaper.defer(Loop)
   end
