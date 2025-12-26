@@ -364,7 +364,7 @@ local function ColorButton(text, color, idx)
   if reaper.ImGui_IsItemHovered(ctx) then data.hovered_idx = idx end
 
   if reaper.ImGui_IsItemHovered(ctx, reaper.ImGui_HoveredFlags_DelayNormal() | reaper.ImGui_HoveredFlags_NoSharedDelay()) and reaper.ImGui_BeginTooltip(ctx) then
-    reaper.ImGui_Text(ctx, "Right-click for settings")
+    reaper.ImGui_Text(ctx, "RMB on item for color picker\nRMB on window for settings")
     reaper.ImGui_EndTooltip(ctx)
   end
 
