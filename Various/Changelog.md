@@ -12,9 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added coloring of markers and regions
+- Added coloring of takes if there are more than 1 takes per item
 - Added button to reset colors to default (REAPER Color Theme)
 - Added button to assign random colors to palette
 - Added slider to adjust button count from 1 to 16
+- Added setting to display rounded buttons
 
 ### Changed
 
