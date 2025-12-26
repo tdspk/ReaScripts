@@ -136,7 +136,7 @@ local orientation_mod = {
 
 local segment_map = {
   [0] = "Tracks",
-  [1] = "Items",
+  [1] = "Items / Takes",
   [2] = "Markers",
   [3] = "Regions"
 }
@@ -510,14 +510,13 @@ local function Loop()
 
       if reaper.ImGui_CollapsingHeader(ctx, "Settings", false, reaper.ImGui_TreeNodeFlags_DefaultOpen()) then
         reaper.ImGui_SeparatorText(ctx, "Color Settings")
-
-        if reaper.ImGui_Button(ctx, "Open SWS Color Manager...") then
+        if reaper.ImGui_Button(ctx, "Open SWS Color Manager...", 150) then
           local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
           reaper.Main_OnCommand(cmd, 0)
           data.update_colors = true
         end
 
-        if reaper.ImGui_Button(ctx, "Assign random colors...") then
+        if reaper.ImGui_Button(ctx, "Assign random colors...", 150) then
           for i = 0, 15 do
             local r, g, b = math.random(0, 255), math.random(0, 255), math.random(0, 255)
             reaper.CF_SetCustomColor(i, reaper.ColorToNative(r, g, b))
@@ -525,7 +524,7 @@ local function Loop()
           data.update_colors = true
         end
 
-        if reaper.ImGui_Button(ctx, "Reset custom Colors") then
+        if reaper.ImGui_Button(ctx, "Reset custom colors", 150) then
           ResetColors()
           data.update_colors = true
         end
@@ -565,7 +564,7 @@ local function Loop()
 
         reaper.ImGui_Separator(ctx)
 
-        if reaper.ImGui_Button(ctx, "Reset") then
+        if reaper.ImGui_Button(ctx, "Reset all settings", 100) then
           ResetSettings()
         end
       end
