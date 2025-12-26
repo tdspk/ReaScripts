@@ -446,6 +446,7 @@ local function Loop()
 
       if btn then
         local clr = color | 0x1000000
+        local randomize = false
 
         if apply_random then
           clr = colors[math.random(1, #colors)]| 0x1000000
@@ -453,10 +454,17 @@ local function Loop()
           clr = 1 & ~0x10000000
         end
 
+        if apply_random and apply_default then
+          randomize = true
+        end
+
         if data.last_segment == 0 then -- color tracks
           for j = 0, reaper.CountSelectedTracks(0) do
             local tr = reaper.GetSelectedTrack(0, j)
             if tr then
+              if randomize then
+                clr = colors[math.random(1, #colors)]| 0x1000000
+              end
               reaper.SetMediaTrackInfo_Value(tr, "I_CUSTOMCOLOR", clr)
             end
           end
@@ -465,11 +473,17 @@ local function Loop()
             local item = reaper.GetSelectedMediaItem(0, j)
             local take_count = reaper.CountTakes(item)
 
-            if item and take_count <= 1 then
-              reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
-            elseif item and take_count > 1 then
-              local take = reaper.GetActiveTake(item)
-              reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
+            if item then
+              if randomize then
+                clr = colors[math.random(1, #colors)]| 0x1000000
+              end
+
+              if take_count <= 1 then
+                reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
+              elseif take_count > 1 then
+                local take = reaper.GetActiveTake(item)
+                reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
+              end
             end
           end
         else
@@ -572,7 +586,8 @@ local function Loop()
       if reaper.ImGui_CollapsingHeader(ctx, "Manual", false) then
         reaper.ImGui_Text(ctx, "Left-Click to apply color")
         reaper.ImGui_Text(ctx, "Shift-Click to apply color without closing window")
-        reaper.ImGui_Text(ctx, "Alt-Shift to reset color (default color)")
+        reaper.ImGui_Text(ctx, "Alt-Click to reset color (default color)")
+        reaper.ImGui_Text(ctx, "Shift-Alt-Click to apply random colors on selection")
         reaper.ImGui_Text(ctx, "Right-Click to open settings and info")
         reaper.ImGui_Text(ctx, "Close with ESC")
       end
