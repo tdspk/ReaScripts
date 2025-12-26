@@ -111,6 +111,7 @@ default_settings = {
   button_size = 16,
   item_spacing = 2,
   orientation = 3,
+  rounded_buttons = false,
   open_at_mousepos = true,
   show_selection_info = false,
   open_at_center = false,
@@ -339,6 +340,8 @@ local function ColorButton(text, color, idx)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color)
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, 1))
+  local rounded_val = settings.rounded_buttons and 10 or 0
+  reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameRounding(), rounded_val)
 
   if data.hovered_idx == idx then
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), 1)
@@ -355,6 +358,7 @@ local function ColorButton(text, color, idx)
     reaper.ImGui_EndTooltip(ctx)
   end
 
+  reaper.ImGui_PopStyleVar(ctx)
   reaper.ImGui_PopStyleColor(ctx, 4)
 
   return btn
@@ -543,6 +547,8 @@ local function Loop()
 
         reaper.ImGui_SetNextItemWidth(ctx, 100)
         rv, settings.item_spacing = reaper.ImGui_SliderInt(ctx, "Button Spacing", settings.item_spacing, 0, 10)
+
+        rv, settings.rounded_buttons = reaper.ImGui_Checkbox(ctx, "Rounded Buttons", settings.rounded_buttons)
 
         rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor position",
           settings.open_at_mousepos)
