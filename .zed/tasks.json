@@ -2,6 +2,6 @@
   {
     "label": "Run $ZED_FILE (Linux)",
     "command": "/usr/lib/REAPER/reaper -nonewinst '$ZED_FILE'",
-    "use_new_terminal": false,
+    "use_new_terminal": true,
   },
 ]
