@@ -235,6 +235,19 @@ local function ResetColors()
   end
 end
 
+local function UpdateColors()
+  for i = 1, 16 do
+    colors[i] = reaper.CF_GetCustomColor(i - 1)
+  end
+end
+
+local function SaveColors()
+  for i = 1, 16 do
+    local color = colors[i]
+    reaper.CF_SetCustomColor(i - 1, color)
+  end
+end
+
 local function ResetSettings()
   for k, v in pairs(default_settings) do
     settings[k] = v
@@ -245,6 +258,8 @@ local function SaveSettings()
   for k, v in pairs(settings) do
     reaper.SetExtState(data.ext_section, k, tostring(v), true)
   end
+
+  SaveColors()
 end
 
 local function MapExtStateValues(ext_value)
@@ -299,12 +314,6 @@ local function GetMouseCursorContext()
   end
 end
 
-local function UpdateColors()
-  for i = 1, 16 do
-    colors[i] = reaper.CF_GetCustomColor(i - 1)
-  end
-end
-
 local function Init()
   -- Initialize Custom Colors
   local _, col_string = reaper.BR_Win32_GetPrivateProfileString("reaper", "custcolors", "", reaper.get_ini_file())
@@ -334,6 +343,7 @@ end
 
 local function ColorButton(text, color, idx)
   local r, g, b = reaper.ColorFromNative(color)
+  local clr = color
   color = reaper.ImGui_ColorConvertDouble4ToU32(r / 255, g / 255, b / 255, 1)
 
   reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color)
@@ -409,7 +419,7 @@ local function Loop()
     reaper.ImGui_WindowFlags_NoTitleBar())
 
   if visible then
-    data.is_focused = reaper.ImGui_IsWindowFocused(ctx)
+    data.is_focused = reaper.ImGui_IsWindowFocused(ctx, reaper.ImGui_FocusedFlags_RootAndChildWindows())
     data.is_docked = reaper.ImGui_IsWindowDocked(ctx)
 
     if reaper.ImGui_IsWindowHovered(ctx) and not data.is_focused then
@@ -436,13 +446,12 @@ local function Loop()
     else
       is_disabled = not data.is_focused
     end
+
     reaper.ImGui_BeginDisabled(ctx, is_disabled)
 
     for i = 1, settings.button_count do
       local color = colors[i]
       local btn = ColorButton(("##%d"):format(i), color, i)
-
-      local cmd
 
       if btn then
         local clr = color | 0x1000000
@@ -497,6 +506,12 @@ local function Loop()
         if close_on_apply then open = false end
       end
 
+      if reaper.ImGui_BeginPopupContextItem(ctx) then
+        rv, colors[i] = reaper.ImGui_ColorPicker3(ctx, "Color Picker", colors[i])
+
+        reaper.ImGui_EndPopup(ctx)
+      end
+
 
       if settings.orientation > 0 then
         if i % orientation_mod[settings.orientation] ~= 0 then
@@ -516,14 +531,15 @@ local function Loop()
       SmallText(action_text)
     end
 
-    reaper.ImGui_SetNextWindowSize(ctx, 200, 0)
+    reaper.ImGui_SetNextWindowSize(ctx, 250, 0)
 
-    if reaper.ImGui_BeginPopupContextWindow(ctx, "Settings") then
+    if reaper.ImGui_BeginPopupContextWindow(ctx, "Settings", reaper.ImGui_PopupFlags_NoOpenOverItems() | reaper.ImGui_PopupFlags_MouseButtonRight()) then
       reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
       reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 5, 5)
 
       if reaper.ImGui_CollapsingHeader(ctx, "Settings", false, reaper.ImGui_TreeNodeFlags_DefaultOpen()) then
         reaper.ImGui_SeparatorText(ctx, "Color Settings")
+
         if reaper.ImGui_Button(ctx, "Open SWS Color Manager...", 150) then
           local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
           reaper.Main_OnCommand(cmd, 0)
@@ -585,6 +601,7 @@ local function Loop()
 
       if reaper.ImGui_CollapsingHeader(ctx, "Manual", false) then
         reaper.ImGui_Text(ctx, "LMB to apply color")
+        reaper.ImGui_Text(ctx, "RMB to open color picker")
         reaper.ImGui_Text(ctx, "Shift + LMB to apply color without closing window")
         reaper.ImGui_Text(ctx, "Alt + LMB to reset color (default color)")
         reaper.ImGui_Text(ctx, "Ctrl + Alt + LMB to apply random colors on selection")
