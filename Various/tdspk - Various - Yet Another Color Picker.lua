@@ -134,10 +134,10 @@ local orientation_mod = {
 }
 
 local segment_map = {
-  [0] = "TRACK",
-  [1] = "ITEM",
-  [2] = "MARKER",
-  [3] = "REGION"
+  [0] = "Tracks",
+  [1] = "Items",
+  [2] = "Markers",
+  [3] = "Regions"
 }
 
 local default_colors = {
@@ -441,31 +441,40 @@ local function Loop()
       local cmd
 
       if btn then
-        if data.last_segment < 2 then -- color tracks or items
-          if apply_random then
-            cmd = reaper.NamedCommandLookup(("_SWS_%sRANDCOL"):format(segment_map[data.last_segment]))
-          elseif apply_default then
-            cmd = data.last_segment == 0 and 40359 or 40707 -- set either to track or item default color
-          else
-            cmd = reaper.NamedCommandLookup(("_SWS_%sCUSTCOL%d"):format(segment_map[data.last_segment], i))
-          end
+        local clr = color | 0x1000000
 
-          if cmd then
-            reaper.Main_OnCommand(cmd, 0)
+        if apply_random then
+          clr = colors[math.random(1, #colors)]| 0x1000000
+        elseif apply_default then
+          clr = 1 & ~0x10000000
+        end
+
+        if data.last_segment == 0 then -- color tracks
+          for j = 0, reaper.CountSelectedTracks(0) do
+            local tr = reaper.GetSelectedTrack(0, j)
+            if tr then
+              reaper.SetMediaTrackInfo_Value(tr, "I_CUSTOMCOLOR", clr)
+            end
+          end
+        elseif data.last_segment == 1 then -- color items or takes
+          for j = 0, reaper.CountSelectedMediaItems(0) - 1 do
+            local item = reaper.GetSelectedMediaItem(0, j)
+            local take_count = reaper.CountTakes(item)
+
+            if item and take_count <= 1 then
+              reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
+            elseif item and take_count > 1 then
+              local take = reaper.GetActiveTake(item)
+              reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
+            end
           end
         else
-          local clr = color| 0x1000000
-
-          if apply_random then
-            clr = colors[math.random(1, #colors)]| 0x1000000
-          elseif apply_default then
-            clr = 1 & ~0x10000000
-          end
-
           -- color either markers or regions
           reaper.SetProjectMarker3(0, data.mrk_rgn_idx, data.is_region, data.mrk_rgn_pos, data.rgn_end, "",
             clr)
         end
+
+        reaper.UpdateArrange()
 
         if close_on_apply then open = false end
       end
