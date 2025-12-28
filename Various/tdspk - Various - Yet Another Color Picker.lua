@@ -115,7 +115,8 @@ default_settings = {
   open_at_mousepos = true,
   show_selection_info = false,
   open_at_center = false,
-  show_action_info = false
+  show_action_info = false,
+  autosave_to_sws = false
 }
 
 local orientation_names = {
@@ -259,7 +260,7 @@ local function SaveSettings()
     reaper.SetExtState(data.ext_section, k, tostring(v), true)
   end
 
-  SaveColors()
+  if settings.autosave_to_sws then SaveColors() end
 end
 
 local function MapExtStateValues(ext_value)
@@ -559,9 +560,10 @@ local function Loop()
           data.update_colors = true
         end
 
-        reaper.ImGui_SeparatorText(ctx, "UI Settings")
-
         local rv
+        rv, settings.autosave_to_sws = reaper.ImGui_Checkbox(ctx, "Autosave colors to SWS Palette", settings.autosave_to_sws)
+
+        reaper.ImGui_SeparatorText(ctx, "UI Settings")
 
         reaper.ImGui_SetNextItemWidth(ctx, 100)
         rv, settings.orientation = reaper.ImGui_SliderInt(ctx, "Orientation", settings.orientation, 1,
