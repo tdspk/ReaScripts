@@ -116,7 +116,8 @@ default_settings = {
   show_selection_info = false,
   open_at_center = false,
   show_action_info = false,
-  autosave_to_sws = false
+  autosave_to_sws = false,
+  no_close_apply = false
 }
 
 local orientation_names = {
@@ -439,19 +440,22 @@ local function Settings()
       rv, settings.open_at_center = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor center", settings
         .open_at_center)
 
-      reaper.ImGui_SeparatorText(ctx, "Debug")
-
-      rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
-        .show_selection_info)
-
-      rv, settings.show_action_info = reaper.ImGui_Checkbox(ctx, "Show Action Info", settings.show_action_info)
-
-      reaper.ImGui_Separator(ctx)
-
       if reaper.ImGui_Button(ctx, "Reset UI settings", 100) then
         ResetSettings()
       end
     end
+
+    if reaper.ImGui_CollapsingHeader(ctx, "Debug Options", false) then
+
+    rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
+      .show_selection_info)
+
+    rv, settings.show_action_info = reaper.ImGui_Checkbox(ctx, "Show Action Info", settings.show_action_info)
+    rv, settings.no_close_apply = reaper.ImGui_Checkbox(ctx, "Don't close on apply", settings.no_close_apply)
+
+    reaper.ImGui_Separator(ctx)
+    end
+
 
     if reaper.ImGui_CollapsingHeader(ctx, "Manual", false) then
       reaper.ImGui_Text(ctx, "LMB to apply color")
@@ -553,6 +557,8 @@ local function Loop()
       close_on_apply = not reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift())
     end
 
+    if settings.no_close_apply then close_on_apply = false end
+
     local apply_random = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl())
     local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt())
 
@@ -565,7 +571,76 @@ local function Loop()
 
     reaper.ImGui_BeginDisabled(ctx, is_disabled)
 
-    ColorButtons()
+    for i = 1, settings.button_count do
+      local color = colors[i]
+      local btn = ColorButton(("##%d"):format(i), color, i)
+
+      if btn then
+        local clr = color | 0x1000000
+        local randomize = false
+
+        if apply_random then
+          clr = colors[math.random(1, #colors)]| 0x1000000
+        elseif apply_default then
+          clr = 1 & ~0x10000000
+        end
+
+        if apply_random and apply_default then
+          randomize = true
+        end
+
+        if data.last_segment == 0 then -- color tracks
+          for j = 0, reaper.CountSelectedTracks(0) do
+            local tr = reaper.GetSelectedTrack(0, j)
+            if tr then
+              if randomize then
+                clr = colors[math.random(1, #colors)]| 0x1000000
+              end
+              reaper.SetMediaTrackInfo_Value(tr, "I_CUSTOMCOLOR", clr)
+            end
+          end
+        elseif data.last_segment == 1 then -- color items or takes
+          for j = 0, reaper.CountSelectedMediaItems(0) - 1 do
+            local item = reaper.GetSelectedMediaItem(0, j)
+            local take_count = reaper.CountTakes(item)
+
+            if item then
+              if randomize then
+                clr = colors[math.random(1, #colors)]| 0x1000000
+              end
+
+              if take_count <= 1 then
+                reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
+              elseif take_count > 1 then
+                local take = reaper.GetActiveTake(item)
+                reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
+              end
+            end
+          end
+        else
+          -- color either markers or regions
+          reaper.SetProjectMarker3(0, data.mrk_rgn_idx, data.is_region, data.mrk_rgn_pos, data.rgn_end, "",
+            clr)
+        end
+
+        reaper.UpdateArrange()
+
+        if close_on_apply then open = false end
+      end
+
+      if reaper.ImGui_BeginPopupContextItem(ctx) then
+        rv, colors[i] = reaper.ImGui_ColorPicker3(ctx, "Color Picker", colors[i])
+
+        reaper.ImGui_EndPopup(ctx)
+      end
+
+
+      if settings.orientation > 0 then
+        if i % orientation_mod[settings.orientation] ~= 0 then
+          reaper.ImGui_SameLine(ctx)
+        end
+      end
+    end
 
     reaper.ImGui_EndDisabled(ctx)
 
