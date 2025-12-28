@@ -575,9 +575,12 @@ local function Loop()
       local color = colors[i]
       local btn = ColorButton(("##%d"):format(i), color, i)
 
+      local is_doubleclick = reaper.ImGui_IsMouseDoubleClicked(ctx, 0)
+
       if btn then
         local clr = color | 0x1000000
         local randomize = false
+        local default_from_parent = false
 
         if apply_random then
           clr = colors[math.random(1, #colors)]| 0x1000000
@@ -587,6 +590,11 @@ local function Loop()
 
         if apply_random and apply_default then
           randomize = true
+        end
+
+        if apply_default and is_doubleclick then
+          default_from_parent = true
+          randomize = false
         end
 
         if data.last_segment == 0 then -- color tracks
@@ -609,7 +617,7 @@ local function Loop()
                 clr = colors[math.random(1, #colors)]| 0x1000000
               end
 
-              if take_count <= 1 then
+              if take_count <= 1 or default_from_parent then -- if there is only one take or the item is an empty item
                 reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
               elseif take_count > 1 then
                 local take = reaper.GetActiveTake(item)
