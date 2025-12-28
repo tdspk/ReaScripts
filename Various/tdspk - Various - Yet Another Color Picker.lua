@@ -381,6 +381,121 @@ local function SmallText(text)
   reaper.ImGui_PopFont(ctx)
 end
 
+local function Settings()
+  reaper.ImGui_SetNextWindowSize(ctx, 250, 0)
+
+  if reaper.ImGui_BeginPopupContextWindow(ctx, "Settings", reaper.ImGui_PopupFlags_NoOpenOverItems() | reaper.ImGui_PopupFlags_MouseButtonRight()) then
+    reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
+    reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 5, 5)
+
+    if reaper.ImGui_CollapsingHeader(ctx, "Settings", false, reaper.ImGui_TreeNodeFlags_DefaultOpen()) then
+      reaper.ImGui_SeparatorText(ctx, "Color Settings")
+
+      if reaper.ImGui_Button(ctx, "Open SWS Color Manager...", 150) then
+        local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
+        reaper.Main_OnCommand(cmd, 0)
+        data.update_colors = true
+      end
+
+      reaper.ImGui_SetItemTooltip(ctx, "Opens the SWS Color Manager.\nUse this if you want to save and load your palettes the SWS way.")
+
+      if reaper.ImGui_Button(ctx, "Assign random colors...", 150) then
+        for i = 0, 15 do
+          local r, g, b = math.random(0, 255), math.random(0, 255), math.random(0, 255)
+          reaper.CF_SetCustomColor(i, reaper.ColorToNative(r, g, b))
+        end
+        data.update_colors = true
+      end
+
+      if reaper.ImGui_Button(ctx, "Reset custom colors", 150) then
+        ResetColors()
+        data.update_colors = true
+      end
+
+      local rv
+      rv, settings.autosave_to_sws = reaper.ImGui_Checkbox(ctx, "Autosave colors to SWS Palette", settings.autosave_to_sws)
+
+      reaper.ImGui_SeparatorText(ctx, "UI Settings")
+
+      reaper.ImGui_SetNextItemWidth(ctx, 100)
+      rv, settings.orientation = reaper.ImGui_SliderInt(ctx, "Orientation", settings.orientation, 1,
+        #orientation_names,
+        orientation_names[settings.orientation])
+
+      reaper.ImGui_SetNextItemWidth(ctx, 100)
+      rv, settings.button_count = reaper.ImGui_SliderInt(ctx, "Button Count", settings.button_count, 1, 16)
+
+      reaper.ImGui_SetNextItemWidth(ctx, 100)
+      rv, settings.button_size = reaper.ImGui_SliderInt(ctx, "Button Size", settings.button_size, 10, 30)
+
+      reaper.ImGui_SetNextItemWidth(ctx, 100)
+      rv, settings.item_spacing = reaper.ImGui_SliderInt(ctx, "Button Spacing", settings.item_spacing, 0, 10)
+
+      rv, settings.rounded_buttons = reaper.ImGui_Checkbox(ctx, "Rounded Buttons", settings.rounded_buttons)
+
+      rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor position",
+        settings.open_at_mousepos)
+
+      rv, settings.open_at_center = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor center", settings
+        .open_at_center)
+
+      reaper.ImGui_SeparatorText(ctx, "Debug")
+
+      rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
+        .show_selection_info)
+
+      rv, settings.show_action_info = reaper.ImGui_Checkbox(ctx, "Show Action Info", settings.show_action_info)
+
+      reaper.ImGui_Separator(ctx)
+
+      if reaper.ImGui_Button(ctx, "Reset UI settings", 100) then
+        ResetSettings()
+      end
+    end
+
+    if reaper.ImGui_CollapsingHeader(ctx, "Manual", false) then
+      reaper.ImGui_Text(ctx, "LMB to apply color")
+      reaper.ImGui_Text(ctx, "RMB to open color picker")
+      reaper.ImGui_Text(ctx, "Shift + LMB to apply color without closing window")
+      reaper.ImGui_Text(ctx, "Alt + LMB to reset color (default color)")
+      reaper.ImGui_Text(ctx, "Ctrl + Alt + LMB to apply random colors on selection")
+      reaper.ImGui_Text(ctx, "RMB to open settings and info")
+      reaper.ImGui_Text(ctx, "Close with ESC")
+    end
+
+    if reaper.ImGui_CollapsingHeader(ctx, "Info", false) then
+      local info = {
+        "Yet Another Color Picker",
+        "Version " .. data.version,
+        "A tool by tdspk"
+      }
+
+      for i = 1, #info do
+        reaper.ImGui_Text(ctx, info[i])
+      end
+
+      reaper.ImGui_Separator(ctx)
+
+      if reaper.ImGui_Button(ctx, "Website") then
+        reaper.CF_ShellExecute("https://www.tdspkaudio.com")
+      end
+
+      if reaper.ImGui_Button(ctx, "Donate") then
+        reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
+      end
+
+      if reaper.ImGui_Button(ctx, "GitHub Repository") then
+        reaper.CF_ShellExecute("https://github.com/tdspk/ReaScripts")
+      end
+    end
+
+    reaper.ImGui_PopStyleVar(ctx, 1)
+    reaper.ImGui_PopFont(ctx)
+
+    reaper.ImGui_EndPopup(ctx)
+  end
+end
+
 local function Loop()
   if data.update_colors then
     UpdateColors()
@@ -450,76 +565,7 @@ local function Loop()
 
     reaper.ImGui_BeginDisabled(ctx, is_disabled)
 
-    for i = 1, settings.button_count do
-      local color = colors[i]
-      local btn = ColorButton(("##%d"):format(i), color, i)
-
-      if btn then
-        local clr = color | 0x1000000
-        local randomize = false
-
-        if apply_random then
-          clr = colors[math.random(1, #colors)]| 0x1000000
-        elseif apply_default then
-          clr = 1 & ~0x10000000
-        end
-
-        if apply_random and apply_default then
-          randomize = true
-        end
-
-        if data.last_segment == 0 then -- color tracks
-          for j = 0, reaper.CountSelectedTracks(0) do
-            local tr = reaper.GetSelectedTrack(0, j)
-            if tr then
-              if randomize then
-                clr = colors[math.random(1, #colors)]| 0x1000000
-              end
-              reaper.SetMediaTrackInfo_Value(tr, "I_CUSTOMCOLOR", clr)
-            end
-          end
-        elseif data.last_segment == 1 then -- color items or takes
-          for j = 0, reaper.CountSelectedMediaItems(0) - 1 do
-            local item = reaper.GetSelectedMediaItem(0, j)
-            local take_count = reaper.CountTakes(item)
-
-            if item then
-              if randomize then
-                clr = colors[math.random(1, #colors)]| 0x1000000
-              end
-
-              if take_count <= 1 then
-                reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
-              elseif take_count > 1 then
-                local take = reaper.GetActiveTake(item)
-                reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
-              end
-            end
-          end
-        else
-          -- color either markers or regions
-          reaper.SetProjectMarker3(0, data.mrk_rgn_idx, data.is_region, data.mrk_rgn_pos, data.rgn_end, "",
-            clr)
-        end
-
-        reaper.UpdateArrange()
-
-        if close_on_apply then open = false end
-      end
-
-      if reaper.ImGui_BeginPopupContextItem(ctx) then
-        rv, colors[i] = reaper.ImGui_ColorPicker3(ctx, "Color Picker", colors[i])
-
-        reaper.ImGui_EndPopup(ctx)
-      end
-
-
-      if settings.orientation > 0 then
-        if i % orientation_mod[settings.orientation] ~= 0 then
-          reaper.ImGui_SameLine(ctx)
-        end
-      end
-    end
+    ColorButtons()
 
     reaper.ImGui_EndDisabled(ctx)
 
@@ -532,116 +578,7 @@ local function Loop()
       SmallText(action_text)
     end
 
-    reaper.ImGui_SetNextWindowSize(ctx, 250, 0)
-
-    if reaper.ImGui_BeginPopupContextWindow(ctx, "Settings", reaper.ImGui_PopupFlags_NoOpenOverItems() | reaper.ImGui_PopupFlags_MouseButtonRight()) then
-      reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
-      reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 5, 5)
-
-      if reaper.ImGui_CollapsingHeader(ctx, "Settings", false, reaper.ImGui_TreeNodeFlags_DefaultOpen()) then
-        reaper.ImGui_SeparatorText(ctx, "Color Settings")
-
-        if reaper.ImGui_Button(ctx, "Open SWS Color Manager...", 150) then
-          local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
-          reaper.Main_OnCommand(cmd, 0)
-          data.update_colors = true
-        end
-
-        if reaper.ImGui_Button(ctx, "Assign random colors...", 150) then
-          for i = 0, 15 do
-            local r, g, b = math.random(0, 255), math.random(0, 255), math.random(0, 255)
-            reaper.CF_SetCustomColor(i, reaper.ColorToNative(r, g, b))
-          end
-          data.update_colors = true
-        end
-
-        if reaper.ImGui_Button(ctx, "Reset custom colors", 150) then
-          ResetColors()
-          data.update_colors = true
-        end
-
-        local rv
-        rv, settings.autosave_to_sws = reaper.ImGui_Checkbox(ctx, "Autosave colors to SWS Palette", settings.autosave_to_sws)
-
-        reaper.ImGui_SeparatorText(ctx, "UI Settings")
-
-        reaper.ImGui_SetNextItemWidth(ctx, 100)
-        rv, settings.orientation = reaper.ImGui_SliderInt(ctx, "Orientation", settings.orientation, 1,
-          #orientation_names,
-          orientation_names[settings.orientation])
-
-        reaper.ImGui_SetNextItemWidth(ctx, 100)
-        rv, settings.button_count = reaper.ImGui_SliderInt(ctx, "Button Count", settings.button_count, 1, 16)
-
-        reaper.ImGui_SetNextItemWidth(ctx, 100)
-        rv, settings.button_size = reaper.ImGui_SliderInt(ctx, "Button Size", settings.button_size, 10, 30)
-
-        reaper.ImGui_SetNextItemWidth(ctx, 100)
-        rv, settings.item_spacing = reaper.ImGui_SliderInt(ctx, "Button Spacing", settings.item_spacing, 0, 10)
-
-        rv, settings.rounded_buttons = reaper.ImGui_Checkbox(ctx, "Rounded Buttons", settings.rounded_buttons)
-
-        rv, settings.open_at_mousepos = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor position",
-          settings.open_at_mousepos)
-
-        rv, settings.open_at_center = reaper.ImGui_Checkbox(ctx, "Open at mouse cursor center", settings
-          .open_at_center)
-
-        reaper.ImGui_SeparatorText(ctx, "Debug")
-
-        rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
-          .show_selection_info)
-
-        rv, settings.show_action_info = reaper.ImGui_Checkbox(ctx, "Show Action Info", settings.show_action_info)
-
-        reaper.ImGui_Separator(ctx)
-
-        if reaper.ImGui_Button(ctx, "Reset UI settings", 100) then
-          ResetSettings()
-        end
-      end
-
-      if reaper.ImGui_CollapsingHeader(ctx, "Manual", false) then
-        reaper.ImGui_Text(ctx, "LMB to apply color")
-        reaper.ImGui_Text(ctx, "RMB to open color picker")
-        reaper.ImGui_Text(ctx, "Shift + LMB to apply color without closing window")
-        reaper.ImGui_Text(ctx, "Alt + LMB to reset color (default color)")
-        reaper.ImGui_Text(ctx, "Ctrl + Alt + LMB to apply random colors on selection")
-        reaper.ImGui_Text(ctx, "RMB to open settings and info")
-        reaper.ImGui_Text(ctx, "Close with ESC")
-      end
-
-      if reaper.ImGui_CollapsingHeader(ctx, "Info", false) then
-        local info = {
-          "Yet Another Color Picker",
-          "Version " .. data.version,
-          "A tool by tdspk"
-        }
-
-        for i = 1, #info do
-          reaper.ImGui_Text(ctx, info[i])
-        end
-
-        reaper.ImGui_Separator(ctx)
-
-        if reaper.ImGui_Button(ctx, "Website") then
-          reaper.CF_ShellExecute("https://www.tdspkaudio.com")
-        end
-
-        if reaper.ImGui_Button(ctx, "Donate") then
-          reaper.CF_ShellExecute("https://coindrop.to/tdspkaudio")
-        end
-
-        if reaper.ImGui_Button(ctx, "GitHub Repository") then
-          reaper.CF_ShellExecute("https://github.com/tdspk/ReaScripts")
-        end
-      end
-
-      reaper.ImGui_PopStyleVar(ctx, 1)
-      reaper.ImGui_PopFont(ctx)
-
-      reaper.ImGui_EndPopup(ctx)
-    end
+    Settings()
 
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape(), false) then
       open = false
