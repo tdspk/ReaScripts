@@ -596,7 +596,7 @@ local function Loop()
 
         reaper.ImGui_Separator(ctx)
 
-        if reaper.ImGui_Button(ctx, "Reset all settings", 100) then
+        if reaper.ImGui_Button(ctx, "Reset UI settings", 100) then
           ResetSettings()
         end
       end
