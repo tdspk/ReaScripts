@@ -165,6 +165,18 @@ local default_colors = {
 
 local colors = {}
 
+if not reaper.HasExtState(data.ext_section, "init") then
+  local choice = reaper.ShowMessageBox(
+    "Do you want to use SWS mode?\nThis mode loads and saves directly to SWS custom colors.\nOtherwise, the default REAPER 7.0 palette will be used.\nYou can change this setting later.",
+    "Color Palette", 4)
+
+  if choice == 6 then
+    settings.sws_mode = true
+    reaper.SetExtState(data.ext_section, "sws_mode", "1", true)
+  end
+  reaper.SetExtState(data.ext_section, "init", "1", true)
+end
+
 local ctx = reaper.ImGui_CreateContext('tdspk - Yet Another Color Picker')
 
 local function ResetColors()
@@ -266,31 +278,11 @@ local function GetMouseCursorContext()
 end
 
 local function Init()
-  -- Initialize Custom Colors
-  local _, col_string = reaper.BR_Win32_GetPrivateProfileString("reaper", "custcolors", "", reaper.get_ini_file())
-  local choice = -1
-
-  if col_string == "" then
-    choice = reaper.ShowMessageBox(
-      "It appears there are no custom colors defined.\nDo you want to open SWS Color Managment?\nOtherwise, the REAPER 7.0 Color Palette will be used.",
-      "No Custom Colors", 4)
-  end
-
-  if choice == 6 then
-    reaper.Main_OnCommand(reaper.NamedCommandLookup("_SWSCOLORWND"), 0)
-    return false
-  elseif choice == 7 then
-    ResetColors()
-  end
-
   LoadSettings()
   LoadColors()
 
-
   GetMouseCursorContext()
   reaper.ImGui_SetConfigVar(ctx, reaper.ImGui_ConfigVar_HoverDelayNormal(), 1)
-
-  return true
 end
 
 local function ColorButton(text, color, idx)
@@ -646,9 +638,8 @@ local function Loop()
   data.post_init = true
 end
 
-if Init() then
-  reaper.defer(Loop)
-end
+Init()
+Loop()
 reaper.atexit(SaveSettings)
 
 ::eof::
