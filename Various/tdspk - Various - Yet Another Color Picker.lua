@@ -398,7 +398,8 @@ local function Settings()
         data.update_colors = true
       end
 
-      reaper.ImGui_SetItemTooltip(ctx, "Opens the SWS Color Manager.\nUse this if you want to save and load your palettes the SWS way.")
+      reaper.ImGui_SetItemTooltip(ctx,
+        "Opens the SWS Color Manager.\nUse this if you want to save and load your palettes the SWS way.")
 
       if reaper.ImGui_Button(ctx, "Assign random colors...", 150) then
         for i = 0, 15 do
@@ -414,7 +415,8 @@ local function Settings()
       end
 
       local rv
-      rv, settings.autosave_to_sws = reaper.ImGui_Checkbox(ctx, "Autosave colors to SWS Palette", settings.autosave_to_sws)
+      rv, settings.autosave_to_sws = reaper.ImGui_Checkbox(ctx, "Autosave colors to SWS Palette",
+        settings.autosave_to_sws)
 
       reaper.ImGui_SeparatorText(ctx, "UI Settings")
 
@@ -446,14 +448,13 @@ local function Settings()
     end
 
     if reaper.ImGui_CollapsingHeader(ctx, "Debug Options", false) then
+      rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
+        .show_selection_info)
 
-    rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
-      .show_selection_info)
+      rv, settings.show_action_info = reaper.ImGui_Checkbox(ctx, "Show Action Info", settings.show_action_info)
+      rv, settings.no_close_apply = reaper.ImGui_Checkbox(ctx, "Don't close on apply", settings.no_close_apply)
 
-    rv, settings.show_action_info = reaper.ImGui_Checkbox(ctx, "Show Action Info", settings.show_action_info)
-    rv, settings.no_close_apply = reaper.ImGui_Checkbox(ctx, "Don't close on apply", settings.no_close_apply)
-
-    reaper.ImGui_Separator(ctx)
+      reaper.ImGui_Separator(ctx)
     end
 
 
@@ -575,12 +576,9 @@ local function Loop()
       local color = colors[i]
       local btn = ColorButton(("##%d"):format(i), color, i)
 
-      local is_doubleclick = reaper.ImGui_IsMouseDoubleClicked(ctx, 0)
-
       if btn then
         local clr = color | 0x1000000
         local randomize = false
-        local default_from_parent = false
 
         if apply_random then
           clr = colors[math.random(1, #colors)]| 0x1000000
@@ -590,11 +588,6 @@ local function Loop()
 
         if apply_random and apply_default then
           randomize = true
-        end
-
-        if apply_default and is_doubleclick then
-          default_from_parent = true
-          randomize = false
         end
 
         if data.last_segment == 0 then -- color tracks
@@ -617,11 +610,16 @@ local function Loop()
                 clr = colors[math.random(1, #colors)]| 0x1000000
               end
 
-              if take_count <= 1 or default_from_parent then -- if there is only one take or the item is an empty item
+              if take_count <= 1 then -- if there is only one take or the item is an empty item
                 reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
               elseif take_count > 1 then
                 local take = reaper.GetActiveTake(item)
-                reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
+
+                if apply_default then
+                  reaper.Main_OnCommand(41337, 0) -- Take: Set all takes of selected items to default color
+                else
+                  reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
+                end
               end
             end
           end
