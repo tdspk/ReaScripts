@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added setting to auto-save colors to SWS color palette
 - Added setting to display rounded buttons
 - Added shortcut to apply random colors on selection (Ctrl+Alt+Click)
+- Added SWS mode, which directly interacts with SWS custom colors
 
 ### Changed
 
@@ -27,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed descriptions in manual
 - Changed access to settings with RMB on window
 - Changed "Reset settings" to "Reset UI settings" for clarification
+- Changed take behaviour, Alt+LMB now applied the item default color to all takes 
 
 ### Fixed
 
