@@ -700,12 +700,6 @@ First version]]></changelog>
 1.0 Initial Release]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/9f02839ab60c86b248fa632ac3ff22122caf8b5b/Various/tdspk%20-%20Various%20-%20Yet%20Another%20Color%20Picker.lua</source>
       </version>
-      <version name="1.2dev1229" author="Tadej Supukovic (tdspk)" time="2025-12-29T18:17:35Z">
-        <changelog><![CDATA[1.1 Add action debug setting, auto-focus on open and hover
-1.0.1 Auto-Close window, add modifiers to reset color
-1.0 Initial Release]]></changelog>
-        <source main="main">https://github.com/tdspk/ReaScripts/raw/62c735335622c94c3fb4057c6065f28170249fe1/Various/tdspk%20-%20Various%20-%20Yet%20Another%20Color%20Picker.lua</source>
-      </version>
       <version name="1.2dev1229.1" author="Tadej Supukovic (tdspk)" time="2025-12-29T18:59:54Z">
         <changelog><![CDATA[1.1 Add action debug setting, auto-focus on open and hover
 1.0.1 Auto-Close window, add modifiers to reset color
