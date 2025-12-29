@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="tdspk" commit="9f02839ab60c86b248fa632ac3ff22122caf8b5b">
+<index version="1" name="tdspk" commit="e0dc4fd21b84556f257b0c8e3cddcd671ceca17c">
   <category name="Automation">
     <reapack name="tdspk - Automation Tool.lua" type="script" desc="Automation Tool">
       <metadata>
@@ -699,6 +699,12 @@ First version]]></changelog>
 1.0.1 Auto-Close window, add modifiers to reset color
 1.0 Initial Release]]></changelog>
         <source main="main">https://github.com/tdspk/ReaScripts/raw/9f02839ab60c86b248fa632ac3ff22122caf8b5b/Various/tdspk%20-%20Various%20-%20Yet%20Another%20Color%20Picker.lua</source>
+      </version>
+      <version name="1.1dev1229" author="Tadej Supukovic (tdspk)" time="2025-12-29T17:37:43Z">
+        <changelog><![CDATA[1.1 Add action debug setting, auto-focus on open and hover
+1.0.1 Auto-Close window, add modifiers to reset color
+1.0 Initial Release]]></changelog>
+        <source main="main">https://github.com/tdspk/ReaScripts/raw/e0dc4fd21b84556f257b0c8e3cddcd671ceca17c/Various/tdspk%20-%20Various%20-%20Yet%20Another%20Color%20Picker.lua</source>
       </version>
     </reapack>
   </category>
