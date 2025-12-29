@@ -356,10 +356,11 @@ local function Settings()
       end
 
       if reaper.ImGui_Button(ctx, "Assign random colors...", 150) then
-        for i = 0, 15 do
+        for i = 1, 16 do
           local r, g, b = math.random(0, 255), math.random(0, 255), math.random(0, 255)
-          reaper.CF_SetCustomColor(i, reaper.ColorToNative(r, g, b))
+          colors[i] = reaper.ColorToNative(r, g, b)
         end
+        SaveColors()
         data.update_colors = true
       end
 
