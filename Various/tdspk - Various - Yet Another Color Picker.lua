@@ -191,7 +191,7 @@ local function LoadColors()
       colors[i] = reaper.CF_GetCustomColor(i - 1)
     else
       if reaper.HasExtState(data.ext_section, 'color_' .. i) then
-        colors[i] = reaper.GetExtState(data.ext_section, 'color_' .. i)
+        colors[i] = tonumber(reaper.GetExtState(data.ext_section, 'color_' .. i))
       else
         colors[i] = default_colors[i]
       end
