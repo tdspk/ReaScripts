@@ -1,5 +1,5 @@
 --@description Yet Another Color Picker
---@version 1.1dev1229
+--@version 1.2dev1229
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Yet Another Color Picker
@@ -87,7 +87,7 @@ if version >= 7.31 then
 end
 
 data = {
-  version = "1.1dev1229",
+  version = "1.2dev1229",
   ext_section = "tdspk_YACP",
   last_segment = 0,
   mrk_rgn_idx = -1,
