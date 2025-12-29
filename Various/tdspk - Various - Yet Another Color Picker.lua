@@ -117,7 +117,8 @@ default_settings = {
   open_at_center = false,
   show_action_info = false,
   autosave_to_sws = false,
-  no_close_apply = false
+  no_close_apply = false,
+  sws_mode = false
 }
 
 local orientation_names = {
@@ -168,21 +169,33 @@ local ctx = reaper.ImGui_CreateContext('tdspk - Yet Another Color Picker')
 
 local function ResetColors()
   for i = 1, 16 do
-    local color = default_colors[i]
-    reaper.CF_SetCustomColor(i - 1, color)
+    colors[i] = default_colors[i]
   end
 end
 
-local function UpdateColors()
+local function LoadColors()
   for i = 1, 16 do
-    colors[i] = reaper.CF_GetCustomColor(i - 1)
+    if settings.sws_mode then
+      colors[i] = reaper.CF_GetCustomColor(i - 1)
+    else
+      if reaper.HasExtState(data.ext_section, 'color_' .. i) then
+        colors[i] = reaper.GetExtState(data.ext_section, 'color_' .. i)
+      else
+        colors[i] = default_colors[i]
+      end
+    end
   end
 end
 
 local function SaveColors()
   for i = 1, 16 do
     local color = colors[i]
-    reaper.CF_SetCustomColor(i - 1, color)
+
+    if settings.sws_mode then
+      reaper.CF_SetCustomColor(i - 1, color)
+    else
+      reaper.SetExtState(data.ext_section, 'color_' .. i, colors[i], false) -- TODO set to true later!
+    end
   end
 end
 
@@ -197,7 +210,7 @@ local function SaveSettings()
     reaper.SetExtState(data.ext_section, k, tostring(v), true)
   end
 
-  if settings.autosave_to_sws then SaveColors() end
+  SaveColors()
 end
 
 local function MapExtStateValues(ext_value)
@@ -270,9 +283,10 @@ local function Init()
     ResetColors()
   end
 
-  UpdateColors()
-
   LoadSettings()
+  LoadColors()
+
+
   GetMouseCursorContext()
   reaper.ImGui_SetConfigVar(ctx, reaper.ImGui_ConfigVar_HoverDelayNormal(), 1)
 
@@ -325,17 +339,29 @@ local function Settings()
     reaper.ImGui_PushFont(ctx, reaper.ImGui_GetFont(ctx), reaper.ImGui_GetFontSize(ctx) * 0.8)
     reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_ItemSpacing(), 5, 5)
 
+    local rv
+
     if reaper.ImGui_CollapsingHeader(ctx, "Settings", false, reaper.ImGui_TreeNodeFlags_DefaultOpen()) then
       reaper.ImGui_SeparatorText(ctx, "Color Settings")
 
-      if reaper.ImGui_Button(ctx, "Open SWS Color Manager...", 150) then
-        local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
-        reaper.Main_OnCommand(cmd, 0)
+      rv, settings.sws_mode = reaper.ImGui_Checkbox(ctx, "SWS Mode", settings.sws_mode)
+      reaper.ImGui_SetItemTooltip(ctx,
+        "Enabling this will save and load the palette from SWS custom colors.")
+
+      if rv then
         data.update_colors = true
       end
 
-      reaper.ImGui_SetItemTooltip(ctx,
-        "Opens the SWS Color Manager.\nUse this if you want to save and load your palettes the SWS way.")
+      if settings.sws_mode then
+        if reaper.ImGui_Button(ctx, "Open SWS Color Manager...", 150) then
+          local cmd = reaper.NamedCommandLookup("_SWSCOLORWND")
+          reaper.Main_OnCommand(cmd, 0)
+          data.update_colors = true
+        end
+
+        reaper.ImGui_SetItemTooltip(ctx,
+          "Opens the SWS Color Manager.\nUse this if you want to save and load your palettes the SWS way.")
+      end
 
       if reaper.ImGui_Button(ctx, "Assign random colors...", 150) then
         for i = 0, 15 do
@@ -347,12 +373,9 @@ local function Settings()
 
       if reaper.ImGui_Button(ctx, "Reset custom colors", 150) then
         ResetColors()
+        SaveColors()
         data.update_colors = true
       end
-
-      local rv
-      rv, settings.autosave_to_sws = reaper.ImGui_Checkbox(ctx, "Autosave colors to SWS Palette",
-        settings.autosave_to_sws)
 
       reaper.ImGui_SeparatorText(ctx, "UI Settings")
 
@@ -439,7 +462,7 @@ end
 
 local function Loop()
   if data.update_colors then
-    UpdateColors()
+    LoadColors()
     data.update_colors = false
   end
 
