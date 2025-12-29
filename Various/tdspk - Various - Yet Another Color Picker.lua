@@ -586,7 +586,11 @@ local function Loop()
       end
 
       if reaper.ImGui_BeginPopupContextItem(ctx) then
-        rv, colors[i] = reaper.ImGui_ColorPicker3(ctx, "Color Picker", colors[i])
+        local clr = reaper.ImGui_ColorConvertNative(colors[i])
+        rv, clr = reaper.ImGui_ColorPicker3(ctx, "Color Picker", clr)
+        if rv then
+          colors[i] = reaper.ImGui_ColorConvertNative(clr)
+        end
 
         reaper.ImGui_EndPopup(ctx)
       end
