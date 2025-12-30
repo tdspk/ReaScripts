@@ -537,13 +537,16 @@ local function Loop()
     if data.is_docked then
       close_on_apply = false
     else
-      close_on_apply = not reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift())
+      close_on_apply = not (reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift()) or
+        reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_RightShift()))
     end
 
     if settings.no_close_apply then close_on_apply = false end
 
-    local apply_random = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl())
-    local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt())
+    local apply_random = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl()) or
+        reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_RightCtrl())
+    local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt()) or
+        reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_RightAlt())
 
     local is_disabled
     if data.is_docked then
