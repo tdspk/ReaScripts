@@ -179,6 +179,35 @@ end
 
 local ctx = reaper.ImGui_CreateContext('tdspk - Yet Another Color Picker')
 
+local function CalculateLuminance(r, g, b)
+  -- Normalize RGB values to 0-1 range
+  local rs = r / 255
+  local gs = g / 255
+  local bs = b / 255
+
+  -- Apply gamma correction
+  if rs <= 0.03928 then
+    rs = rs / 12.92
+  else
+    rs = ((rs + 0.055) / 1.055) ^ 2.4
+  end
+
+  if gs <= 0.03928 then
+    gs = gs / 12.92
+  else
+    gs = ((gs + 0.055) / 1.055) ^ 2.4
+  end
+
+  if bs <= 0.03928 then
+    bs = bs / 12.92
+  else
+    bs = ((bs + 0.055) / 1.055) ^ 2.4
+  end
+
+  -- Calculate luminance using WCAG coefficients
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
+end
+
 local function ResetColors()
   for i = 1, 16 do
     colors[i] = default_colors[i]
@@ -287,13 +316,14 @@ end
 
 local function ColorButton(text, color, idx)
   local r, g, b = reaper.ColorFromNative(color)
-  local clr = color
-  color = reaper.ImGui_ColorConvertDouble4ToU32(r / 255, g / 255, b / 255, 1)
+  local clr = reaper.ImGui_ColorConvertDouble4ToU32(r / 255, g / 255, b / 255, 1)
 
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color)
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color)
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, 1))
+  local border_col = CalculateLuminance(r, g, b) > 0.9 and 0x000000FF or 0xFFFFFFFF
+
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), clr)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), clr)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), clr)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), border_col)
   local rounded_val = settings.rounded_buttons and 10 or 0
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameRounding(), rounded_val)
 
