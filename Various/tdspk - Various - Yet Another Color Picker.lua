@@ -552,6 +552,14 @@ local function Loop()
         reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_RightAlt())
     local apply_on_children = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_A())
 
+    local undo = 0
+    if apply_random and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Z(), false) then
+      undo = -1
+    end
+    if apply_random and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Y(), false) then
+      undo = 1
+    end
+
     local is_disabled
     if data.is_docked then
       is_disabled = false
@@ -566,10 +574,6 @@ local function Loop()
       local btn = ColorButton(("##%d"):format(i), color, i)
 
       if btn then
-        if reaper.ImGui_IsMouseDoubleClicked(ctx, 0) then
-          reaper.ShowConsoleMsg("skibidi")
-        end
-
         local clr = color | 0x1000000
         local randomize = false
 
@@ -665,6 +669,12 @@ local function Loop()
 
     if reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Escape(), false) then
       open = false
+    end
+
+    if undo == -1 then
+      if reaper.Undo_CanUndo2(0) then reaper.Undo_DoUndo2(0) end
+    elseif undo == 1 then
+      if reaper.Undo_CanRedo2(0) then reaper.Undo_DoRedo2(0) end
     end
 
     reaper.ImGui_End(ctx)
