@@ -99,7 +99,8 @@ data = {
   post_init = false,
   is_docked = false,
   focus_ticks = 0,
-  update_colors = false
+  update_colors = false,
+  self_cmd = select(4, reaper.get_action_context())
 }
 
 settings = {
@@ -307,6 +308,7 @@ local function GetMouseCursorContext()
 end
 
 local function Init()
+  reaper.SetToggleCommandState(0, data.self_cmd, 1)
   LoadSettings()
   LoadColors()
 
@@ -689,6 +691,9 @@ end
 
 Init()
 Loop()
-reaper.atexit(SaveSettings)
+reaper.atexit(function()
+  SaveSettings()
+  reaper.SetToggleCommandState(0, data.self_cmd, 0)
+end)
 
 ::eof::
