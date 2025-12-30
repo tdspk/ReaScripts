@@ -446,6 +446,7 @@ local function Settings()
       reaper.ImGui_Text(ctx, "Shift + LMB to apply color without closing window")
       reaper.ImGui_Text(ctx, "Alt + LMB to reset color (default color)")
       reaper.ImGui_Text(ctx, "Ctrl + Alt + LMB to apply random colors on selection")
+      reaper.ImGui_Text(ctx, "A + LMB to apply color to child tracks / all takes")
       reaper.ImGui_Text(ctx, "RMB to open settings and info")
       reaper.ImGui_Text(ctx, "Close with ESC")
     end
@@ -547,6 +548,7 @@ local function Loop()
         reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_RightCtrl())
     local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt()) or
         reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_RightAlt())
+    local apply_on_children = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_A())
 
     local is_disabled
     if data.is_docked then
@@ -562,6 +564,10 @@ local function Loop()
       local btn = ColorButton(("##%d"):format(i), color, i)
 
       if btn then
+        if reaper.ImGui_IsMouseDoubleClicked(ctx, 0) then
+          reaper.ShowConsoleMsg("skibidi")
+        end
+
         local clr = color | 0x1000000
         local randomize = false
 
@@ -584,6 +590,11 @@ local function Loop()
               end
               reaper.SetMediaTrackInfo_Value(tr, "I_CUSTOMCOLOR", clr)
             end
+
+            if apply_on_children then
+              local cmd = reaper.NamedCommandLookup("_SWS_COLCHILDREN")
+              reaper.Main_OnCommand(cmd, 0)
+            end
           end
         elseif data.last_segment == 1 then -- color items or takes
           for j = 0, reaper.CountSelectedMediaItems(0) - 1 do
@@ -599,12 +610,12 @@ local function Loop()
                 reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
               elseif take_count > 1 then
                 local take = reaper.GetActiveTake(item)
+                reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
+              end
 
-                if apply_default then
-                  reaper.Main_OnCommand(41337, 0) -- Take: Set all takes of selected items to default color
-                else
-                  reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
-                end
+              if apply_on_children then
+                reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
+                reaper.Main_OnCommand(41337, 0) -- Take: Set all takes of selected items to default color
               end
             end
           end
