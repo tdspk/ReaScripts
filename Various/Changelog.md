@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added setting to display rounded buttons
 - Added shortcut to apply random colors on selection (Ctrl+Alt+Click)
 - Added SWS mode, which directly interacts with SWS custom colors
+- Key "A" now assigns the color of the selected track to all children and color of selected items to all takes
+- Script state now updates in action list
+- Enable undo / redo while window is focused
 
 ### Changed
 
@@ -28,11 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed descriptions in manual
 - Changed access to settings with RMB on window
 - Changed "Reset settings" to "Reset UI settings" for clarification
-- Changed take behaviour, Alt+LMB now applied the item default color to all takes 
+- Changed take behaviour, Alt+LMB now applied the item default color to all takes
+- Color border color now updates according to color luminance when hovering over a button
 
 ### Fixed
 
 - Fixed issue where colors were not updated correctly
+- Fixed issue where right modifier keys were not working
 
 ## [1.1]
 

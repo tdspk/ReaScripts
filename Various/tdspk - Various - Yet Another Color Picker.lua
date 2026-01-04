@@ -1,5 +1,5 @@
 --@description Yet Another Color Picker
---@version 1.2dev1229
+--@version 1.2dev1229.1
 --@author Tadej Supukovic (tdspk)
 --@about
 --  # Yet Another Color Picker
@@ -87,7 +87,7 @@ if version >= 7.31 then
 end
 
 data = {
-  version = "1.2dev1229",
+  version = "1.2dev1229.1",
   ext_section = "tdspk_YACP",
   last_segment = 0,
   mrk_rgn_idx = -1,
@@ -99,7 +99,8 @@ data = {
   post_init = false,
   is_docked = false,
   focus_ticks = 0,
-  update_colors = false
+  update_colors = false,
+  self_cmd = select(4, reaper.get_action_context())
 }
 
 settings = {
@@ -178,6 +179,35 @@ if not reaper.HasExtState(data.ext_section, "init") then
 end
 
 local ctx = reaper.ImGui_CreateContext('tdspk - Yet Another Color Picker')
+
+local function CalculateLuminance(r, g, b)
+  -- Normalize RGB values to 0-1 range
+  local rs = r / 255
+  local gs = g / 255
+  local bs = b / 255
+
+  -- Apply gamma correction
+  if rs <= 0.03928 then
+    rs = rs / 12.92
+  else
+    rs = ((rs + 0.055) / 1.055) ^ 2.4
+  end
+
+  if gs <= 0.03928 then
+    gs = gs / 12.92
+  else
+    gs = ((gs + 0.055) / 1.055) ^ 2.4
+  end
+
+  if bs <= 0.03928 then
+    bs = bs / 12.92
+  else
+    bs = ((bs + 0.055) / 1.055) ^ 2.4
+  end
+
+  -- Calculate luminance using WCAG coefficients
+  return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs
+end
 
 local function ResetColors()
   for i = 1, 16 do
@@ -278,6 +308,7 @@ local function GetMouseCursorContext()
 end
 
 local function Init()
+  reaper.SetToggleCommandState(0, data.self_cmd, 1)
   LoadSettings()
   LoadColors()
 
@@ -287,13 +318,14 @@ end
 
 local function ColorButton(text, color, idx)
   local r, g, b = reaper.ColorFromNative(color)
-  local clr = color
-  color = reaper.ImGui_ColorConvertDouble4ToU32(r / 255, g / 255, b / 255, 1)
+  local clr = reaper.ImGui_ColorConvertDouble4ToU32(r / 255, g / 255, b / 255, 1)
 
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), color)
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), color)
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), color)
-  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, 1))
+  local border_col = CalculateLuminance(r, g, b) > 0.9 and 0x000000FF or 0xFFFFFFFF
+
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Button(), clr)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonHovered(), clr)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_ButtonActive(), clr)
+  reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_Border(), border_col)
   local rounded_val = settings.rounded_buttons and 10 or 0
   reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameRounding(), rounded_val)
 
@@ -356,10 +388,11 @@ local function Settings()
       end
 
       if reaper.ImGui_Button(ctx, "Assign random colors...", 150) then
-        for i = 0, 15 do
+        for i = 1, 16 do
           local r, g, b = math.random(0, 255), math.random(0, 255), math.random(0, 255)
-          reaper.CF_SetCustomColor(i, reaper.ColorToNative(r, g, b))
+          colors[i] = reaper.ColorToNative(r, g, b)
         end
+        SaveColors()
         data.update_colors = true
       end
 
@@ -415,6 +448,7 @@ local function Settings()
       reaper.ImGui_Text(ctx, "Shift + LMB to apply color without closing window")
       reaper.ImGui_Text(ctx, "Alt + LMB to reset color (default color)")
       reaper.ImGui_Text(ctx, "Ctrl + Alt + LMB to apply random colors on selection")
+      reaper.ImGui_Text(ctx, "A + LMB to apply color to child tracks / all takes")
       reaper.ImGui_Text(ctx, "RMB to open settings and info")
       reaper.ImGui_Text(ctx, "Close with ESC")
     end
@@ -506,13 +540,25 @@ local function Loop()
     if data.is_docked then
       close_on_apply = false
     else
-      close_on_apply = not reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift())
+      close_on_apply = not (reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftShift()) or
+        reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_RightShift()))
     end
 
     if settings.no_close_apply then close_on_apply = false end
 
-    local apply_random = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl())
-    local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt())
+    local apply_random = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftCtrl()) or
+        reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_RightCtrl())
+    local apply_default = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_LeftAlt()) or
+        reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_RightAlt())
+    local apply_on_children = reaper.ImGui_IsKeyDown(ctx, reaper.ImGui_Key_A())
+
+    local undo = 0
+    if apply_random and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Z(), false) then
+      undo = -1
+    end
+    if apply_random and reaper.ImGui_IsKeyPressed(ctx, reaper.ImGui_Key_Y(), false) then
+      undo = 1
+    end
 
     local is_disabled
     if data.is_docked then
@@ -550,6 +596,11 @@ local function Loop()
               end
               reaper.SetMediaTrackInfo_Value(tr, "I_CUSTOMCOLOR", clr)
             end
+
+            if apply_on_children then
+              local cmd = reaper.NamedCommandLookup("_SWS_COLCHILDREN")
+              reaper.Main_OnCommand(cmd, 0)
+            end
           end
         elseif data.last_segment == 1 then -- color items or takes
           for j = 0, reaper.CountSelectedMediaItems(0) - 1 do
@@ -565,12 +616,12 @@ local function Loop()
                 reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
               elseif take_count > 1 then
                 local take = reaper.GetActiveTake(item)
+                reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
+              end
 
-                if apply_default then
-                  reaper.Main_OnCommand(41337, 0) -- Take: Set all takes of selected items to default color
-                else
-                  reaper.SetMediaItemTakeInfo_Value(take, "I_CUSTOMCOLOR", clr)
-                end
+              if apply_on_children then
+                reaper.SetMediaItemInfo_Value(item, "I_CUSTOMCOLOR", clr)
+                reaper.Main_OnCommand(41337, 0) -- Take: Set all takes of selected items to default color
               end
             end
           end
@@ -620,6 +671,12 @@ local function Loop()
       open = false
     end
 
+    if undo == -1 then
+      if reaper.Undo_CanUndo2(0) then reaper.Undo_DoUndo2(0) end
+    elseif undo == 1 then
+      if reaper.Undo_CanRedo2(0) then reaper.Undo_DoRedo2(0) end
+    end
+
     reaper.ImGui_End(ctx)
   end
 
@@ -644,6 +701,9 @@ end
 
 Init()
 Loop()
-reaper.atexit(SaveSettings)
+reaper.atexit(function()
+  SaveSettings()
+  reaper.SetToggleCommandState(0, data.self_cmd, 0)
+end)
 
 ::eof::
