@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Key "A" now assigns the color of the selected track to all children and color of selected items to all takes
 - Script state now updates in action list
 - Enable undo / redo while window is focused
+- Tooltips for settings.
 
 ### Changed
 

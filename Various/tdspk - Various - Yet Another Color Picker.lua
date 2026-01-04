@@ -395,12 +395,14 @@ local function Settings()
         SaveColors()
         data.update_colors = true
       end
+      reaper.ImGui_SetItemTooltip(ctx, "Assigns random colors to the color palette.")
 
       if reaper.ImGui_Button(ctx, "Reset custom colors", 150) then
         ResetColors()
         SaveColors()
         data.update_colors = true
       end
+      reaper.ImGui_SetItemTooltip(ctx, "Resets the colors to the default color palette.")
 
       reaper.ImGui_SeparatorText(ctx, "UI Settings")
 
@@ -434,9 +436,13 @@ local function Settings()
     if reaper.ImGui_CollapsingHeader(ctx, "Debug Options", false) then
       rv, settings.show_selection_info = reaper.ImGui_Checkbox(ctx, "Show Selection Info", settings
         .show_selection_info)
+      reaper.ImGui_SetItemTooltip(ctx, "Shows on which target the color will be applied (track, item, marker, region).")
 
       rv, settings.show_action_info = reaper.ImGui_Checkbox(ctx, "Show Action Info", settings.show_action_info)
+      reaper.ImGui_SetItemTooltip(ctx, "Shows which action will be applied.")
+
       rv, settings.no_close_apply = reaper.ImGui_Checkbox(ctx, "Don't close on apply", settings.no_close_apply)
+      reaper.ImGui_SetItemTooltip(ctx, "Prevents closing the window on LMB click.")
 
       reaper.ImGui_Separator(ctx)
     end
@@ -449,7 +455,7 @@ local function Settings()
       reaper.ImGui_Text(ctx, "Alt + LMB to reset color (default color)")
       reaper.ImGui_Text(ctx, "Ctrl + Alt + LMB to apply random colors on selection")
       reaper.ImGui_Text(ctx, "A + LMB to apply color to child tracks / all takes")
-      reaper.ImGui_Text(ctx, "RMB to open settings and info")
+      reaper.ImGui_Text(ctx, "RMB on window to open settings and info")
       reaper.ImGui_Text(ctx, "Close with ESC")
     end
 
