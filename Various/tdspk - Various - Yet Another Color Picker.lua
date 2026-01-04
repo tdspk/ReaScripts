@@ -14,6 +14,7 @@
 --@provides
 --  [main] .
 -- @changelog
+--  1.2 Add coloring of markers and regions, takes, color picker, sws mode and more. See full changelog in repo.
 --  1.1 Add action debug setting, auto-focus on open and hover
 --  1.0.1 Auto-Close window, add modifiers to reset color
 --  1.0 Initial Release
