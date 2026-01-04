@@ -17,7 +17,22 @@ local function CacheItems()
 
   for i = 0, reaper.CountMediaItems(0) - 1 do
     local item = reaper.GetMediaItem(0, i)
-    items[i + 1] = item
+    local rv, notes = reaper.GetSetMediaItemInfo_String(item, "P_NOTES", "", false)
+    local track = reaper.GetMediaItemTrack(item)
+    local take = reaper.GetMediaItemTake(item, 0)
+    local take_name = reaper.GetTakeName(take)
+
+    if rv and notes ~= "" then
+      local entry = {
+        item = item,
+        take = take,
+        take_name = take_name,
+        notes = notes,
+        track = track,
+        track_name = reaper.GetTrackName(track),
+      }
+      table.insert(items, entry)
+    end
   end
 
   return items
@@ -42,26 +57,33 @@ local function Loop()
       if reaper.ImGui_CollapsingHeader(ctx, ("Media Items (%d)"):format(#data.items), false) then
         for i = 1, #data.items do
           local item = data.items[i]
-          local rv, notes = reaper.GetSetMediaItemInfo_String(item, "P_NOTES", "", false)
 
-          if rv and notes ~= "" then
-            reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), 1)
+          reaper.ImGui_PushStyleVar(ctx, reaper.ImGui_StyleVar_FrameBorderSize(), 1)
+          reaper.ImGui_PushStyleColor(ctx, reaper.ImGui_Col_FrameBg(), reaper.ImGui_ColorConvertDouble4ToU32(1, 1, 1, 1))
 
-            local sel = reaper.ImGui_Selectable(ctx, ("%s##%d"):format(notes, i), false)
-            if sel then
-              UnselectMediaItems()
-              reaper.SetMediaItemSelected(item, true)
-              local itempos = reaper.GetMediaItemInfo_Value(item, "D_POSITION")
-              reaper.SetEditCurPos2(0, itempos, true, false)
-              reaper.UpdateArrange()
-            end
+          local text = ("%s\n%s"):format(item.take_name, item.notes)
 
-            if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseClicked(ctx, 1) then
-              UnselectMediaItems()
-              reaper.SetMediaItemSelected(item, true)
-              reaper.Main_OnCommand(40850, 0) -- Item: Show notes for items...
-              reaper.UpdateArrange()
-            end
+          local sel = reaper.ImGui_Selectable(ctx,
+            ("%s##%d"):format(text, i), false)
+
+          reaper.ImGui_PopStyleColor(ctx)
+          reaper.ImGui_PopStyleVar(ctx)
+
+          reaper.ImGui_Separator(ctx)
+
+          if sel then
+            UnselectMediaItems()
+            reaper.SetMediaItemSelected(item.item, true)
+            local itempos = reaper.GetMediaItemInfo_Value(item.item, "D_POSITION")
+            reaper.SetEditCurPos2(0, itempos, true, false)
+            reaper.UpdateArrange()
+          end
+
+          if reaper.ImGui_IsItemHovered(ctx) and reaper.ImGui_IsMouseClicked(ctx, 1) then
+            UnselectMediaItems()
+            reaper.SetMediaItemSelected(item.item, true)
+            reaper.Main_OnCommand(40850, 0) -- Item: Show notes for items...
+            reaper.UpdateArrange()
           end
         end
       end
